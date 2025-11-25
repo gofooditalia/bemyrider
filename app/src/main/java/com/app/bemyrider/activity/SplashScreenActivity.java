@@ -39,6 +39,7 @@ import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.LocaleManager;
 import com.app.bemyrider.utils.Log;
 import com.app.bemyrider.utils.PrefsUtil;
+import com.app.bemyrider.utils.SecurePrefsUtil;
 import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.io.File;
@@ -52,6 +53,7 @@ import java.util.LinkedHashMap;
 public class SplashScreenActivity extends AppCompatActivity {
 
     private static final String TAG = "SplashScreenActivity";
+    // UI Components (Legacy references kept for safety, new layout has them hidden/removed)
     private Spinner sp_select_lan;
     private Button btn_continue;
     private ArrayAdapter lanadapter;
@@ -60,6 +62,9 @@ public class SplashScreenActivity extends AppCompatActivity {
     private AsyncTask autoLoginAsync, socialLoginAsync, offlineDataAsync, checkVersionAsync, getLanguageAsync;
     private Context context;
     private ConnectionManager connectionManager;
+    
+    // Secure Preference
+    private SecurePrefsUtil securePrefs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,10 +72,23 @@ public class SplashScreenActivity extends AppCompatActivity {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        getSupportActionBar().hide();
+        // getSupportActionBar().hide(); // Already hidden by theme or null in some cases
         setContentView(R.layout.activity_splash_screen);
 
         context = SplashScreenActivity.this;
+        
+        // Init Secure Prefs
+        securePrefs = SecurePrefsUtil.with(context);
+        
+        // --- SECURE MIGRATION START ---
+        PrefsUtil legacyPrefs = PrefsUtil.with(context);
+        // Check if legacy data exists (e.g., UserId is present in old prefs)
+        if (legacyPrefs.readString("UserId") != null && !legacyPrefs.readString("UserId").isEmpty()) {
+            Log.i(TAG, "Migrating legacy preferences to encrypted storage...");
+            securePrefs.migrateFromLegacy(legacyPrefs);
+        }
+        // --- SECURE MIGRATION END ---
+
         printHashKey(this);
 
         /*Init Internet Connection Class For No Internet Banner*/
@@ -80,7 +98,7 @@ public class SplashScreenActivity extends AppCompatActivity {
 
         FirebaseMessaging.getInstance().getToken().addOnSuccessListener(token -> {
             try {
-                PrefsUtil.with(SplashScreenActivity.this).write("device_token", token);
+                securePrefs.write("device_token", token);
             } catch (NullPointerException npe) {
                 npe.printStackTrace();
             }
@@ -88,57 +106,51 @@ public class SplashScreenActivity extends AppCompatActivity {
 
         sp_select_lan = findViewById(R.id.sp_select_lan);
         btn_continue = findViewById(R.id.btn_continue);
+        
+        // Initialize adapter even if hidden to prevent crashes in existing logic
         lanadapter = new ArrayAdapter<>
                 (SplashScreenActivity.this,
                         R.layout.spinner_item_inverse,
                         languagePojoItems);
         lanadapter.setDropDownViewResource(
                 android.R.layout.simple_spinner_dropdown_item);
-        sp_select_lan.setAdapter(lanadapter);
+        if (sp_select_lan != null) {
+            sp_select_lan.setAdapter(lanadapter);
+            sp_select_lan.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                    securePrefs.write("lanId", languagePojoItems.get(i).getId());
+                    if (view instanceof TextView) {
+                        ((TextView) view).setTextColor(getResources().getColor(R.color.white));
+                    }
+                    lanId = languagePojoItems.get(i).getId();
+                }
 
-        lanId = PrefsUtil.with(SplashScreenActivity.this).readString("lanId");
-        Log.e("SPLASH SCRENN ID", lanId + "ADv");
+                @Override
+                public void onNothingSelected(AdapterView<?> adapterView) {
 
-        sp_select_lan.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                PrefsUtil.with(SplashScreenActivity.this).write("lanId", languagePojoItems.get(i).getId());
-                ((TextView) adapterView.getChildAt(0)).setTextColor(getResources().getColor(R.color.white));
-                lanId = languagePojoItems.get(i).getId();
-                Log.e("SEcond SPLASH", lanId + "vdef");
-            }
+                }
+            });
+        }
 
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-
-            }
-        });
+        lanId = securePrefs.readString("lanId");
+        Log.e("SPLASH SCREEN ID", lanId + "ADv");
 
         checkVersion();
 
-        btn_continue.setOnClickListener(view -> {
-            if (lanId.equals("2")) {
-                LocaleManager.setLocale(context, "fr");
+        if (btn_continue != null) {
+            btn_continue.setOnClickListener(view -> {
+                String langCode = "en";
+                if ("2".equals(lanId)) langCode = "fr";
+                else if ("3".equals(lanId)) langCode = "pt";
+                else if ("4".equals(lanId)) langCode = "it";
+                
+                LocaleManager.setLocale(context, langCode);
                 Intent intent = new Intent(SplashScreenActivity.this, IntroductionActivity.class);
                 startActivity(intent);
                 finish();
-            } else if (lanId.equals("3")) {
-                LocaleManager.setLocale(context, "pt");
-                Intent intent = new Intent(SplashScreenActivity.this, IntroductionActivity.class);
-                startActivity(intent);
-                finish();
-            } else if (lanId.equals("4")) {
-                LocaleManager.setLocale(context, "it");
-                Intent intent = new Intent(SplashScreenActivity.this, IntroductionActivity.class);
-                startActivity(intent);
-                finish();
-            } else {
-                Intent intent = new Intent(SplashScreenActivity.this, IntroductionActivity.class);
-                startActivity(intent);
-                finish();
-            }
-
-        });
+            });
+        }
     }
 
     public void printHashKey(Context pContext) {
@@ -157,9 +169,9 @@ public class SplashScreenActivity extends AppCompatActivity {
 
     private void serviceCallLogin() {
         LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-        textParams.put("email", PrefsUtil.with(SplashScreenActivity.this).readString("eMail"));
-        textParams.put("password", PrefsUtil.with(SplashScreenActivity.this).readString("Pass"));
-        textParams.put("device_token", PrefsUtil.with(SplashScreenActivity.this).readString("device_token"));
+        textParams.put("email", securePrefs.readString("eMail"));
+        textParams.put("password", securePrefs.readString("Pass"));
+        textParams.put("device_token", securePrefs.readString("device_token"));
 
         new WebServiceCall(context, WebServiceUrl.URL_LOGIN, textParams, NewLoginPojo.class, false, new WebServiceCall.OnResultListener() {
             @Override
@@ -168,32 +180,24 @@ public class SplashScreenActivity extends AppCompatActivity {
                     NewLoginPojo login_response = ((NewLoginPojo) obj);
                     NewLoginPojoItem item = login_response.getData();
 
-//                    PrefsUtil.with(SplashScreenActivity.this).clearPrefs(); // it will clear password also so.. Do not clear here
-                    PrefsUtil.with(SplashScreenActivity.this).write("UserId", login_response.getData().getUserId());
-                    PrefsUtil.with(SplashScreenActivity.this).write("countrycodeid", login_response.getData().getCountryCodeId());
-                    PrefsUtil.with(SplashScreenActivity.this).write("UserName", login_response.getData().getUserName());
-                    PrefsUtil.with(SplashScreenActivity.this).write("FirstName", login_response.getData().getFirstName());
-                    PrefsUtil.with(SplashScreenActivity.this).write("LastName", login_response.getData().getLastName());
-                    PrefsUtil.with(SplashScreenActivity.this).write("UserType", login_response.getData().getUserType());
-                    PrefsUtil.with(SplashScreenActivity.this).write("eMail", login_response.getData().getEmailId());
-                    PrefsUtil.with(SplashScreenActivity.this).write("UserImg", login_response.getData().getProfileImg());
-                    PrefsUtil.with(SplashScreenActivity.this).write("login_cust_address", login_response.getData().getAddress());
+                    securePrefs.write("UserId", login_response.getData().getUserId());
+                    securePrefs.write("countrycodeid", login_response.getData().getCountryCodeId());
+                    securePrefs.write("UserName", login_response.getData().getUserName());
+                    securePrefs.write("FirstName", login_response.getData().getFirstName());
+                    securePrefs.write("LastName", login_response.getData().getLastName());
+                    securePrefs.write("UserType", login_response.getData().getUserType());
+                    securePrefs.write("eMail", login_response.getData().getEmailId());
+                    securePrefs.write("UserImg", login_response.getData().getProfileImg());
+                    securePrefs.write("login_cust_address", login_response.getData().getAddress());
 
-                    if (lanId.equals("2")) {
-                        LocaleManager.setLocale(context, "fr");
-                    } else if (lanId.equals("3")) {
-                        LocaleManager.setLocale(context, "pt");
-                    } else if (lanId.equals("4")) {
-                        LocaleManager.setLocale(context, "it");
-                    } else {
-                        LocaleManager.setLocale(context, "en");
-                    }
+                    String langCode = "en";
+                    if ("2".equals(lanId)) langCode = "fr";
+                    else if ("3".equals(lanId)) langCode = "pt";
+                    else if ("4".equals(lanId)) langCode = "it";
+                    LocaleManager.setLocale(context, langCode);
 
                     if (item.getUserType().equals("c")) {
                         if (item.getFirstName().equals("") || item.getLastName().equals("") || item.getContactNumber().equals("")) {
-                                /*|| item.getCompanyName().equals("") || item.getVat().equals("") || item.getTaxId().equals("") ||
-                                item.getCertifiedEmail().equals("") || item.getReceiptCode().equals("")) {*/
-
                             Intent intent = new Intent(context, EditProfileActivity.class);
                             intent.putExtra("isFromEdit", false);
                             intent.putExtra("loginPojoData", item);
@@ -204,8 +208,7 @@ public class SplashScreenActivity extends AppCompatActivity {
                         finish();
                     } else {
                         if (item.getFirstName().equals("") || item.getLastName().equals("") || item.getContactNumber().equals("") ||
-                                item.getCompanyName().equals("") || item.getVat().equals("") /*|| item.getTaxId().equals("") ||
-                                item.getCertifiedEmail().equals("") || item.getReceiptCode().equals("")*/) {
+                                item.getCompanyName().equals("") || item.getVat().equals("")) {
 
                             Intent intent = new Intent(context, com.app.bemyrider.activity.partner.EditProfileActivity.class);
                             intent.putExtra("isFromEdit", false);
@@ -217,28 +220,15 @@ public class SplashScreenActivity extends AppCompatActivity {
                         finish();
                     }
                 } else {
-                    if (lanId.equals("2")) {
-                        LocaleManager.setLocale(context, "fr");
-                        Intent intent = new Intent(SplashScreenActivity.this, SignupActivity.class);
-                        startActivity(intent);
-                        finish();
-                    } else if (lanId.equals("3")) {
-                        LocaleManager.setLocale(context, "pt");
-                        Intent intent = new Intent(SplashScreenActivity.this, SignupActivity.class);
-                        startActivity(intent);
-                        finish();
-                    } else if (lanId.equals("4")) {
-                        LocaleManager.setLocale(context, "it");
-                        startActivity(new Intent(SplashScreenActivity.this,
-                                SignupActivity.class));
-                        finish();
-                    } else {
-                        LocaleManager.setLocale(context, "en");
-                        Intent intent = new Intent(SplashScreenActivity.this, SignupActivity.class);
-                        startActivity(intent);
-                        finish();
-                    }
-
+                    String langCode = "en";
+                    if ("2".equals(lanId)) langCode = "fr";
+                    else if ("3".equals(lanId)) langCode = "pt";
+                    else if ("4".equals(lanId)) langCode = "it";
+                    LocaleManager.setLocale(context, langCode);
+                    
+                    Intent intent = new Intent(SplashScreenActivity.this, SignupActivity.class);
+                    startActivity(intent);
+                    finish();
                 }
             }
 
@@ -257,7 +247,7 @@ public class SplashScreenActivity extends AppCompatActivity {
     public void serviceCallSocialLogin(final String email, final String firstName,
                                        final String lastName, final String logintype,
                                        final String social_id) {
-        PrefsUtil.with(SplashScreenActivity.this).clearPrefs();
+        securePrefs.clearPrefs();
         LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
 
         textParams.put("first_name", firstName);
@@ -271,7 +261,7 @@ public class SplashScreenActivity extends AppCompatActivity {
         } else if (logintype.equals("l")) {
             textParams.put("linkedinid", social_id);
         }
-        textParams.put("device_token", PrefsUtil.with(SplashScreenActivity.this).readString("device_token"));
+        textParams.put("device_token", securePrefs.readString("device_token"));
 
 
         new WebServiceCall(SplashScreenActivity.this, WebServiceUrl.URL_SOCIAL_LOGIN,
@@ -293,21 +283,21 @@ public class SplashScreenActivity extends AppCompatActivity {
                             startActivity(intent);
                             finish();
                         } else {
-                            PrefsUtil.with(SplashScreenActivity.this).clearPrefs();
-                            PrefsUtil.with(SplashScreenActivity.this).write("UserId", loginData.getUserId());
-                            PrefsUtil.with(SplashScreenActivity.this).write("CurrencySign", loginData.getCurrencySign());
-                            PrefsUtil.with(SplashScreenActivity.this).write("UserName", loginData.getUserName());
-                            PrefsUtil.with(SplashScreenActivity.this).write("FirstName", loginData.getFirstName());
-                            PrefsUtil.with(SplashScreenActivity.this).write("LastName", loginData.getLastName());
-                            PrefsUtil.with(SplashScreenActivity.this).write("UserType", loginData.getUserType());
-                            PrefsUtil.with(SplashScreenActivity.this).write("eMail", loginData.getEmailId());
-                            PrefsUtil.with(SplashScreenActivity.this).write("loginType", logintype);
-                            PrefsUtil.with(SplashScreenActivity.this).write("socialId", social_id);
-                            PrefsUtil.with(SplashScreenActivity.this).write("UserImg", loginData.getProfileImg());
-                            PrefsUtil.with(SplashScreenActivity.this).write("login_cust_address", loginData.getAddress());
+                            securePrefs.clearPrefs();
+                            securePrefs.write("UserId", loginData.getUserId());
+                            securePrefs.write("CurrencySign", loginData.getCurrencySign());
+                            securePrefs.write("UserName", loginData.getUserName());
+                            securePrefs.write("FirstName", loginData.getFirstName());
+                            securePrefs.write("LastName", loginData.getLastName());
+                            securePrefs.write("UserType", loginData.getUserType());
+                            securePrefs.write("eMail", loginData.getEmailId());
+                            securePrefs.write("loginType", logintype);
+                            securePrefs.write("socialId", social_id);
+                            securePrefs.write("UserImg", loginData.getProfileImg());
+                            securePrefs.write("login_cust_address", loginData.getAddress());
 
 
-                            if (PrefsUtil.with(SplashScreenActivity.this).readString("UserType").equalsIgnoreCase("c")) {
+                            if (securePrefs.readString("UserType").equalsIgnoreCase("c")) {
                                 startActivity(new Intent(SplashScreenActivity.this, CustomerHomeActivity.class));
                             } else {
                                 startActivity(new Intent(SplashScreenActivity.this, ProviderHomeActivity.class));
@@ -342,7 +332,7 @@ public class SplashScreenActivity extends AppCompatActivity {
     private void saveOfflineData() {
         LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
 
-        textParams.put("user_id", PrefsUtil.with(SplashScreenActivity.this).readString("UserId"));
+        textParams.put("user_id", securePrefs.readString("UserId"));
 
         new WebServiceCall(SplashScreenActivity.this, WebServiceUrl.URL_GETOFFLINEDATA,
                 textParams, String.class, false, new WebServiceCall.OnResultListener() {
@@ -423,34 +413,16 @@ public class SplashScreenActivity extends AppCompatActivity {
                                         builder.setNegativeButton("Cancel", (dialogInterface, i) -> finish());
                                         builder.show();
                                     } else {
-                                        if (PrefsUtil.with(SplashScreenActivity.this).readString("lanId").equals("")) {
-                                            sp_select_lan.setVisibility(View.VISIBLE);
-                                            btn_continue.setVisibility(View.VISIBLE);
-                                            serviceCallGetLanguage();
-                                        } else {
-                                            doLogin();
-                                        }
+                                        proceedWithLoginFlow();
                                     }
                                 } catch (PackageManager.NameNotFoundException e) {
                                     e.printStackTrace();
                                 }
                             } else {
-                                if (PrefsUtil.with(SplashScreenActivity.this).readString("lanId").equals("")) {
-                                    sp_select_lan.setVisibility(View.VISIBLE);
-                                    btn_continue.setVisibility(View.VISIBLE);
-                                    serviceCallGetLanguage();
-                                } else {
-                                    doLogin();
-                                }
+                                proceedWithLoginFlow();
                             }
                         } else {
-                            if (PrefsUtil.with(SplashScreenActivity.this).readString("lanId").equals("")) {
-                                sp_select_lan.setVisibility(View.VISIBLE);
-                                btn_continue.setVisibility(View.VISIBLE);
-                                serviceCallGetLanguage();
-                            } else {
-                                doLogin();
-                            }
+                            proceedWithLoginFlow();
                         }
                     } catch (Exception e) {
                         Log.e("TAG", "Error");
@@ -471,20 +443,30 @@ public class SplashScreenActivity extends AppCompatActivity {
             }
         });
     }
+    
+    private void proceedWithLoginFlow() {
+        if (securePrefs.readString("lanId").equals("")) {
+            // Se non c'è lingua, mostra i controlli per sceglierla
+            if (sp_select_lan != null) sp_select_lan.setVisibility(View.VISIBLE);
+            if (btn_continue != null) btn_continue.setVisibility(View.VISIBLE);
+            if (findViewById(R.id.progressBar) != null) findViewById(R.id.progressBar).setVisibility(View.GONE);
+            serviceCallGetLanguage();
+        } else {
+            doLogin();
+        }
+    }
 
     private void doLogin() {
-        if (PrefsUtil.with(SplashScreenActivity.this).readString("loginType") != null
-                && PrefsUtil.with(SplashScreenActivity.this)
-                .readString("loginType").length() > 0
-                && PrefsUtil.with(SplashScreenActivity.this).readString("socialId") != null
-                && PrefsUtil.with(SplashScreenActivity.this)
-                .readString("socialId").length() > 0) {
+        if (securePrefs.readString("loginType") != null
+                && securePrefs.readString("loginType").length() > 0
+                && securePrefs.readString("socialId") != null
+                && securePrefs.readString("socialId").length() > 0) {
             serviceCallSocialLogin(
-                    PrefsUtil.with(SplashScreenActivity.this).readString("eMail"),
-                    PrefsUtil.with(SplashScreenActivity.this).readString("FirstName"),
-                    PrefsUtil.with(SplashScreenActivity.this).readString("LastName"),
-                    PrefsUtil.with(SplashScreenActivity.this).readString("loginType"),
-                    PrefsUtil.with(SplashScreenActivity.this).readString("socialId"));
+                    securePrefs.readString("eMail"),
+                    securePrefs.readString("FirstName"),
+                    securePrefs.readString("LastName"),
+                    securePrefs.readString("loginType"),
+                    securePrefs.readString("socialId"));
         } else {
             serviceCallLogin();
         }
@@ -500,16 +482,19 @@ public class SplashScreenActivity extends AppCompatActivity {
             public void onResult(boolean status, Object obj) {
                 if (status) {
                     LanguagePojo languagePojo = (LanguagePojo) obj;
-                    for (int i = 0; i < languagePojo.getData().size(); i++) {
-                        Log.e("Splash", "onResult: " + languagePojo.getData().get(i).getLanguageName());
-                        if (languagePojo.getData().get(i).getLanguageName().trim().equalsIgnoreCase("french") ||
-                                languagePojo.getData().get(i).getLanguageName().trim().equalsIgnoreCase("english") ||
-                                languagePojo.getData().get(i).getLanguageName().trim().equalsIgnoreCase("Portuguese") ||
-                                languagePojo.getData().get(i).getLanguageName().trim().equalsIgnoreCase("Italian")) {
-                            languagePojoItems.add(languagePojo.getData().get(i));
-                            Collections.reverse(languagePojoItems);
-                            lanadapter.notifyDataSetChanged();
+                    if (languagePojo != null && languagePojo.getData() != null) {
+                        for (int i = 0; i < languagePojo.getData().size(); i++) {
+                            String langName = languagePojo.getData().get(i).getLanguageName();
+                            Log.e("Splash", "onResult: " + langName);
+                            if (langName != null && (langName.trim().equalsIgnoreCase("french") ||
+                                    langName.trim().equalsIgnoreCase("english") ||
+                                    langName.trim().equalsIgnoreCase("Portuguese") ||
+                                    langName.trim().equalsIgnoreCase("Italian"))) {
+                                languagePojoItems.add(languagePojo.getData().get(i));
+                            }
                         }
+                        Collections.reverse(languagePojoItems);
+                        if (lanadapter != null) lanadapter.notifyDataSetChanged();
                     }
                 } else {
                     Toast.makeText(SplashScreenActivity.this, (String) obj, Toast.LENGTH_SHORT).show();

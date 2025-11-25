@@ -48,14 +48,7 @@ import com.app.bemyrider.utils.LocaleManager;
 import com.app.bemyrider.utils.Log;
 import com.app.bemyrider.utils.PrefsUtil;
 import com.app.bemyrider.utils.Utils;
-import com.facebook.AccessToken;
-import com.facebook.CallbackManager;
-import com.facebook.FacebookAuthorizationException;
-import com.facebook.FacebookCallback;
-import com.facebook.FacebookException;
-import com.facebook.GraphRequest;
-import com.facebook.login.LoginManager;
-import com.facebook.login.LoginResult;
+// import com.facebook.* removed
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -85,7 +78,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private static final String TAG = "LoginActivity";
     private ActivityLoginBinding binding;
-    private CallbackManager callbackmanager;
+    // private CallbackManager callbackmanager; // REMOVED
     private String strUsername, strPassword;
     private String clicktype = "";
     private Context context = LoginActivity.this;
@@ -124,7 +117,7 @@ public class LoginActivity extends AppCompatActivity {
 
         initView();
 
-        callbackmanager = CallbackManager.Factory.create();
+        // callbackmanager = CallbackManager.Factory.create(); // REMOVED
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getResources().getString(R.string.default_web_client_id))
@@ -263,7 +256,8 @@ public class LoginActivity extends AppCompatActivity {
 
         binding.imgFb.setOnClickListener(v -> {
             clicktype = "f";
-            loginWithFacebook();
+            // loginWithFacebook(); // REMOVED
+            Toast.makeText(context, "Facebook login is disabled", Toast.LENGTH_SHORT).show();
         });
 
         binding.imgGoogle.setOnClickListener(v -> {
@@ -566,7 +560,7 @@ public class LoginActivity extends AppCompatActivity {
         PrefsUtil.with(activity).clearPrefs(); // social login
         LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
 
-        LoginManager.getInstance().logOut();
+        // LoginManager.getInstance().logOut(); // REMOVED
 
         textParams.put("first_name", firstName);
         textParams.put("last_name", lastName);
@@ -705,6 +699,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     //Login with Facebook
+    /*
     public void loginWithFacebook() {
         // Set permissions
         LoginManager.getInstance().logInWithReadPermissions(activity, Arrays.asList("email", "public_profile"));
@@ -768,6 +763,7 @@ public class LoginActivity extends AppCompatActivity {
                 }
         );
     }
+    */
 
     //Login with Google Plus
     public void loginWithGooglePlus() {
@@ -780,7 +776,7 @@ public class LoginActivity extends AppCompatActivity {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (clicktype.equals("f")) {
-            callbackmanager.onActivityResult(requestCode, resultCode, data);
+            // callbackmanager.onActivityResult(requestCode, resultCode, data); // REMOVED
         }
     }
 

@@ -57,6 +57,8 @@ import com.app.bemyrider.utils.LocaleManager;
 import com.app.bemyrider.utils.Log;
 import com.app.bemyrider.utils.PrefsUtil;
 import com.app.bemyrider.utils.Utils;
+// import com.facebook.*; // REMOVED
+/*
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookAuthorizationException;
@@ -66,6 +68,7 @@ import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
+*/
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -105,7 +108,7 @@ public class DrawerActivity extends AppCompatActivity {
     private String strepoc_avl_start_time, strepoc_avl_end_time,
             countrycodeid, userAddress, smallDelivery, mediumDelivery, largeDelivery;
     private String clicktype = "";
-    private CallbackManager callbackmanager;
+    // private CallbackManager callbackmanager; // REMOVED
     private AsyncTask socialSignInAsync, changeStatusAsync, getProfileAsync, logoutAsync;
     private BroadcastReceiver mMessageReceiver;
     private ConnectionManager connectionManager;
@@ -122,7 +125,7 @@ public class DrawerActivity extends AppCompatActivity {
         requestWindowFeature(Window.FEATURE_ACTION_BAR_OVERLAY);
         binding = DataBindingUtil.setContentView(DrawerActivity.this, R.layout.partner_activity_profile, null);
 
-        callbackmanager = CallbackManager.Factory.create();
+        // callbackmanager = CallbackManager.Factory.create(); // REMOVED
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getResources().getString(R.string.default_web_client_id))
@@ -173,7 +176,8 @@ public class DrawerActivity extends AppCompatActivity {
 
         binding.imgVerifyFacebook.setOnClickListener(view -> {
             clicktype = "f";
-            loginWithFacebook();
+            // loginWithFacebook(); // REMOVED
+            Toast.makeText(DrawerActivity.this, "Facebook verification is disabled", Toast.LENGTH_SHORT).show();
         });
 
         binding.imgVerifyGmail.setOnClickListener(view -> {
@@ -217,6 +221,7 @@ public class DrawerActivity extends AppCompatActivity {
         gmailActivityResult.launch(intent);
     }
 
+    /*
     private void loginWithFacebook() {
         LoginManager.getInstance().logInWithReadPermissions(DrawerActivity.this, Arrays.asList("email", "public_profile"));
         LoginManager.getInstance().registerCallback(callbackmanager,
@@ -285,6 +290,7 @@ public class DrawerActivity extends AppCompatActivity {
                 }
         );
     }
+    */
 
     /*------------- Social Sign in Api Call -------------------*/
     private void socialSignIn(final String email, final String firstName, final String lastName, String profileImageUrl, String logintype, String social_id) {
@@ -367,7 +373,7 @@ public class DrawerActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (clicktype.equals("f")) {
-            callbackmanager.onActivityResult(requestCode, resultCode, data);
+            // callbackmanager.onActivityResult(requestCode, resultCode, data); // REMOVED
         }
     }
 

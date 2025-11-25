@@ -4,9 +4,32 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@mipmap/img_spash_bg"
+    android:background="@color/white"
     android:padding="@dimen/_14sdp">
 
+    <!-- Logo Centrato e Moderno -->
+    <ImageView
+        android:id="@+id/Img_logo"
+        android:layout_width="@dimen/_150sdp"
+        android:layout_height="@dimen/_150sdp"
+        android:layout_centerInParent="true"
+        android:src="@mipmap/ic_logo"
+        android:contentDescription="@string/app_name"
+        android:scaleType="fitCenter" />
+
+    <!-- Loading indicator discreto in basso -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="@dimen/_30sdp"
+        android:indeterminate="true"
+        android:indeterminateTint="@color/colorAccent" />
+
+    <!-- Elementi Legacy (nascosti per ora, gestiti da logica se servono) -->
     <Spinner
         android:id="@+id/sp_select_lan"
         style="@style/SpinnerThemeWhite"
@@ -26,19 +49,8 @@
         android:background="@drawable/button_border_white"
         android:text="@string/continues"
         android:textAllCaps="false"
-        android:textColor="@color/white"
+        android:textColor="@color/colorPrimary"
         android:textSize="@dimen/_12ssp"
         android:visibility="gone" />
-
-    <ImageView
-        android:id="@+id/Img_logo"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="@dimen/_140sdp"
-        android:background="@mipmap/ic_logo"
-        android:scaleType="centerCrop"
-        android:visibility="visible" />
 
 </RelativeLayout>

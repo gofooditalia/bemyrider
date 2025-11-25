@@ -39,14 +39,7 @@ import com.app.bemyrider.model.NewLoginPojoItem;
 import com.app.bemyrider.model.ProfilePojo;
 import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.PrefsUtil;
-import com.facebook.AccessToken;
-import com.facebook.CallbackManager;
-import com.facebook.FacebookAuthorizationException;
-import com.facebook.FacebookCallback;
-import com.facebook.FacebookException;
-import com.facebook.GraphRequest;
-import com.facebook.login.LoginManager;
-import com.facebook.login.LoginResult;
+// import com.facebook.*; // REMOVED
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -70,7 +63,7 @@ public class PartnerProfile_Acitvity extends AppCompatActivity {
     private String strepoc_avl_start_time, strepoc_avl_end_time, countrycodeid, userAddress;
     private Switch switch_available_now;
     private GoogleApiClient mGoogleApiClient;
-    private CallbackManager callbackmanager;
+    // private CallbackManager callbackmanager; // REMOVED
     private AsyncTask socialSignInAsync, availableStatusAsync, getProfileAsync;
     private ConnectionManager connectionManager;
     private RelativeLayout fab_edit;
@@ -91,7 +84,7 @@ public class PartnerProfile_Acitvity extends AppCompatActivity {
         initView();
         serviceCall();
 
-        callbackmanager = CallbackManager.Factory.create();
+        // callbackmanager = CallbackManager.Factory.create(); // REMOVED
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getResources().getString(R.string.default_web_client_id))
@@ -131,7 +124,8 @@ public class PartnerProfile_Acitvity extends AppCompatActivity {
 
         img_verify_facebook.setOnClickListener(view -> {
             clicktype = "f";
-            loginWithFacebook();
+            // loginWithFacebook(); // REMOVED
+            Toast.makeText(mContext, "Facebook verification is disabled", Toast.LENGTH_SHORT).show();
         });
 
         img_verify_gmail.setOnClickListener(view -> {
@@ -156,6 +150,7 @@ public class PartnerProfile_Acitvity extends AppCompatActivity {
         gmailActivityResult.launch(intent);
     }
 
+    /*
     private void loginWithFacebook() {
 
         LoginManager.getInstance().logInWithReadPermissions(PartnerProfile_Acitvity.this, Arrays.asList("email", "public_profile"));
@@ -218,6 +213,7 @@ public class PartnerProfile_Acitvity extends AppCompatActivity {
                 }
         );
     }
+    */
 
     private void socialSignIn(final String email, final String firstName, final String lastName,
                               String profileImageUrl, String logintype, String social_id) {
@@ -320,7 +316,7 @@ public class PartnerProfile_Acitvity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (clicktype.equals("f")) {
-            callbackmanager.onActivityResult(requestCode, resultCode, data);
+            // callbackmanager.onActivityResult(requestCode, resultCode, data); // REMOVED
         }
     }
 

@@ -62,13 +62,14 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="${googleMapsApiKey}" />
 
-        <meta-data
+        <!-- Removed Facebook Metadata -->
+        <!-- <meta-data
             android:name="com.facebook.sdk.ApplicationId"
             android:value="@string/facebook_app_id" />
 
         <meta-data
             android:name="com.facebook.sdk.ClientToken"
-            android:value="@string/facebook_client_token" />
+            android:value="@string/facebook_client_token" /> -->
 
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -93,7 +94,8 @@
             </intent-filter>
         </activity>
 
-        <activity
+        <!-- Removed Facebook Activities -->
+        <!-- <activity
             android:name="com.facebook.FacebookActivity"
             android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
             android:label="@string/app_name"
@@ -111,7 +113,7 @@
 
                 <data android:scheme="@string/fb_login_protocol_scheme" />
             </intent-filter>
-        </activity>
+        </activity> -->
 
         <service
             android:name=".utils.MyFirebaseMessagingService"

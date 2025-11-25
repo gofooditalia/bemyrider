@@ -37,14 +37,7 @@ import com.app.bemyrider.utils.LocaleManager;
 import com.app.bemyrider.utils.Log;
 import com.app.bemyrider.utils.PrefsUtil;
 import com.app.bemyrider.utils.Utils;
-import com.facebook.AccessToken;
-import com.facebook.CallbackManager;
-import com.facebook.FacebookAuthorizationException;
-import com.facebook.FacebookCallback;
-import com.facebook.FacebookException;
-import com.facebook.GraphRequest;
-import com.facebook.login.LoginManager;
-import com.facebook.login.LoginResult;
+// import com.facebook.*; // REMOVED
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -72,7 +65,7 @@ public class CustomerProfileActivity extends AppCompatActivity {
     private ProfileItem profileData;
     private GoogleApiClient mGoogleApiClient;
     private String clicktype = "";
-    private CallbackManager callbackmanager;
+    // private CallbackManager callbackmanager; // REMOVED
     private AsyncTask socialSignInAsync, profileDataAsync;
     private ConnectionManager connectionManager;
     private Context context;
@@ -92,7 +85,7 @@ public class CustomerProfileActivity extends AppCompatActivity {
 
         init();
 
-        callbackmanager = CallbackManager.Factory.create();
+        // callbackmanager = CallbackManager.Factory.create(); // REMOVED
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getResources().getString(R.string.default_web_client_id))
@@ -129,7 +122,8 @@ public class CustomerProfileActivity extends AppCompatActivity {
 
         binding.imgVerifyFacebookU.setOnClickListener(view -> {
             clicktype = "f";
-            loginWithFacebook();
+            // loginWithFacebook(); // REMOVED
+            Toast.makeText(context, "Facebook verification is disabled", Toast.LENGTH_SHORT).show();
         });
 
         binding.imgVerifyGmailU.setOnClickListener(view -> {
@@ -159,6 +153,7 @@ public class CustomerProfileActivity extends AppCompatActivity {
         gmailActivityResult.launch(intent);
     }
 
+    /*
     private void loginWithFacebook() {
         LoginManager.getInstance().logInWithReadPermissions(activity, Arrays.asList("email", "public_profile"));
         LoginManager.getInstance().registerCallback(callbackmanager,
@@ -219,6 +214,7 @@ public class CustomerProfileActivity extends AppCompatActivity {
                 }
         );
     }
+    */
 
     private void socialSignIn(final String email, final String firstName, final String lastName, String profileImageUrl, String logintype, String social_id) {
         LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
@@ -295,7 +291,7 @@ public class CustomerProfileActivity extends AppCompatActivity {
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (clicktype.equals("f")) {
-            callbackmanager.onActivityResult(requestCode, resultCode, data);
+            // callbackmanager.onActivityResult(requestCode, resultCode, data); // REMOVED
         }
     }
 
@@ -402,7 +398,6 @@ public class CustomerProfileActivity extends AppCompatActivity {
                                 GoogleSignInResult gResult = Auth.GoogleSignInApi.getSignInResultFromIntent(result.getData());
                                 Log.e("LOG FOR G+", gResult + "");
                                 handleSignInResult(gResult);
-
                             }
                         } catch (Exception e) {
                             e.printStackTrace();
