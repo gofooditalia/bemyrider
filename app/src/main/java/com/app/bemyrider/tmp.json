@@ -1,0 +1,30 @@
+{
+  "data": {
+    "provider_list": [
+      {
+        "provider_id": "439",
+        "total_records": 1,
+        "avg_rating": "0.0",
+        "total_ratting": "0.0",
+        "total_reviews": "0",
+        "user_type": "p",
+        "provider_first_name": "Alessandro",
+        "provider_last_name": "Marchisella",
+        "address": "Roma RM, Italia",
+        "provider_image": "https:\/\/bemyrider.it\/upload-nct\/th2_no_user_image.png",
+        "small_delivery": "n",
+        "medium_delivery": "y",
+        "large_delivery": "y",
+        "hour_rate": "12.5\u20ac\/h"
+      }
+    ],
+    "pagination": {
+      "total_records": 1,
+      "total_pages": 1,
+      "currentPage": 1
+    }
+  },
+  "status": true,
+  "type": "success",
+  "message": ""
+}

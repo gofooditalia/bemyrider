@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="@dimen/_14sdp"
+    android:background="@color/white"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            style="@style/font_regular"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toStartOf="@+id/Txt_fundvalue"
+            android:gravity="end|center"
+            android:text="@string/availbalance"
+            android:textColor="@color/text"
+            android:textSize="@dimen/_11ssp" />
+
+        <TextView
+            android:id="@+id/Txt_fundvalue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_marginStart="@dimen/_3sdp"
+            android:textColor="@color/button"
+            android:textSize="@dimen/_11ssp"
+            style="@style/font_medium" />
+
+    </RelativeLayout>
+
+    <LinearLayout
+        android:id="@+id/layout_direct_deposit"
+        android:layout_width="match_parent"
+        android:visibility="gone"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_toStartOf="@+id/Txt_fundvalue_service_price"
+                android:gravity="end|center"
+                android:text="@string/serviceprice"
+                android:textColor="@color/text"
+                style="@style/font_regular"
+                android:textSize="@dimen/_11ssp" />
+
+            <TextView
+                android:id="@+id/Txt_fundvalue_service_price"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_marginStart="@dimen/_3sdp"
+                android:textColor="@color/button"
+                android:textSize="@dimen/_11ssp"
+                style="@style/font_medium"/>
+
+        </RelativeLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/StyledTilInput">
+
+            <EditText
+                android:id="@+id/Edt_depositeAmount_commission"
+                style="@style/StyledTilEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:focusable="false"
+                android:textSize="@dimen/_12ssp"
+                android:hint="@string/admin_fees"
+                android:inputType="number"
+                android:textColor="@color/text" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <TextView
+            android:id="@+id/txt_admin_commission_wallet"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/_14sdp"
+            android:textSize="@dimen/_12ssp"
+            style="@style/font_regular"
+            android:text="5 % + 10 % admin commission"
+            android:textColor="@color/text" />
+    </LinearLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        style="@style/StyledTilInput">
+
+        <EditText
+            android:id="@+id/Edt_depositeAmount"
+            style="@style/StyledTilEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/deposit_amount"
+            android:inputType="number"
+            android:textSize="@dimen/_12ssp"
+            android:textColor="@color/text" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+   <RelativeLayout
+       android:id="@+id/relPayPal"
+       android:layout_width="match_parent"
+       android:layout_height="wrap_content"
+       android:background="@drawable/button_style_filltype_two"
+       android:layout_marginTop="@dimen/_14sdp"
+       android:gravity="center"
+       android:padding="@dimen/_10sdp">
+
+       <ImageView
+           android:id="@+id/imgPayPal"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:src="@mipmap/ic_paypal"
+           android:layout_marginEnd="@dimen/_3sdp"/>
+
+       <TextView
+           android:id="@+id/txtPaypal"
+           style="@style/font_regular"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:layout_marginStart="@dimen/_3sdp"
+           android:layout_toEndOf="@+id/imgPayPal"
+           android:background="@color/transparent"
+           android:includeFontPadding="false"
+           android:text="@string/paypal"
+           android:textAllCaps="false"
+           android:textColor="@color/white"
+           android:textSize="@dimen/_12ssp" />
+
+   </RelativeLayout>
+
+
+</LinearLayout>

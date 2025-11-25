@@ -1,0 +1,307 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Base application theme. -->
+
+    <!--<style name="AppTheme" >-->
+    <style name="AppTheme" parent="Theme.MaterialComponents.Light.DarkActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="colorControlNormal">@color/text</item>
+        <item name="colorControlActivated">@color/button</item>
+        <item name="android:timePickerStyle" tools:ignore="NewApi">@style/TimePicker</item>
+        <item name="fontFamily">@font/roboto_light</item>
+        <item name="android:fontFamily">@font/roboto_light</item> <!-- Default app font -->
+        <item name="actionBarStyle">@style/Custom.ActionBar</item>
+        <item name="android:homeAsUpIndicator">@drawable/ic_back</item>
+        <item name="android:statusBarColor" tools:targetApi="lollipop">@color/status_bg_color</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
+    </style>
+
+    <style name="AppThemeNoActionBar" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="colorControlNormal">@color/text</item>
+        <item name="colorControlActivated">@color/button</item>
+        <item name="android:timePickerStyle" tools:ignore="NewApi">@style/TimePicker</item>
+    </style>
+
+    <!--<style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />-->
+
+    <!--<style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />-->
+
+    <style name="ToolbarTheme" parent="@style/ThemeOverlay.AppCompat.ActionBar">
+        <!-- Customize color of navigation drawer icon and back arrow -->
+        <item name="android:homeAsUpIndicator">@drawable/ic_back</item>
+        <item name="navigationIcon">@drawable/ic_back</item>
+        <item name="colorControlNormal">@color/text</item>
+    </style>
+
+    <style name="AppTheme.NoActionBar">
+        <item name="colorPrimary">@color/toolbar_bg_color</item>
+        <item name="colorPrimaryDark">@color/toolbar_bg_color</item>
+        <item name="colorAccent">@color/toolbar_bg_color</item>
+        <item name="android:windowActionBar">false</item>
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="android:statusBarColor" tools:targetApi="lollipop">@color/status_bg_color</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
+        <item name="android:windowTranslucentStatus">true</item>
+    </style>
+
+
+    <style name="Custom.ActionBar" parent="Widget.AppCompat.ActionBar">
+        <item name="background">@color/toolbar_bg_color</item>
+        <item name="titleTextStyle">@style/Custom.ActionBar.Title</item>
+    </style>
+
+    <style name="Custom.ActionBar.Title" parent="TextAppearance.AppCompat.Widget.ActionBar.Title">
+        <item name="android:fontFamily">@font/roboto_medium</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textSize">@dimen/_14ssp</item>
+        <item name="fontFamily">@font/roboto_medium</item>
+    </style>
+
+
+    <style name="TimePicker" parent="android:Widget.Material.TimePicker" tools:ignore="NewApi">
+        <item name="android:timePickerMode" tools:ignore="NewApi">spinner</item>
+    </style>
+
+    <style name="ErrorTextAppearance" parent="TextAppearance.AppCompat">
+        <!--<item name="android:textColor">@android:color/holo_orange_dark</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textStyle">bold|italic</item>-->
+        <item name="fontFamily">@font/roboto_light</item>
+        <item name="android:fontFamily">@font/roboto_light</item>
+        <item name="android:textColor">@color/colorRed</item>
+    </style>
+
+    <style name="HelperTextAppearance" parent="TextAppearance.AppCompat">
+        <item name="android:textColor">@android:color/holo_green_dark</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textStyle">bold|italic</item>
+        <item name="android:paddingStart">10dp</item>
+        <item name="android:paddingEnd">10dp</item>
+    </style>
+
+    <style name="HintTextAppearance" parent="TextAppearance.AppCompat">
+        <item name="android:paddingStart">0dp</item>
+        <item name="android:paddingEnd">0dp</item>
+    </style>
+
+    <style name="StyledTilEditTextTheme">
+        <item name="colorAccent">@color/edit_border_color</item>
+        <item name="colorControlNormal">@color/edit_border_color</item>
+        <item name="colorControlActivated">@color/button</item>
+    </style>
+
+    <style name="StyledTilInputTheme">
+        <item name="colorAccent">@color/text_light</item>
+        <item name="colorControlNormal">@color/text_light</item>
+        <item name="colorControlActivated">@color/button</item>
+    </style>
+
+    <style name="StyledTilEditText" parent="ThemeOverlay.MaterialComponents.TextInputEditText.OutlinedBox.Dense"> <!--parent="ThemeOverlay.MaterialComponents.TextInputEditText.OutlinedBox.Dense"-->
+        <item name="android:textColor">@color/text_light</item>
+        <item name="android:colorBackground">@color/text_light</item>
+        <item name="colorControlActivated">@color/text_light</item>
+        <item name="colorControlNormal">@color/text_light</item>
+        <item name="colorControlHighlight">@color/text_light</item>
+        <item name="backgroundTint">@color/text_light</item>
+        <item name="colorAccent">@color/text_light</item>
+        <item name="fontFamily">@font/roboto_light</item>
+        <item name="android:fontFamily">@font/roboto_light</item>
+        <item name="android:paddingTop">@dimen/_10sdp</item>
+        <item name="android:paddingBottom">@dimen/_10sdp</item>
+        <!-- <item name="android:theme">@style/StyledTilEditTextTheme</item>
+         <item name="fontFamily">@font/roboto_light</item>
+         <item name="android:fontFamily">@font/roboto_light</item>-->
+    </style>
+
+    <style name="StyledTilInput" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox"> <!---->
+        <item name="android:colorBackground">@color/text_light</item>
+        <item name="android:textColorPrimary">@color/text</item>
+        <item name="android:textColorHint">@color/text_medium</item>
+        <item name="boxStrokeColor">@color/edit_text_box_border</item>
+        <item name="colorControlHighlight">@color/text_light</item>
+        <item name="backgroundTint">@color/text_light</item>
+        <item name="colorAccent">@color/text_light</item>
+        <item name="colorControlNormal">@color/text_light</item>
+        <item name="colorControlActivated">@color/text_medium</item>
+        <item name="android:layout_marginTop">@dimen/_4sdp</item>
+        <item name="android:layout_marginBottom">@dimen/_4sdp</item>
+        <item name="errorTextAppearance">@style/ErrorTextAppearance</item>
+        <item name="fontFamily">@font/roboto_light</item>
+        <item name="android:fontFamily">@font/roboto_light</item>
+        <!--<item name="android:theme">@style/StyledTilInputTheme</item>
+        <item name="android:textColorHint">@color/hint_text_color</item>
+        <item name="hintTextAppearance">@style/HintTextAppearance</item>
+        <item name="errorTextAppearance">@style/ErrorTextAppearance</item>-->
+    </style>
+
+    <style name="SpinnerTheme">
+        <!--<item name="android:textColor">@color/hint_text_color</item>-->
+        <item name="overlapAnchor">false</item>
+        <item name="android:textColor">@color/text</item>
+        <item name="android:fontFamily">@font/spinner_fonts</item>
+        <item name="fontFamily">@font/spinner_fonts</item>
+        <item name="colorControlNormal">@color/edit_text_box_border</item>
+    </style>
+
+    <style name="SpinnerThemeSearch">
+        <item name="overlapAnchor">false</item>
+        <item name="android:textColor">@color/button</item>
+        <item name="android:background">@drawable/ic_down_resize_transparent</item>
+        <item name="android:fontFamily">@font/spinner_fonts</item>
+        <item name="fontFamily">@font/spinner_fonts</item>
+        <item name="android:paddingBottom">@dimen/_10sdp</item>
+        <item name="android:textSize">@dimen/_12ssp</item>
+        <item name="colorControlNormal">@color/edit_border_color</item>
+    </style>
+
+    <style name="SpinnerThemeWhite">
+        <item name="overlapAnchor">false</item>
+        <item name="android:textColor">@color/text</item>
+        <item name="android:background">@drawable/ic_down_resize_white</item>
+        <item name="android:fontFamily">@font/spinner_fonts</item>
+        <item name="fontFamily">@font/spinner_fonts</item>
+        <item name="android:paddingBottom">@dimen/_5sdp</item>
+        <item name="colorControlNormal">@color/white</item>
+    </style>
+
+    <style name="MyTextInputLayout" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        <item name="android:colorBackground">@color/text_light</item>
+        <item name="android:textColorHint">@color/text_medium</item>
+        <item name="boxStrokeColor">@color/edit_text_box_border</item>
+        <item name="colorControlHighlight">@color/text_light</item>
+        <item name="backgroundTint">@color/text_light</item>
+        <item name="colorAccent">@color/text_light</item>
+        <item name="colorControlNormal">@color/text_light</item>
+        <item name="colorControlActivated">@color/button</item>
+        <item name="errorTextAppearance">@style/ErrorTextAppearance</item>
+        <item name="fontFamily">@font/roboto_light</item>
+        <item name="android:fontFamily">@font/roboto_light</item>
+    </style>
+
+    <style name="MyTextInputEditText" parent="ThemeOverlay.MaterialComponents.TextInputEditText.OutlinedBox.Dense">
+        <item name="android:textColor">@color/text_light</item>
+        <item name="android:colorBackground">@color/text_light</item>
+        <item name="colorControlActivated">@color/text_light</item>
+        <item name="colorControlNormal">@color/text_light</item>
+        <item name="colorControlHighlight">@color/text_light</item>
+        <item name="backgroundTint">@color/text_light</item>
+        <item name="colorAccent">@color/text_light</item>
+        <item name="fontFamily">@font/roboto_light</item>
+        <item name="android:fontFamily">@font/roboto_light</item>
+    </style>
+
+    <style name="SpinnerItem" parent="@android:style/Widget.TextView.SpinnerItem">
+        <item name="android:textColor">@color/white</item>
+    </style>
+
+    <style name="SpinnerItem.DropDownItem" parent="@android:style/Widget.DropDownItem.Spinner">
+        <item name="android:textColor">@color/white</item>
+    </style>
+
+    <style name="TextLabel1" parent="Theme.AppCompat.Light">
+        <!-- Hint color and label color in FALSE state -->
+        <item name="android:textColorHint">@color/white</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:textColor">@color/white</item>
+        <!-- Label color in TRUE state and bar color FALSE and TRUE State -->
+        <item name="colorAccent">@color/text_light</item>
+        <item name="colorControlNormal">@color/white</item>
+        <item name="colorControlActivated">@color/white</item>
+    </style>
+
+    <style name="StyledTilEditTextTheme1">
+        <item name="android:textColorHint">@color/white</item>
+        <item name="colorAccent">@color/white</item>
+        <item name="colorControlNormal">@color/white</item>
+        <item name="colorControlActivated">@color/button</item>
+    </style>
+
+    <style name="StyledTilEditText1">
+        <item name="android:theme">@style/StyledTilEditTextTheme1</item>
+    </style>
+
+    <style name="NoToolBarStyle" parent="@style/AppTheme">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="tab_text" parent="@android:style/TextAppearance.Widget.TabWidget">
+        <item name="android:fontFamily">@font/roboto_bold</item>
+        <item name="fontFamily">@font/roboto_bold</item>
+        <item name="android:textSize">@dimen/_12ssp</item>
+    </style>
+
+    <style name="font_medium">
+        <item name="android:fontFamily">@font/roboto_medium</item>
+        <item name="fontFamily">@font/roboto_medium</item>
+    </style>
+
+    <style name="font_light">
+        <item name="android:fontFamily">@font/roboto_light</item>
+        <item name="fontFamily">@font/roboto_light</item>
+    </style>
+
+    <!--Currently not used-->
+    <style name="font_regular">
+        <item name="android:fontFamily">@font/roboto_regular</item>
+        <item name="fontFamily">@font/roboto_regular</item>
+    </style>
+    <!--Currently not used-->
+    <style name="font_bold">
+        <item name="android:fontFamily">@font/roboto_bold</item>
+        <item name="fontFamily">@font/roboto_bold</item>
+    </style>
+
+    <!--PARTNER-->
+
+    <style name="MySpinner" parent="Theme.AppCompat.Light.DarkActionBar"><!-- colorPrimary is used for the default action bar background
+-->
+        <item name="colorPrimary">@color/white
+        </item><!-- colorPrimaryDark is used for the status bar -->
+        <item name="colorPrimaryDark">@color/white</item><!-- colorAccent is used as the default value for colorControlActivated which is used to tint widgets
+-->
+        <item name="colorAccent">@color/white</item>
+        <item name="colorControlNormal">@color/black</item>
+        <item name="android:textColor">@color/black</item>
+    </style>
+
+    <style name="Theme.MyTheme" parent="Theme.AppCompat.Light">
+        <!-- colorPrimary is used for the default action bar background -->
+        <item name="colorPrimary">@color/colorDarkGreen</item>
+
+        <!-- colorPrimaryDark is used for the status bar -->
+        <item name="colorPrimaryDark">@color/colorDarkGreen</item>
+
+        <!-- colorAccent is used as the default value for colorControlActivated,
+             which is used to tint widgets -->
+        <item name="colorAccent">@color/colorDarkGreen</item>
+
+        <!-- You can also set colorControlNormal, colorControlActivated
+             colorControlHighlight, and colorSwitchThumbNormal. -->
+
+    </style>
+
+    <style name="WhiteAccent" parent="@style/Theme.AppCompat.Light">
+        <item name="colorAccent">@color/white</item>
+    </style>
+
+    <style name="BottomNavigationViewStyle">
+        <item name="android:textSize">10sp</item>
+        <item name="android:fontFamily">@font/roboto_regular</item>
+    </style>
+
+    <style name="BottomNavigationViewTheam" parent="@style/Theme.MaterialComponents.Light.DarkActionBar">
+        <item name="colorPrimary">@color/tex</item>
+        <item name="colorPrimaryDark">@color/button</item>
+        <item name="colorAccent">@color/tex</item>
+    </style>
+
+</resources>

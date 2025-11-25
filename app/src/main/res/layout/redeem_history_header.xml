@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <TextView
+        android:layout_width="@dimen/_130sdp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:textSize="@dimen/_12ssp"
+        android:text="@string/requested_amount"
+        android:textColor="@color/black" />
+
+    <TextView
+        android:layout_width="@dimen/_130sdp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:textSize="@dimen/_12ssp"
+        android:text="@string/admin_fees"
+        android:textColor="@color/black" />
+
+    <TextView
+        android:layout_width="@dimen/_130sdp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:textSize="@dimen/_12ssp"
+        android:text="Requested Date"
+        android:textColor="@color/black" />
+
+    <TextView
+        android:layout_width="@dimen/_130sdp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:textSize="@dimen/_12ssp"
+        android:text="Redeemed Amount"
+        android:textColor="@color/black" />
+
+    <TextView
+        android:layout_width="@dimen/_130sdp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:textSize="@dimen/_12ssp"
+        android:text="Redeemed Date"
+        android:textColor="@color/black" />
+</LinearLayout>

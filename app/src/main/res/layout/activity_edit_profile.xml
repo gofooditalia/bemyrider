@@ -1,0 +1,533 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/white"
+        android:overScrollMode="never"
+        tools:context="com.app.bemyrider.activity.user.EditProfileActivity">
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/_14sdp">
+
+            <FrameLayout
+                android:layout_width="@dimen/_72sdp"
+                android:layout_height="@dimen/_72sdp"
+                android:layout_gravity="center">
+
+                <com.app.bemyrider.utils.CircleImageView
+                    android:id="@+id/iv_profile"
+                    android:layout_width="@dimen/_72sdp"
+                    android:layout_height="@dimen/_72sdp"
+                    android:foreground="@drawable/gradient_backgroungimg"
+                    app:border_color="#E0E6E4"
+                    app:border_width="2dp"
+                    tools:ignore="UnusedAttribute"
+                    tools:targetApi="m" />
+
+                <androidx.appcompat.widget.AppCompatImageView
+                    android:id="@+id/ivOverlay"
+                    android:layout_width="@dimen/_27sdp"
+                    android:layout_height="@dimen/_27sdp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/icon_camera" />
+
+            </FrameLayout>
+
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:orientation="vertical">
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/font_medium"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/_10sdp"
+                    android:layout_marginBottom="@dimen/_3sdp"
+                    android:gravity="center_horizontal"
+                    android:text="@string/profile"
+                    android:textColor="@color/text"
+                    android:textSize="@dimen/_16ssp" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/til_fname"
+                    style="@style/StyledTilInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp">
+
+                    <androidx.appcompat.widget.AppCompatEditText
+                        android:id="@+id/edt_fname"
+                        style="@style/StyledTilEditText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/first_name"
+                        android:inputType="textPersonName"
+                        android:maxLength="50"
+                        android:textColor="@color/text"
+                        android:textSize="@dimen/_12ssp" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/til_lname"
+                    style="@style/StyledTilInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp">
+
+                    <androidx.appcompat.widget.AppCompatEditText
+                        android:id="@+id/edt_lname"
+                        style="@style/StyledTilEditText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/last_name"
+                        android:inputType="textPersonName"
+                        android:maxLength="50"
+                        android:textColor="@color/text"
+                        android:textSize="@dimen/_12ssp" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/til_email"
+                    style="@style/StyledTilInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp">
+
+                    <androidx.appcompat.widget.AppCompatEditText
+                        android:id="@+id/edt_email"
+                        style="@style/StyledTilEditText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:focusable="false"
+                        android:hint="@string/email_id"
+                        android:inputType="textEmailAddress"
+                        android:textColor="@color/text"
+                        android:textSize="@dimen/_12ssp" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="7dp"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <ProgressBar
+                    android:id="@+id/pgCountryCode"
+                    android:layout_width="0dp"
+                    android:layout_height="@dimen/_30sdp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_weight="1"
+                    android:visibility="gone" />
+
+                <androidx.appcompat.widget.AppCompatSpinner
+                    android:id="@+id/sp_code"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/rounded_spinner_bg"
+                    android:paddingStart="0dp"
+                    android:paddingTop="@dimen/_10sdp"
+                    android:paddingEnd="-5dp"
+                    android:paddingBottom="@dimen/_9sdp"
+                    android:textColor="@color/black"
+                    android:theme="@style/SpinnerTheme"
+                    android:visibility="gone" />
+
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/til_number"
+                    style="@style/StyledTilInput"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_toEndOf="@+id/sp_code"
+                    android:layout_weight="2">
+
+                    <androidx.appcompat.widget.AppCompatEditText
+                        android:id="@+id/edt_number"
+                        style="@style/StyledTilEditText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:hint="@string/number"
+                        android:inputType="number"
+                        android:textColor="@color/text"
+                        android:textSize="@dimen/_12ssp" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
+
+            <androidx.appcompat.widget.AppCompatTextView
+                style="@style/font_medium"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/_10sdp"
+                android:gravity="center_horizontal"
+                android:text="@string/tax_data"
+                android:textColor="@color/text"
+                android:textSize="@dimen/_16ssp" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilCompany"
+                style="@style/StyledTilInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp">
+
+                <androidx.appcompat.widget.AppCompatEditText
+                    android:id="@+id/edtCompany"
+                    style="@style/StyledTilEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/company_name"
+                    android:inputType="textPersonName"
+                    android:maxLength="50"
+                    android:textColor="@color/text"
+                    android:textSize="@dimen/_12ssp" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilVat"
+                style="@style/StyledTilInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp">
+
+                <androidx.appcompat.widget.AppCompatEditText
+                    android:id="@+id/edtVat"
+                    style="@style/StyledTilEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/vat"
+                    android:inputType="textPersonName"
+                    android:maxLength="50"
+                    android:textColor="@color/text"
+                    android:textSize="@dimen/_12ssp" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!--<com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilTaxIdCode"
+                style="@style/StyledTilInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp">
+
+                <androidx.appcompat.widget.AppCompatEditText
+                    android:id="@+id/edtTaxIdCode"
+                    style="@style/StyledTilEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/tax_id_code"
+                    android:inputType="textPersonName"
+                    android:maxLength="50"
+                    android:textColor="@color/text"
+                    android:textSize="@dimen/_12ssp" />
+
+            </com.google.android.material.textfield.TextInputLayout>-->
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/til_address"
+                style="@style/StyledTilInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/sp_code"
+                android:layout_marginTop="4dp">
+
+                <androidx.appcompat.widget.AppCompatAutoCompleteTextView
+                    android:id="@+id/txt_address"
+                    style="@style/StyledTilEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:drawableEnd="@drawable/ic_location_resize"
+                    android:drawablePadding="@dimen/_4sdp"
+                    android:focusable="false"
+                    android:focusableInTouchMode="false"
+                    android:hint="@string/shop_address"
+                    android:maxLines="3"
+                    android:paddingStart="@dimen/_8sdp"
+                    android:paddingEnd="@dimen/_8sdp"
+                    android:textColor="@color/text"
+                    android:textSize="@dimen/_12ssp" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilInvoiceRecipeCode"
+                style="@style/StyledTilInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp">
+
+                <androidx.appcompat.widget.AppCompatEditText
+                    android:id="@+id/edtInvoiceRecipeCode"
+                    style="@style/StyledTilEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/invoice_recipe_code"
+                    android:inputType="textPersonName"
+                    android:maxLength="50"
+                    android:textColor="@color/text"
+                    android:textSize="@dimen/_12ssp" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilCertifiedMail"
+                style="@style/StyledTilInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp">
+
+                <androidx.appcompat.widget.AppCompatEditText
+                    android:id="@+id/edtCertifiedMail"
+                    style="@style/StyledTilEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/certified_mail"
+                    android:imeOptions="actionDone"
+                    android:inputType="textEmailAddress"
+                    android:textColor="@color/text"
+                    android:textSize="@dimen/_12ssp" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilCityOfCompany"
+                style="@style/StyledTilInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp">
+
+                <androidx.appcompat.widget.AppCompatEditText
+                    android:id="@+id/edtCityOfCompany"
+                    style="@style/StyledTilEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/lbl_city_of_company_with_dot"
+                    android:inputType="text"
+                    android:maxLines="1"
+                    android:textColor="@color/text"
+                    android:textSize="@dimen/_12ssp" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+
+
+            <!-- <androidx.appcompat.widget.AppCompatButton
+                 android:id="@+id/btnAddSignature"
+                 style="@style/font_regular"
+                 android:layout_width="match_parent"
+                 android:layout_height="wrap_content"
+                 android:layout_centerVertical="true"
+                 android:layout_gravity="center"
+                 android:background="@drawable/button_style_filltype_two"
+                 android:text="@string/lbl_add_signature"
+                 android:textAllCaps="false"
+                 android:textColor="@color/white"
+                 android:textSize="@dimen/_14ssp" />-->
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/til_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/til_address"
+                android:layout_marginTop="4dp"
+                android:visibility="gone">
+
+                <androidx.appcompat.widget.AppCompatEditText
+                    android:id="@+id/edt_description"
+                    style="@style/StyledTilEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/descr"
+                    android:maxLines="3"
+                    android:textColor="@color/text"
+                    android:textSize="@dimen/_12ssp" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
+                android:visibility="gone">
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:id="@+id/txt_dmethod"
+                    style="@style/font_regular"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/default_method"
+                    android:textColor="@color/text"
+                    android:textSize="@dimen/_12ssp" />
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/txt_dmethod"
+                    android:layout_marginTop="8dp"
+                    android:orientation="horizontal">
+
+                    <RadioGroup
+                        android:id="@+id/rg_paymentMethod"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:checkedButton="@+id/rb_wallet"
+                        android:orientation="horizontal">
+
+                        <androidx.appcompat.widget.AppCompatRadioButton
+                            android:id="@+id/rb_wallet"
+                            style="@style/font_light"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:background="@drawable/radiobutton_background"
+                            android:button="@null"
+                            android:drawableStart="@drawable/ic_wallet"
+                            android:drawablePadding="@dimen/_15sdp"
+                            android:text="@string/wallet"
+                            android:textColor="@color/radio_text_selector"
+                            android:textSize="@dimen/_12ssp" />
+
+                        <androidx.appcompat.widget.AppCompatRadioButton
+                            android:id="@+id/rb_cash"
+                            style="@style/font_light"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="16dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/radiobutton_background_cash"
+                            android:button="@null"
+                            android:drawableStart="@drawable/ic_cash"
+                            android:drawablePadding="@dimen/_15sdp"
+                            android:text="@string/cash"
+                            android:textColor="@color/radio_text_selector"
+                            android:textSize="@dimen/_12ssp" />
+
+                    </RadioGroup>
+
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+            </RelativeLayout>
+
+
+            <!--Update Profile Button-->
+            <RelativeLayout
+                android:id="@+id/relUpdateProfile"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="@dimen/_25sdp"
+                android:layout_marginBottom="@dimen/_25sdp"
+                android:background="@drawable/button_style_filltype_two"
+                android:orientation="horizontal">
+
+                <ProgressBar
+                    android:id="@+id/pgUpdateProfile"
+                    android:layout_width="@dimen/_28sdp"
+                    android:layout_height="@dimen/_28sdp"
+                    android:layout_centerVertical="true"
+                    android:layout_gravity="center"
+                    android:padding="@dimen/_2sdp"
+                    android:paddingStart="@dimen/_8sdp"
+                    android:paddingEnd="0dp"
+                    android:theme="@style/WhiteAccent"
+                    android:visibility="gone" />
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/Btn_updateprofile"
+                    style="@style/font_regular"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_gravity="center"
+                    android:background="@android:color/transparent"
+                    android:text="@string/update_profile"
+                    android:textAllCaps="false"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/_14ssp" />
+
+            </RelativeLayout>
+
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+    </ScrollView>
+
+</layout>
+
+    <!--<?xml version="1.0" encoding="utf-8"?>
+    <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="110dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <com.app.gotaskerdev.utils.CircleImageView
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:src="@drawable/circle_background"
+                android:padding="3dp"/>
+
+            <com.app.gotaskerdev.utils.CircleImageView
+                android:id="@+id/Img_photos"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:background="@drawable/circle_background"
+                app:border_width="3dp"
+                app:border_color="@color/white"
+                android:src="@drawable/dummy_image" />
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/relative_imageremove"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="90dp">
+
+            <ProgressBar
+                android:id="@+id/pgDelete"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:visibility="gone" />
+
+            <ImageView
+                android:id="@+id/Img_remove"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:background="@drawable/ic_red_remove"
+                android:scaleType="centerCrop"
+                android:visibility="visible" />
+
+        </RelativeLayout>
+
+
+
+
+
+        </FrameLayout>
+        -->

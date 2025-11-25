@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_margin="16dp"
+    android:layout_height="match_parent">
+
+    <RelativeLayout
+        android:id="@+id/layout_profile"
+        android:layout_width="55dp"
+        android:layout_height="wrap_content">
+
+    <ImageView
+        android:id="@+id/Img_profile"
+        android:layout_width="@dimen/_45sdp"
+        android:layout_height="@dimen/_45sdp" />
+
+        <TextView
+            android:layout_below="@+id/Img_profile"
+            android:gravity="center"
+            android:textSize="@dimen/_10ssp"
+            android:textColor="@color/black"
+            android:layout_marginTop="8dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+
+    </RelativeLayout>
+
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_toEndOf="@+id/layout_profile"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@+id/layout_profile">
+
+
+    <RelativeLayout
+        android:id="@+id/layout_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/Txt_sName"
+            android:layout_marginStart="4dp"
+            android:textColor="@color/black"
+            android:layout_alignParentLeft="true"
+            android:layout_toStartOf="@+id/Txt_date"
+            android:textSize="@dimen/_13ssp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_marginLeft="4dp"
+            android:layout_toLeftOf="@+id/Txt_date" />
+
+        <TextView
+            android:id="@+id/Txt_date"
+            android:textColor="@color/text"
+            android:layout_marginTop="4dp"
+            android:textSize="@dimen/_10ssp"
+            android:layout_alignParentRight="true"
+            android:layout_marginStart="4dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_marginLeft="4dp" />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/layout_subject"
+        android:layout_marginTop="4dp"
+        android:layout_below="@+id/layout_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <!--<TextView-->
+            <!--android:id="@+id/Txt_Subjectname"-->
+            <!--android:text="Service Name"-->
+            <!--android:layout_marginLeft="4dp"-->
+            <!--android:textColor="@color/colorPrimaryDark"-->
+            <!--android:textSize="16dp"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content" />-->
+
+        <!--<ImageView-->
+            <!--android:text="11-Nov-16,2:00 PM"-->
+            <!--android:layout_marginTop="4dp"-->
+            <!--android:layout_alignRight="@+id/Txt_Subjectname"-->
+            <!--android:layout_marginLeft="4dp"-->
+            <!--android:layout_width="15dp"-->
+            <!--android:layout_height="15dp"-->
+            <!--android:background="@mipmap/ic_launcher"-->
+            <!--android:layout_alignParentRight="true" />-->
+
+        <TextView
+            android:id="@+id/Txt_SubjectName"
+            android:layout_marginStart="4dp"
+            android:textColor="@color/text"
+            android:textSize="@dimen/_12ssp"
+            android:layout_alignParentLeft="true"
+            android:layout_width="match_parent"
+            android:lines="1"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_marginLeft="4dp" />
+
+
+
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/Txt_desc"
+        android:layout_marginStart="4dp"
+        android:layout_below="@+id/layout_subject"
+        android:layout_width="match_parent"
+        android:layout_marginTop="2dp"
+        android:textSize="@dimen/_10ssp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="4dp">
+    </TextView>
+
+    <View
+        android:layout_below="@+id/Txt_desc"
+        android:background="@color/black"
+        android:layout_marginTop="12dp"
+        android:layout_marginStart="5dp"
+        android:layout_marginBottom="12dp"
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+
+        android:layout_marginLeft="5dp" />
+
+    </RelativeLayout>
+
+</RelativeLayout>

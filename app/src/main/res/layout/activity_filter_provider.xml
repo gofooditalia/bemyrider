@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout>
+
+    <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:overScrollMode="never"
+        android:background="@color/white">
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/_14sdp">
+
+            <ProgressBar
+                android:id="@+id/pgCat"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/_25sdp"
+                android:visibility="gone" />
+
+            <androidx.appcompat.widget.AppCompatSpinner
+                android:id="@+id/sp_selectCat"
+                style="@style/SpinnerThemeSearch"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:layout_marginTop="@dimen/_14sdp"
+                android:textAlignment="textStart"
+                android:visibility="gone"/>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginStart="3dp"
+                android:layout_marginEnd="3dp"
+                android:visibility="gone"
+                android:background="@color/edit_border_color" />
+
+
+            <ProgressBar
+                android:id="@+id/pgSubCat"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/_25sdp"
+                android:layout_marginTop="@dimen/_14sdp"
+                android:visibility="gone" />
+
+
+            <androidx.appcompat.widget.AppCompatSpinner
+                android:id="@+id/sp_selectSubcat"
+                style="@style/SpinnerThemeSearch"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:layout_marginTop="@dimen/_14sdp"
+                android_textAlignment="textStart"
+                android:visibility="gone"/>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginStart="3dp"
+                android:layout_marginEnd="3dp"
+                android:visibility="gone"
+                android:background="@color/edit_border_color" />
+
+            <ProgressBar
+                android:id="@+id/pgService"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/_25sdp"
+                android:layout_marginTop="@dimen/_14sdp"
+                android:visibility="gone" />
+
+            <androidx.appcompat.widget.AppCompatSpinner
+                android:id="@+id/sp_selectService"
+                style="@style/SpinnerThemeSearch"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:layout_marginTop="@dimen/_14sdp"
+                android:textAlignment="textStart"
+                android:visibility="gone"/>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginStart="3dp"
+                android:layout_marginEnd="3dp"
+                android:visibility="gone"
+                android:background="@color/edit_border_color" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/til_location"
+                style="@style/StyledTilInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/_7sdp">
+
+                <androidx.appcompat.widget.AppCompatAutoCompleteTextView
+                    android:id="@+id/txt_location"
+                    style="@style/StyledTilEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:drawableEnd="@drawable/ic_location_resize"
+                    android:drawablePadding="@dimen/_4sdp"
+                    android:focusable="false"
+                    android:hint="@string/locationa"
+                    android:maxLines="3"
+                    android:paddingStart="@dimen/_8sdp"
+                    android:paddingEnd="@dimen/_8sdp"
+                    android:textColor="@color/text"
+                    android:textSize="@dimen/_12ssp" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/til_date"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                style="@style/StyledTilInput"
+                android:layout_marginTop="@dimen/_7sdp"
+                android:hint="@string/select_date">
+
+                <androidx.appcompat.widget.AppCompatEditText
+                    android:id="@+id/Edt_date"
+                    style="@style/StyledTilEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:drawableEnd="@drawable/ic_calender_resize"
+                    android:focusable="false"
+                    android:inputType="date"
+                    android:textColor="@color/text"
+                    android:textSize="@dimen/_12ssp" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/til_provider_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                style="@style/StyledTilInput"
+                android:layout_marginTop="@dimen/_7sdp"
+                android:hint="@string/provider_name">
+
+                <androidx.appcompat.widget.AppCompatEditText
+                    android:id="@+id/Edt_provider_name"
+                    style="@style/StyledTilEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textPersonName"
+                    android:textColor="@color/text"
+                    android:textSize="@dimen/_12ssp" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/til_search_keyword"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                style="@style/StyledTilInput"
+                android:layout_marginTop="@dimen/_7sdp"
+                android:hint="@string/search_keyword">
+
+                <androidx.appcompat.widget.AppCompatEditText
+                    android:id="@+id/Edt_search_keyword"
+                    style="@style/StyledTilEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textPersonName"
+                    android:textColor="@color/text"
+                    android:textSize="@dimen/_12ssp" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/minimum_rating"
+                android:layout_marginTop="@dimen/_7sdp"
+                style="@style/font_regular"
+                android:textColor="@color/text"
+                android:textSize="@dimen/_12ssp" />
+
+            <androidx.appcompat.widget.AppCompatRatingBar
+                android:id="@+id/ratingbar_filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:numStars="5"
+                android:stepSize="0.5"
+               android:layout_marginTop="@dimen/_3sdp" />
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/_7sdp">
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:id="@+id/Txt_selectPrize"
+                    style="@style/font_regular"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:text="@string/select_prize"
+                    android:textColor="@color/text"
+                    android:textSize="@dimen/_12ssp" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:id="@+id/txt_showPrize"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginStart="4dp"
+                    android:gravity="center_vertical"
+                    style="@style/font_regular"
+                    android:textColor="@color/text"
+                    android:textSize="@dimen/_12ssp" />
+
+            </RelativeLayout>
+
+            <com.google.android.material.slider.RangeSlider
+                android:id="@+id/rangeSeekbar5"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:valueFrom="0"
+                android:valueTo="100"
+                app:values="@array/initial_slider_values" />
+
+            <ProgressBar
+                android:id="@+id/progress"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/_30sdp"
+                android:layout_gravity="center"
+                android:visibility="gone" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/Btn_applyFilter"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                style="@style/font_regular"
+                android:layout_gravity="center"
+                android:layout_marginTop="30dp"
+                android:layout_marginBottom="40dp"
+                android:background="@drawable/button_style_filltype_two"
+                android:paddingLeft="15dp"
+                android:paddingRight="15dp"
+                android:textAllCaps="false"
+                android:text="@string/apply_filter"
+                android:textColor="@color/white"
+                android:textSize="@dimen/_13ssp" />
+
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+    </ScrollView>
+
+</layout>

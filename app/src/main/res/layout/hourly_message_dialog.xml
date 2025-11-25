@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/white"
+    android:orientation="vertical"
+    android:padding="@dimen/_14sdp">
+
+    <Spinner
+        android:id="@+id/spinner_select_proposal_hours"
+        style="@style/SpinnerThemeSearch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start"
+        android:layout_marginTop="@dimen/_14sdp"
+        android:entries="@array/select_hours"
+        android:textAlignment="textStart" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginStart="3dp"
+        android:layout_marginEnd="3dp"
+        android:visibility="gone"
+        android:background="@color/edit_border_color" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/StyledTilInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/_7sdp">
+
+        <EditText
+            android:id="@+id/edt_peoposal_msg"
+            style="@style/StyledTilEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/enter_message_here"
+            android:textSize="@dimen/_12ssp" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/_14sdp"
+        android:orientation="horizontal">
+
+        <androidx.appcompat.widget.AppCompatButton
+            style="@style/font_regular"
+            android:id="@+id/btn_proposal_cancle"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/_32sdp"
+            android:layout_weight="1"
+            android:background="@drawable/button_style_filltype"
+            android:text="@string/cancel"
+            android:layout_marginEnd="@dimen/_8sdp"
+            android:textAllCaps="false"
+            android:textColor="@color/button"
+            android:textSize="@dimen/_13ssp" />
+
+        <!--Layout Button Send Approval-->
+        <RelativeLayout
+            android:id="@+id/llBtnSendApproval"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/_32sdp"
+            android:layout_weight="1"
+            android:layout_marginStart="@dimen/_8sdp"
+            android:background="@drawable/button_style_filltype_two"
+            android:orientation="horizontal"
+            android:visibility="visible">
+
+            <ProgressBar
+                android:id="@+id/pgDialogSendApproval"
+                android:layout_width="@dimen/_28sdp"
+                android:layout_height="@dimen/_28sdp"
+                android:layout_centerVertical="true"
+                android:layout_gravity="end"
+                android:padding="@dimen/_2sdp"
+                android:paddingStart="@dimen/_8sdp"
+                android:paddingEnd="0dp"
+                android:theme="@style/WhiteAccent"
+                android:visibility="gone" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_proposal_send"
+                style="@style/font_regular"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_centerVertical="true"
+                android:background="@android:color/transparent"
+                android:text="@string/send"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="@dimen/_13ssp"
+                android:visibility="visible" />
+
+        </RelativeLayout>
+
+    </LinearLayout>
+
+</LinearLayout>

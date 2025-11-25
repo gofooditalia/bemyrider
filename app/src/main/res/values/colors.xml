@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="colorPrimary">#444</color>
+
+    <color name="colorPrimaryDark">#666666</color>
+    <!--<color name="colorAccent">#51AE54</color>-->
+    <color name="colorAccent">#656565</color>
+
+    <!--#3E3D72-->
+    <color name="hint_text_color">#95989c</color>
+
+   <!-- <color name="toolbar_bg_color">#f08b18</color>
+    <color name="tab_bg_color">#fbf5ef</color>
+    <color name="status_bg_color">#f08b18</color>-->
+
+    <color name="toolbar_bg_color">#3E3D72</color>
+    <color name="tab_bg_color">#F0F0F8</color>
+    <color name="status_bg_color">#3E3D72</color>
+
+    <color name="purple">#3E3D72</color>
+    <!--<color name="button">#f08b18</color>-->
+    <color name="icon_color">#f08b18</color>
+    <color name="button">#3E3D72</color>
+    <color name="white">#FFFFFF</color>
+    <color name="tex">#222222</color>
+    <color name="text_light">#848484</color>
+    <color name="text_medium">#444444</color>
+    <color name="text">#2f353c</color>
+    <color name="gray_light">#c6c5c4</color>
+    <color name="black">#000000</color>
+    <color name="transparent">#00000000</color>
+    <color name="colorRed">#C10013</color>
+    <color name="colorDarkGreen">#3E9E2C</color>
+
+    <color name="status_accepted">#337ab7</color>
+    <color name="status_cancelled">#f51414</color>
+    <color name="status_closed">#8d6e63</color>
+    <color name="status_completed">#2e7d32</color>
+    <color name="status_dispute">#ef5350</color>
+    <color name="status_pending">#f0ad4e</color>
+    <color name="status_ongoing">#5c6bc0</color>
+    <color name="status_rejected">#777</color>
+    <color name="status_expired">#000000</color>
+    <color name="status_hired">#5bc0de</color>
+    <color name="status_paid">#4daf51</color>
+
+    <!--PARTNER-->
+
+    <color name="colorHighlight">#666666</color>
+    <color name="colorGreyLight">#CDCDCD</color>
+    <color name="dash_line">#F6F6F6</color>
+
+<!--Status Background Color-->
+<!--<color name="bgcoloe_accepted">#337ab7</color>-->
+<!--<color name="bgcoloe_cancelled">#f51414</color>-->
+<!--<color name="bgcoloe_closed">#8d6e63</color>-->
+<!--<color name="bgcoloe_completed">#2e7d32</color>-->
+<!--<color name="bgcoloe_disputed">#ef5350</color>-->
+<!--<color name="bgcoloe_pending">#f0ad4e</color>-->
+<!--<color name="bgcoloe_ongoing">#5c6bc0</color>-->
+<!--<color name="bgcoloe_rejected">#777</color>-->
+<!--<color name="bgcoloe_hired">#5bc0de</color>-->
+
+
+
+
+    <!--SERVICE TRANSPARENT OVERLAYS-->
+    <color name="transparent_overlay1">#aab09ab3</color>
+    <color name="transparent_overlay2">#aa4d4db3</color>
+    <color name="transparent_overlay3">#aa4eadb3</color>
+    <color name="transparent_overlay4">#aaa824b3</color>
+    <color name="transparent_overlay5">#aa665cb3</color>
+    <color name="transparent_overlay6">#aab4f5b3</color>
+    <color name="edit_border_color">#dce1e2</color>
+
+    <integer-array name="overlay_colors">
+        <item>@color/transparent_overlay1</item>
+        <item>@color/transparent_overlay2</item>
+        <item>@color/transparent_overlay3</item>
+        <item>@color/transparent_overlay4</item>
+        <item>@color/transparent_overlay5</item>
+        <item>@color/transparent_overlay6</item>
+    </integer-array>
+</resources>

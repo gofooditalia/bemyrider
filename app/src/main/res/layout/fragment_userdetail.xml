@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/_13sdp"
+        android:orientation="vertical">
+
+        <TextView
+            style="@style/font_regular"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/about_provider"
+            android:textColor="@color/text"
+            android:textSize="@dimen/_11ssp" />
+
+        <TextView
+            android:id="@+id/txt_about_provider"
+            style="@style/font_light"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/text_light"
+            android:textSize="@dimen/_11ssp" />
+
+        <TextView
+            style="@style/font_regular"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/provider_services"
+            android:textColor="@color/text"
+            android:textSize="@dimen/_11ssp"
+            android:visibility="gone" />
+
+        <!--<android.support.v7.widget.RecyclerView-->
+        <!--android:id="@+id/recycler_view"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_marginTop="4dp" />-->
+
+        <!--<LinearLayout
+            android:id="@+id/layout_contact"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_7sdp"
+            android:layout_toEndOf="@+id/Img_profile"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/Txt_profileNname"
+                style="@style/font_regular"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/contact"
+                android:textColor="@color/text"
+                android:textSize="@dimen/_11ssp" />
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/_3sdp">
+
+                <ImageView
+                    android:id="@+id/Img_mobile"
+                    android:layout_width="@dimen/_15sdp"
+                    android:layout_height="@dimen/_15sdp"
+                    android:layout_marginTop="1dp"
+                    android:src="@drawable/ic_call"
+                    app:tint="@color/text_light" />
+
+                <TextView
+                    android:id="@+id/txt_number"
+                    style="@style/font_light"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_toEndOf="@+id/Img_mobile"
+                    android:autoLink="phone"
+                    android:textColor="@color/text_light"
+                    android:textColorLink="@color/text_light"
+                    android:textSize="@dimen/_11ssp" />
+
+
+            </RelativeLayout>
+
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/_3sdp">
+
+                <ImageView
+                    android:id="@+id/Img_mail"
+                    android:layout_width="@dimen/_19sdp"
+                    android:layout_height="@dimen/_15sdp"
+                    android:src="@mipmap/ic_email"
+                    app:tint="@color/text_light" />
+
+                <TextView
+                    android:id="@+id/txt_mail"
+                    style="@style/font_light"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_toEndOf="@+id/Img_mail"
+                    android:autoLink="email"
+                    android:textColor="@color/text_light"
+                    android:textColorLink="@color/text_light"
+                    android:textSize="@dimen/_11ssp" />
+            </RelativeLayout>
+
+        </LinearLayout>-->
+
+    </LinearLayout>
+</ScrollView>

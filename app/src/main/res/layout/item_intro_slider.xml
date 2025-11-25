@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <RelativeLayout
+        android:id="@+id/relMain"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:id="@+id/txtSkip"
+            style="@style/font_medium"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_marginTop="@dimen/_20sdp"
+            android:layout_marginBottom="@dimen/_20sdp"
+            android:layout_marginEnd="@dimen/_20sdp"
+            android:paddingStart="@dimen/_10sdp"
+            android:paddingEnd="@dimen/_10sdp"
+            android:text="@string/skip"
+            android:textColor="@color/text_light"
+            android:textSize="@dimen/_13ssp" />
+
+        <RelativeLayout
+            android:id="@+id/relPageFirst"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:layout_below="@+id/txtSkip"
+            android:visibility="visible">
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/imgPage1"
+                android:layout_width="@dimen/_100sdp"
+                android:layout_height="@dimen/_100sdp"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="@dimen/_20sdp"
+                android:layout_marginBottom="@dimen/_10sdp"
+                android:src="@drawable/intro_img_1" />
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/logoPage1"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/_60sdp"
+                android:layout_below="@+id/imgPage1"
+                android:layout_centerHorizontal="true"
+                android:paddingStart="@dimen/_30sdp"
+                android:paddingEnd="@dimen/_30sdp"
+                android:src="@drawable/intro_logo" />
+
+            <TextView
+                android:id="@+id/txtPage1"
+                style="@style/font_regular"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/logoPage1"
+                android:layout_marginTop="@dimen/_15sdp"
+                android:layout_marginBottom="@dimen/_10sdp"
+                android:letterSpacing="0.1"
+                android:paddingStart="@dimen/_20sdp"
+                android:paddingEnd="@dimen/_20sdp"
+                android:text="@string/intro_first_page_text"
+                android:textColor="@color/text"
+                android:textSize="@dimen/_25ssp"
+                tools:targetApi="lollipop" />
+
+            <TextView
+                android:id="@+id/txtBtn1"
+                style="@style/font_medium"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/txtPage1"
+                android:paddingStart="@dimen/_20sdp"
+                android:paddingEnd="@dimen/_20sdp"
+                android:text="@string/intro_lets_start"
+                android:textColor="@color/button"
+                android:textSize="@dimen/_16ssp" />
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/relPageAnother"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:layout_below="@+id/txtSkip"
+            android:visibility="gone">
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/logoPage2"
+                android:layout_width="@dimen/_180sdp"
+                android:layout_height="@dimen/_54sdp"
+                android:paddingStart="@dimen/_20sdp"
+                android:paddingEnd="@dimen/_20sdp"
+                android:src="@drawable/intro_logo" />
+
+            <TextView
+                android:id="@+id/txtPage2"
+                style="@style/font_regular"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/logoPage2"
+                android:paddingStart="@dimen/_20sdp"
+                android:paddingEnd="@dimen/_20sdp"
+                android:layout_marginTop="@dimen/_15sdp"
+                android:layout_marginBottom="@dimen/_10sdp"
+                android:letterSpacing="0.1"
+                android:text="@string/intro_second_page_text"
+                android:textColor="@color/text"
+                android:textSize="@dimen/_18ssp"
+                tools:targetApi="lollipop" />
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/imgPage2"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/_210sdp"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="@dimen/_10sdp"
+                android:layout_marginBottom="@dimen/_15sdp"
+                android:src="@drawable/intro_img_2"
+                android:layout_below="@+id/txtPage2" />
+
+            <TextView
+                android:id="@+id/txtBtn2"
+                style="@style/font_medium"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/imgPage2"
+                android:paddingStart="@dimen/_20sdp"
+                android:paddingEnd="@dimen/_20sdp"
+                android:textColor="@color/button"
+                android:textSize="@dimen/_16ssp"
+                android:text="@string/intro_signin"/>
+
+        </RelativeLayout>
+
+    </RelativeLayout>
+
+</layout>

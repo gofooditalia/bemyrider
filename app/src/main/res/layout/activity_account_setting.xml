@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/_14sdp"
+            android:background="@color/white"
+            tools:context="com.app.bemyrider.activity.AccountSettingActivity">
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/til_current_pass"
+                android:layout_width="match_parent"
+                app:passwordToggleEnabled="true"
+                android:layout_height="wrap_content"
+                style="@style/StyledTilInput"
+                app:passwordToggleDrawable="@drawable/show_password_selector">
+
+                <androidx.appcompat.widget.AppCompatEditText
+                    android:id="@+id/et_current_pass"
+                    style="@style/StyledTilEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/current_password"
+                    android:inputType="textPassword"
+                    android:maxLength="50"
+                    android:textColor="@color/text"
+                    android:textSize="@dimen/_12ssp" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/til_new_pass"
+                android:layout_width="match_parent"
+                app:passwordToggleEnabled="true"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                style="@style/StyledTilInput"
+                app:passwordToggleDrawable="@drawable/show_password_selector">
+
+                <androidx.appcompat.widget.AppCompatEditText
+                    android:id="@+id/et_new_pass"
+                    style="@style/StyledTilEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/new_password"
+                    android:inputType="textPassword"
+                    android:maxLength="50"
+                    android:textColor="@color/text"
+                    android:textSize="@dimen/_12ssp" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/til_cnew_pass"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:passwordToggleEnabled="true"
+                android:layout_marginTop="6dp"
+                style="@style/StyledTilInput"
+                app:passwordToggleDrawable="@drawable/show_password_selector">
+
+                <androidx.appcompat.widget.AppCompatEditText
+                    android:id="@+id/et_cnew_pass"
+                    style="@style/StyledTilEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/confirm_new_password"
+                    android:inputType="textPassword"
+                    android:maxLength="50"
+                    android:textColor="@color/text"
+                    android:textSize="@dimen/_12ssp" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!--Layout Save Change-->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/_14sdp"
+                android:background="@drawable/button_style_filltype_two"
+                android:orientation="horizontal">
+
+                <ProgressBar
+                    android:id="@+id/pgSaveChange"
+                    android:layout_width="@dimen/_28sdp"
+                    android:layout_height="@dimen/_28sdp"
+                    android:layout_centerVertical="true"
+                    android:layout_gravity="end"
+                    android:padding="@dimen/_2sdp"
+                    android:paddingStart="@dimen/_8sdp"
+                    android:paddingEnd="0dp"
+                    android:theme="@style/WhiteAccent"
+                    android:visibility="gone" />
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/btn_save_change"
+                    style="@style/font_regular"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:background="@android:color/transparent"
+                    android:text="@string/save_change"
+                    android:textAllCaps="false"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/_13ssp"
+                    android:visibility="visible" />
+
+            </RelativeLayout>
+
+            <ProgressBar
+                android:id="@+id/progress"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/_30sdp"
+                android:layout_marginTop="@dimen/_14sdp"
+                android:layout_gravity="center"
+                android:visibility="gone" />
+
+            <RelativeLayout
+                android:id="@+id/relLang"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/_14sdp"
+                android:paddingTop="@dimen/_10sdp"
+                android:paddingBottom="@dimen/_10sdp"
+                android:paddingEnd="@dimen/_8sdp"
+                android:paddingStart="@dimen/_8sdp"
+                android:background="@drawable/rounded_spinner_bg">
+
+                <androidx.appcompat.widget.AppCompatSpinner
+                    android:id="@+id/sp_select_lan_setting"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/transparent"/>
+
+                <ImageView
+                    android:id="@+id/imgDown"
+                    android:layout_width="@dimen/_16sdp"
+                    android:layout_height="@dimen/_20sdp"
+                    android:src="@drawable/ic_down"
+                    android:layout_alignParentEnd="true"/>
+
+            </RelativeLayout>
+
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_continue_setting"
+                style="@style/font_regular"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="@dimen/_14sdp"
+                android:background="@drawable/button_style_filltype_two"
+                android:text="@string/continues"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="@dimen/_13ssp" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/deactivate_account_content"
+                android:textColor="@color/text"
+                style="@style/font_light"
+                android:layout_marginTop="@dimen/_14sdp"
+                android:padding="@dimen/_12sdp"
+                android:lineSpacingExtra="1sp"
+                android:background="@drawable/rounded_light_red_bg"
+                android:textSize="@dimen/_11ssp"/>
+
+            <!--Layout DeActive Account-->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/_14sdp"
+                android:background="@drawable/btn_style_three"
+                android:orientation="horizontal">
+
+                <ProgressBar
+                    android:id="@+id/pgDeActiveAccount"
+                    android:layout_width="@dimen/_28sdp"
+                    android:layout_height="@dimen/_28sdp"
+                    android:layout_centerVertical="true"
+                    android:layout_gravity="end"
+                    android:padding="@dimen/_2sdp"
+                    android:paddingStart="@dimen/_8sdp"
+                    android:paddingEnd="0dp"
+                    android:theme="@style/WhiteAccent"
+                    android:visibility="gone" />
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/btn_deactivate_account"
+                    style="@style/font_regular"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:background="@android:color/transparent"
+                    android:text="@string/deactivate_your_account"
+                    android:textAllCaps="false"
+                    android:textColor="@color/icon_color"
+                    android:textSize="@dimen/_12ssp"
+                    android:visibility="visible" />
+
+            </RelativeLayout>
+
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+    </ScrollView>
+
+</layout>

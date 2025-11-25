@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/activity_service_history__tab_layout_"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- our tablayout to display tabs  -->
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabLayout_popular"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:tabGravity="fill"
+        app:tabMode="fixed"
+        app:tabMaxWidth="@dimen/_400sdp"
+        app:tabBackground="@drawable/tabicon_selector"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+        android:minHeight="?attr/actionBarSize"
+        app:tabIndicatorColor="@color/tab_text_selector"
+        app:tabPadding="0dp"
+        app:tabSelectedTextColor="@color/button"
+        app:tabTextAppearance="@style/tab_text"
+        app:tabTextColor="@color/text" />
+
+    <!-- View pager to swipe views -->
+    <androidx.viewpager.widget.ViewPager
+        android:id="@+id/pager_popular"
+        android:layout_below="@+id/tabLayout_popular"
+        android:layout_width="match_parent"
+        android:layout_height="fill_parent"/>
+
+</RelativeLayout>

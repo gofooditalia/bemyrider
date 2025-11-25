@@ -1,0 +1,588 @@
+<resources>
+
+    <string name="signup">Iscriviti</string>
+    <string name="username">Nome utente</string>
+    <string name="login">ACCEDERE</string>
+    <string name="reset_password">Resetta la password</string>
+    <string name="forgot"><u> Ha dimenticato la password?</u></string>
+    <string name="password">Password*</string>
+
+    <string name="provide_uname">Si prega di fornire e-mail.</string>
+    <string name="provide_valid_uname">Si prega di fornire un\'e-mail valida.</string>
+    <string name="provide_pass">Si prega di fornire la password</string>
+    <string name="provide_address">Si prega di fornire l\'indirizzo</string>
+    <string name="provide_pass_length">La lunghezza minima della password è sei</string>
+
+    <string name="fb_error">Errore. Si prega di fornire tutti i dettagli richiesti tramite Facebook.</string>
+    <string name="signup_with_email">Errore. Si prega di iscriversi con l\'e-mail.</string>
+
+
+    <string name="connection_time_out">La connessione è scaduta. Vuoi riprovare?</string>
+    <string name="unexpected_error">Si è verificato un errore imprevisto</string>
+    <string name="error">Errore!</string>
+    <string name="yes">sì</string>
+    <string name="no">No</string>
+    <string name="ok">OK</string>
+    <string name="connect_account">Collegare l\'account?</string>
+    <string name="loading">Caricamento in corso...</string>
+    <string name="wait_while_loading">Si prega di attendere durante il caricamento</string>
+    <string name="no_internet">Nessuna connessione internet.</string>
+
+    <string name="first_name">Nome manager*</string>
+    <string name="last_name">Cognome*</string>
+    <string name="email_id">Email*</string>
+    <string name="number">Numero di telefono*</string>
+    <string name="confirmpassword">Conferma password*</string>
+
+    <string name="provide_fname">Si prega di fornire il nome.</string>
+    <string name="provide_lname">Si prega di fornire il cognome.</string>
+    <string name="provide_number">Si prega di fornire il numero di contatto</string>
+    <string name="cpass_not_match">La dose di password e conferma password non corrisponde.</string>
+    <string name="provide_country_code_id">Si prega di selezionare il codice paese.</string>
+
+
+    <string name="iamlookingfor">sto cercando</string>
+    <string name="home">Casa</string>
+    <string name="provide_service_id">Seleziona un servizio*.</string>
+    <string name="provide_category_id">Seleziona una categoria*.</string>
+    <string name="provide_subcategory_id">Seleziona una sottocategoria*.</string>
+    <string name="select_valid_address">Per favore, inserisci un indirizzo valido.</string>
+    <string name="provide_date">Si prega di fornire la data.</string>
+    <string name="provide_time">Si prega di fornire tempo.</string>
+    <string name="no_services_found">Nessun servizio trovato.</string>
+    <string name="select_datea">Seleziona Data*</string>
+    <string name="select_date">Seleziona Data</string>
+
+
+    <string name="payment_method">Metodo di pagamento predefinito</string>
+    <string name="address">Città</string>
+    <string name="cash">Contanti</string>
+    <string name="can_not_edit_now">Non puoi modificare il profilo ora. Riprova più tardi.</string>
+
+
+    <string name="default_method">Metodo predefinito</string>
+    <string name="update_profile">Aggiorna il profilo</string>
+    <string name="landmark">Punto di riferimento</string>
+
+
+    <string name="error_connecting_api">Errore durante il contatto con l\'API:</string>
+
+
+    <string name="provider_count">Provider(i) trovato</string>
+    <string name="no_provider_found">Nessun provider trovato</string>
+
+
+    <string name="status_accepted">Accettato</string>
+    <string name="status_cancelled">Annullato</string>
+    <string name="status_closed">Chiuso</string>
+    <string name="status_completed">Completato</string>
+    <string name="status_dispute">Disputa</string>
+    <string name="status_pending">In attesa di</string>
+    <string name="status_ongoing">In corso</string>
+    <string name="status_rejected">Respinto</string>
+    <string name="send_msg">Invia messaggio</string>
+    <string name="raise_dispute">Solleva la disputa</string>
+    <string name="category">Categoria</string>
+    <string name="report_user">Segnala utente</string>
+    <string name="favourite">Preferito</string>
+    <string name="start_service">Avvia il servizio</string>
+    <string name="cancel">Annulla</string>
+    <string name="view_dispute">Visualizza controversia</string>
+    <string name="view_summary">Visualizza riepilogo</string>
+    <string name="provider_services">Servizi del fornitore</string>
+    <string name="about_provider">Informazioni sul fornitore</string>
+    <string name="wallet_current_balance">I crediti possono essere utilizzati per realizzare nuovi progetti e possono essere riscattati in qualsiasi momento.</string>
+    <string name="wallet_fund_deposit">Crediti da riscattare al termine dei servizi</string>
+    <string name="wallet_redeem_request">Questo è il saldo che hai richiesto per il riscatto.</string>
+    <string name="contact">Contatto</string>
+    <string name="time">Tempo</string>
+    <string name="booked_time">Tempo prenotato</string>
+    <string name="price">Tariffa</string>
+    <string name="payment_pref">Preferenza di pagamento</string>
+    <string name="service_address">Indirizzo del servizio</string>
+    <string name="cancel_by">Annullato da</string>
+    <string name="invalid_time">L\'ora deve essere maggiore dell\'ora corrente</string>
+    <string name="select_start_date_first">Selezionare prima l\'ora di inizio del servizio.</string>
+    <string name="please_select_time_and_address">Si prega di selezionare prima l\'orario e l\'indirizzo del servizio.</string>
+    <string name="current_bal">Bilancio corrente</string>
+
+
+    <string name="fund_deposit">Fondi depositati</string>
+    <string name="redeem_request">Riscatta richiesta</string>
+    <string name="deposit_fund">Fondo di deposito</string>
+    <string name="availbalance">Saldo disponibile:</string>
+
+
+    <string name="amount">Importo</string>
+    <string name="desc">Descrizione</string>
+    <string name="submit">Invia</string>
+    <string name="deposit_amount">Inserisci l\'importo del deposito*</string>
+
+
+    <string name="type_messsage">Scrivi un messaggio qui*</string>
+
+
+    <string name="select_prize">Seleziona Prezzo</string>
+
+
+    <string name="provide_subject">Si prega di fornire l\'oggetto.</string>
+
+
+    <string name="provide_desc">Si prega di fornire una descrizione.</string>
+    <string name="error_required">*necessario</string>
+
+
+    <string name="error_valid_email">*richiesto indirizzo email valido</string>
+    <string name="error_min_pwd">*richiesto minimo 6 caratteri</string>
+    <string name="error_character_required">*sono ammessi solo caratteri</string>
+    <string name="error_pwd_not_match">Password e Conferma password devono corrispondere</string>
+    <string name="error_valid_contact_required">*richiesto numero di contatto valido</string>
+    <string name="enter_price">Inserire il prezzo*</string>
+    <string name="upload_image">Carica immagine*</string>
+    <string name="viewall"><u> Mostra tutto</u>  </string>
+    <string name="accept_dispute"><u> ACCETTA LA CONTROVERSIA</u>  </string>
+    <string name="escalate"><u> RISPONDERE AD AMMINISTRATORE</u>  </string>
+    <string name="myrating">Le mie valutazioni</string>
+    <string name="servicename">Nome di Servizio:</string>
+    <string name="servicecat">Categoria di servizio:</string>
+    <string name="servicetime">Tempo di servizio:</string>
+    <string name="serviceprice">Prezzo del servizio:</string>
+    <string name="rate_provider">Si prega di valutare il fornitore</string>
+    <string name="bycash">In contanti</string>
+    <string name="bywallet">Da Portafoglio</string>
+    <string name="subject">Soggetto:</string>
+    <string name="raised_by">Cresciuto da:</string>
+    <string name="total_earned">Totale Guadagnato</string>
+    <string name="complete_service">Servizi completi</string>
+    <string name="commision">Commissione</string>
+    <string name="net_earned">Guadagno netto</string>
+    <string name="no_of_book">N. di Prenotazioni</string>
+    <string name="rating_me">Valutazioni per me</string>
+    <string name="searh_service">Servizi di ricerca...</string>
+    <string name="accept">Accetta</string>
+    <string name="reject">Rifiuta</string>
+    <string name="end_service">Fine servizio</string>
+    <string name="add_review">Aggiungi recensione</string>
+    <string name="service_start_end">Orario di inizio-fine del servizio</string>
+    <string name="about_me">Su di me</string>
+    <string name="service_time">Tempo di servizio</string>
+    <string name="change_pass">Cambia la password</string>
+    <string name="old_pass">Inserisci la vecchia password*</string>
+    <string name="new_pass">Inserire una nuova password*</string>
+    <string name="confirmnew_pass">Reinserire la nuova password*</string>
+    <string name="cashon">Pagamento alla consegna</string>
+    <string name="payment_gateway">Pagamento online tramite gateway di pagamento</string>
+    <string name="payment_id">ID gateway di pagamento</string>
+    <string name="change_lang">Cambia lingua</string>
+    <string name="email_noti1">Avvisami quando il commerciante accetta/rifiuta il mio servizio richiesto</string>
+    <string name="email_noti2">Avvisami quando il servizio richiesto viene annullato dal commerciante/proprietario del salone</string>
+    <string name="email_noti3">Avvisami per il mio prossimo servizio prenotato</string>
+    <string name="partial_book">Date prenotate parziali</string>
+    <string name="booked_date">Date prenotate</string>
+    <string name="free_date">Date libere</string>
+    <string name="str_and" />
+    <string name="aboutme">Su di me</string>
+    <string name="start_time">Inizio servizio</string>
+    <string name="end_time">Fine servizio</string>
+    <string name="enter_duration">Immettere la durata in minuti</string>
+    <string name="enter_date">Immettere la data</string>
+    <string name="enter_discription">Inserisci la descrizione*</string>
+    <string name="reset">Ripristina</string>
+    <string name="update">Aggiornare</string>
+    <string name="no_record_founf">Nessun record trovato</string>
+    <string name="no_service">Non avendo alcun servizio</string>
+    <string name="assigned_tasks">Compito assegnato</string>
+    <string name="available_on">Disponibile su</string>
+    <string name="positive_rating">Voto positivo</string>
+    <string name="worked_on">Ha lavorato su compiti</string>
+    <string name="str_worked_on">Lavorato su</string>
+    <string name="edit_service">Modifica servizio</string>
+    <string name="add_new_service">Aggiungi nuovo servizio</string>
+    <string name="select_category">Seleziona categoria*</string>
+    <string name="select_subcategory">Seleziona sottocategoria*</string>
+    <string name="select_service">Seleziona Servizio*</string>
+    <string name="take_photo">Fare foto</string>
+    <string name="chose_from_library">Scegli dalla libreria</string>
+    <string name="add_photo">Aggiungi foto!</string>
+    <string name="please_select_category">Si prega di selezionare la categoria</string>
+    <string name="please_select_subcategory">Si prega di selezionare la sottocategoria</string>
+    <string name="please_select_services">Si prega di selezionare il servizio</string>
+    <string name="camcel_image_service">Seleziona immagine annullata</string>
+    <string name="dispute_list">Elenco delle controversie</string>
+    <string name="denine_permission">Hai negato una o più autorizzazioni, consenti tutte le autorizzazioni e riprova</string>
+    <string name="my_profile">Il mio profilo</string>
+    <string name="profile">Profilo</string>
+    <string name="service_request">Richieste di servizio</string>
+    <string name="financial_info">Rendiconto</string>
+    <string name="my_services">I miei servizi</string>
+    <string name="services">Servizi</string>
+    <string name="message">Messaggi</string>
+    <string name="notifications">Notifica</string>
+    <string name="resolution_center">Gestione controversie</string>
+    <string name="help">Aiuto</string>
+    <string name="feedback">Feedback</string>
+    <string name="comtact_us">Contattaci</string>
+    <string name="logout">Esci</string>
+    <string name="edit_profile">Modifica Profilo</string>
+    <string name="select_start_time">Seleziona Ora di inizio</string>
+    <string name="select_end_time">Seleziona Ora di fine</string>
+    <string name="cancelling_granted">Annullando, le autorizzazioni richieste non vengono concesse</string>
+    <string name="please_select_country_code">Si prega di selezionare il codice paese</string>
+    <string name="select_time">Seleziona Ora</string>
+    <string name="dispute_details">Dettaglio controversia</string>
+    <string name="please_enter_message_first">Si prega di inserire prima il messaggio</string>
+    <string name="send_proposal">Modifica richiesta</string>
+    <string name="please_enter_message">Si prega di inserire il messaggio*</string>
+    <string name="please_select_hours_first">Si prega di selezionare prima l\'orario</string>
+    <string name="proposal_data">Dati della proposta</string>
+    <string name="none">nessuno</string>
+    <string name="wallet">Portafoglio</string>
+    <string name="cod">MERLUZZO</string>
+    <string name="status_hired">Assunto</string>
+    <string name="expired">È scaduto</string>
+    <string name="reviews">Recensioni</string>
+    <string name="please_enter_deposit_amount_first">Si prega di inserire prima l\'importo del deposito</string>
+    <string name="amount_to_deposit">Ammontare da depositare</string>
+    <string name="please_enter_description">Si prega di inserire la descrizione*</string>
+    <string name="favorite_services">Servizi preferiti</string>
+    <string name="filter_by">Filtra per</string>
+    <string name="find_services">Trova servizi</string>
+    <string name="title_select_service">Seleziona Servizio</string>
+    <string name="notification_settings">Impostazioni di notifica</string>
+    <string name="please_select_ratting">Si prega di selezionare la valutazione*</string>
+    <string name="service_name">Nome di Servizio</string>
+    <string name="extend_service">Estendi il servizio</string>
+    <string name="please_provide_review">Si prega di fornire una recensione</string>
+    <string name="please_select_rating">Si prega di selezionare la valutazione</string>
+    <string name="please_enter_address">Si prega di inserire l\'indirizzo*</string>
+    <string name="please_enter_end_time">Si prega di inserire l\'ora di fine*</string>
+    <string name="please_enter_start_time">Si prega di selezionare l\'ora di inizio*</string>
+    <string name="user_profile">Profilo utente</string>
+    <string name="my_wallet">Il mio portafoglio</string>
+    <string name="please_select_user_type">Seleziona il tipo di utente...</string>
+    <string name="status_expired">È scaduto</string>
+    <string name="no_reviews">Nessuna recensione</string>
+    <string name="paypal">PAYPAL</string>
+    <string name="upload_your_photo">Carica la tua foto*</string>
+    <string name="enter_feedback">Inserisci feedback*</string>
+    <string name="location">Posizione</string>
+    <string name="locationa">Posizione</string>
+    <string name="apply_filter">Applica il filtro</string>
+    <string name="search_providers">Fornitori di ricerca</string>
+    <string name="save_change">Salva Modifica</string>
+    <string name="you_have_new_proposal">Hai una nuova proposta</string>
+    <string name="click_to_show">clicca per mostrare</string>
+    <string name="book_now">Prenota ora</string>
+    <string name="send_requerst">Verifica disponibilità</string>
+    <string name="current_password">Password attuale*</string>
+    <string name="re_enter_new_password">Reinserire la nuova password*</string>
+    <string name="deactivate_your_account">Disattiva il tuo account</string>
+    <string name="deactivate">Disattivare</string>
+    <string name="send">Invia</string>
+    <string name="service_description">Modello del mezzo e attrezzatura</string>
+    <string name="service_start_time">Calendario*</string>
+    <string name="service_end_time">Orario di fine servizio*</string>
+    <string name="enter_message_here">Inserisci qui il messaggio*</string>
+    <string name="i_am_looking">sto cercando</string>
+    <string name="search_provider">Fornitori di ricerca</string>
+    <string name="sunday">Domenica</string>
+    <string name="monday">Lunedi</string>
+    <string name="tuesday">Martedì</string>
+    <string name="wednesday">Mercoledì</string>
+    <string name="thursday">Giovedì</string>
+    <string name="friday">Venerdì</string>
+    <string name="saturday">Sabato</string>
+    <string name="proposal_message">Messaggi di proposta</string>
+    <string name="hours">Ore</string>
+    <string name="please_select_multipleof_15">si prega di selezionare solo multiplo di 15 per tempo</string>
+    <string name="booking_start_time">Orario di inizio della prenotazione</string>
+    <string name="booking_end_time">Orario di fine prenotazione</string>
+    <string name="booking_amount">Importo della prenotazione</string>
+    <string name="extend_hours">Estendere le ore</string>
+    <string name="extend_service_request">Estendi richiesta di servizio</string>
+    <string name="provider_profile">Profilo del fornitore</string>
+    <string name="credits">Crediti</string>
+    <string name="hold">Presa</string>
+    <string name="per_hours">/ora</string>
+    <string name="fixed">fisso</string>
+    <string name="expand_service">Estendi il servizio</string>
+    <string name="download_invoice">Scarica Ricevute</string>
+    <string name="are_you_cancel">Sei sicuro di voler annullare questo servizio?</string>
+    <string name="provider_name">Nome del provider</string>
+    <string name="search_keyword">Digita qui il nome del rider</string>
+    <string name="pay_for_extend_service">Paga per estendere il servizio</string>
+    <string name="please_update_profile">Il tuo profilo potrebbe non essere aggiornato, aggiorna prima</string>
+    <string name="admin_fees">Commissioni di amministrazione</string>
+    <string name="date">Data</string>
+    <string name="transaction_id">ID transazione</string>
+    <string name="deposit_history">Cronologia dei depositi</string>
+    <string name="requested_amount">Importo richiesto</string>
+    <string name="redeem_request_history">Riscatta la cronologia delle richieste</string>
+    <string name="payment_history">Rendiconto</string>
+    <string name="requested_date">Data richiesta</string>
+    <string name="redeemed_amount">Importo riscattato</string>
+    <string name="redeemed_date">Data redenta</string>
+    <string name="create_new_account">Crea un nuovo account</string>
+    <string name="available_now">Disponibile ora</string>
+    <string name="booking_description">Istruzioni e comunicazioni</string>
+    <string name="new_password">Nuova password*</string>
+    <string name="confirm_new_password">Conferma la nuova password*</string>
+    <string name="continues">Continua</string>
+    <string name="please_enter_current_pass">Si prega di inserire la password attuale</string>
+    <string name="please_enter_new_pass">Si prega di inserire la nuova password</string>
+    <string name="password_miss_match">Password mancata corrispondenza</string>
+    <string name="account_settings">Impostazioni dell\'account</string>
+    <string name="please_enter_confirm_pass">Si prega di inserire conferma password</string>
+    <string name="descr">Descrizione*</string>
+    <string name="enter_message">Inserisci messaggio*</string>
+    <string name="subjecta">Soggetto*</string>
+    <string name="about_mea">Su di me*</string>
+    <string name="start_timea">Inizio*</string>
+    <string name="end_timea">Fine servizio*</string>
+    <string name="completed_services">Servizi completati</string>
+
+
+    <string name="addressa">Indirizzo*</string>
+    <string name="raise_by_me">Cresciuto da me</string>
+    <string name="paypal_email">Email PayPal*</string>
+    <string name="admin_feesa">Commissioni di amministrazione</string>
+    <string name="task_hours">Durata del servizio</string>
+    <string name="status">Stato</string>
+    <string name="extend_service_messages">Estendi i messaggi di servizio</string>
+    <string name="duration">Durata</string>
+    <string name="cost">Costo</string>
+    <string name="paid">Pagato</string>
+    <string name="total_services">Servizi totali</string>
+    <string name="sure_exit_app">Sei sicuro di voler uscire dall\'app?</string>
+    <string name="sure_logout">Sei sicuro di voler uscire?</string>
+    <string name="please_upload_your_photo">Per favore carica la tua foto</string>
+    <string name="enter_review">Entra in Revisione*</string>
+    <string name="invoice">Fattura</string>
+    <string name="service_s_time">Orario di inizio del servizio</string>
+    <string name="service_e_time">Orario di fine servizio</string>
+    <string name="booking_id">ID prenotazione</string>
+    <string name="booking_details">Istruzioni e comunicazioni</string>
+    <string name="admin_feesb">Commissioni di amministrazione</string>
+    <string name="payment_type">Modalità di pagamento</string>
+    <string name="total_payable_amount">Importo totale pagabile</string>
+    <string name="total_receivable_amount">Importo totale da ricevere</string>
+    <string name="admin_commission">Commissione Amministrativa</string>
+    <string name="minimum_rating">Voto minimo</string>
+    <string name="deposit_commission">Commissione di deposito</string>
+    <string name="dispute_has_been_escalate_to_admin">La controversia è stata inoltrata all\'amministratore</string>
+    <string name="close">Chiudere</string>
+    <string name="haven_t_received_activation_email_yet"><u> Non hai ancora ricevuto l\'email di attivazione?</u>  </string>
+    <string name="resend_activation_mail">Invia nuovamente la posta di attivazione</string>
+    <string name="something_went_wrong">Qualcosa è andato storto</string>
+    <string name="oops_brace_yourself_till_we_get_the_error_fixed">Ops..!! Preparati fino a quando non avremo risolto l\'errore</string>
+    <string name="please_retry_after_sometime">Si prega di riprovare dopo qualche tempo.</string>
+    <string name="retry">Riprova</string>
+    <string name="exit">Uscita</string>
+    <string name="view_attachment"><u> Visualizza allegato</u>  </string>
+    <string name="sync_data_message">La connessione a Internet non è disponibile. Verranno visualizzati i dati dell\'ultimo provider sincronizzato</string>
+
+
+    <string name="hours_to_complete">Seleziona le ore per completare</string>
+    <string name="hours_required_by_provider">Orari di servizio</string>
+    <string name="hours_with_space">Ore</string>
+    <string name="service_hours">Inizio servizio</string>
+    <string name="wait_while_payment_confirm">Attendi la conferma del pagamento</string>
+    <string name="channel_name">Notifica</string>
+
+    <string name="channel_description">questo canale contiene tutte le notifiche per questa applicazione.</string>
+    <string name="taskers">Tasker</string>
+    <string name="about">Di</string>
+    <string name="availability">Disponibilità</string>
+    <string name="my_ratings">Le mie valutazioni</string>
+    <string name="no_positive_ratings">Nessuna valutazione positiva</string>
+    <string name="positive_ratings">Valutazioni positive</string>
+    <string name="tasks">Compiti</string>
+    <string name="search_service">Servizi di ricerca</string>
+    <string name="confirm_delete_service">Sei sicuro di voler eliminare questo servizio?</string>
+    <string name="delete">Eliminare</string>
+    <string name="service_detail">Particolare del servizio</string>
+    <string name="confirm_account_deactivate">Sei sicuro di voler disattivare il tuo account?</string>
+    <string name="please_enter_proper_deposit_amount">Si prega di inserire l\'importo del deposito corretto.</string>
+    <string name="please_enter_valid_password">La password deve essere lunga almeno 6 caratteri</string>
+    <string name="vali_contact_num">Il numero di contatto deve essere compreso tra 10 e 15 cifre</string>
+    <string name="received_amount">Importo ricevuto</string>
+    <string name="date_of_completion">Data di completamento</string>
+    <string name="per_hour_rate">Tariffa oraria</string>
+    <string name="total_working_hours">Ore di lavoro totali</string>
+    <string name="currency">€</string>
+    <string name="message_no_connection">Nessuna connessione internet</string>
+    <string name="message_internet_connected">Connesso a Internet</string>
+    <string name="enable_permission_from_setting">Autorizzazione negata, abilitala dalle impostazioni</string>
+    <string name="cancel_permissions">Le autorizzazioni richieste non vengono concesse</string>
+    <string name="info">Info</string>
+    <string name="customer">Cliente</string>
+    <string name="individual_provider">Fornitore individuale</string>
+    <string name="company">Azienda</string>
+    <string name="company_name">Ragione sociale</string>
+    <string name="camera">Telecamera</string>
+    <string name="gallery">Galleria</string>
+    <string name="signin">Accedi</string>
+    <string name="signup_login">Non hai un account? <u>Registrati</u></string>
+    <string name="signin_text">Inserisci qui le tue credenziali</string>
+    <string name="already_signin">Hai già un account? <u>Accedi qui!</u></string>
+    <string name="deactivate_account_content">Se pensi che non utilizzerai di nuovo bemyrider e desideri che il tuo account venga cancellato, possiamo occuparcene noi per te. Tieni presente che non potrai riattivare il tuo account o recuperare alcun contenuto o informazione che hai aggiunto. \n\nSe desideri comunque eliminare il tuo account, fai clic su \"DISATTIVA IL MIO ACCOUNT\".</string>
+    <string name="signup_text">La prima community di riders autonomi al servizio diretto degli esercenti</string>
+    <string name="contact_us_text">Inserisci le tue informazioni qui sotto in Contattaci</string>
+    <string name="ratings_review">Giudizi</string>
+    <string name="upcoming">IN ARRIVO</string>
+    <string name="ongoing">IN CORSO</string>
+    <string name="past">PASSATE</string>
+    <string name="deliveries_type">Veicolo</string>
+    <string name="small_deliveries">Consegne di E-Bike</string>
+    <string name="medium_deliveries">Consegne Moto</string>
+    <string name="large_deliveries">Consegne automatiche</string>
+    <string name="small">E-BIKE</string>
+    <string name="medium">MOTO</string>
+    <string name="large">AUTO</string>
+    <string name="sort">Scegli</string>
+    <string name="ascending">Ascendente</string>
+    <string name="descending">Discendente</string>
+    <string name="delivery_type">Tipo di Veicolo</string>
+    <string name="courier_person_name">Nome della persona del corriere</string>
+    <string name="notifications_title">Notifiche</string>
+    <string name="edit">Modificare</string>
+    <string name="create_account">Benvenuto su bemyrider</string>
+    <string name="signup_now">Iscriviti ora</string>
+    <string name="guest_user">Utente ospite</string>
+    <string name="login_menu">Login</string>
+    <string name="please_select_delivery_type">Si prega di selezionare il tipo di consegna...</string>
+    <string name="quick">Presto</string>
+    <string name="scheduled">Programmato</string>
+    <string name="request_type">Tipo di richiesta</string>
+    <string name="reset_filter">Ripristina filtro</string>
+    <string name="working_time">Disponibilità oraria</string>
+    <string name="working_days">Disponibilità giornaliera</string>
+    <string name="time_validation">L\'orario di lavoro minimo deve essere 8</string>
+    <string name="past_time_validation">L\'ora corrente/passata non è consentita, selezionare l\'ora futura</string>
+    <string name="uploaded_images">Uploaded Images</string>
+    <string name="cancel_dispute"><u>ANNULLA CONTROVERSIA</u></string>
+    <!--<string name="intro_lets_start"><![CDATA[<u>Cominciamo</u>]]></string>-->
+    <string name="intro_lets_start">Cominciamo</string>
+    <string name="intro_first_page_text"><![CDATA[<b>Benvenuto</b> nella prima <b>community</b> di <b>riders autonomi</b> della <b>tua città</b>]]></string>
+    <string name="skip">SALTA</string>
+    <string name="intro_second_page_text">Rider che cerchi, professionista che trovi</string>
+    <string name="intro_third_page_text">Leggi le recensioni, confronta il servizio e scegli il rider più adatto alle tue esigenze</string>
+    <string name="intron_fourth_text">Chatta col tuo rider in tempo reale per una gestione puntuale del servizio</string>
+    <string name="intro_fifth_text"><![CDATA[Una giusta <b>programmazione</b> è la <b>chiave</b> per ogni <b>business</b> di <b>successo</b>]]></string>
+    <string name="intro_signin"><![CDATA[<u>Iscriviti</u>]]></string>
+    <!--<string name="intro_signin"><u>Registrati</u></string>-->
+
+    <string-array name="PayMethod">
+        <item>Portafoglio</item>
+        <item>Contanti</item>
+    </string-array>
+    <string-array name="deliveryType_item">
+        <item>Seleziona Tipo di consegna</item>
+        <item>Presto</item>
+        <item>Programmato</item>
+    </string-array>
+    <string-array name="userType_item">
+        <item>Seleziona Tipo utente</item>
+        <item>Proprietario del ristorante</item>
+        <item>Persona Corriere</item>
+    </string-array>
+    <string-array name="navigation_drawer_items_array">
+        <item>Collegare</item>
+        <item>Infissi</item>
+        <item>Tavolo</item>
+    </string-array>
+    <string-array name="spinnerItems">
+        <item>Seleziona categoria</item>
+        <item>Taglio di capelli</item>
+        <item>Taglio di capelli</item>
+        <item>Perché tagliare i capelli</item>
+    </string-array>
+    <string-array name="spinnerItems1">
+        <item>Seleziona Servizio</item>
+        <item>Taglio di capelli</item>
+        <item>Taglio di capelli</item>
+        <item>Perché tagliare i capelli</item>
+    </string-array>
+    <string-array name="spinnerTime">
+        <item>Seleziona Ora</item>
+    </string-array>
+    <string-array name="spinnerMobile">
+        <item>91</item>
+        <item>90</item>
+        <item>101</item>
+        <item>80</item>
+    </string-array>
+
+    <string-array name="select_hours">
+        <item>Durata del servizio*</item>
+        <item>1 Ora</item>
+        <item>2 Ore</item>
+<!--        <item>3 Ore</item>-->
+<!--        <item>4 Ore</item>-->
+    </string-array>
+
+    <!-- Added by Keval-->
+    <string name="user_type_provider">Rider</string>
+    <string name="user_type_customer">Azienda / Privato</string>
+    <string name="signup_as">Iscriviti come</string>
+    <string name="owner_profile_data">Dati del profilo del proprietario</string>
+    <string name="tax_data">Dati fiscali</string>
+    <string name="hint_company_name">Nome della ditta*</string>
+    <string name="vat">Codice fiscale/partita iva</string>
+    <string name="hint_vat">Partita iva / Codice fiscale*</string>
+    <string name="hint_tax_id_code">Codice Fiscale*</string>
+    <string name="tax_id_code">Codice Fiscale</string>
+    <string name="hint_shop_address">Città*</string>
+    <string name="shop_address">Indirizzo attività</string>
+    <string name="hint_invoice_recipe_code">Codice univoco</string>
+    <string name="invoice_recipe_code">Codice univoco</string>
+    <string name="hint_certified_mail">Indirizzo pec</string>
+    <string name="certified_mail">Indirizzo pec</string>
+    <string name="err_msg_company">Si prega di fornire il nome dell\'azienda</string>
+    <string name="err_msg_vat">Si prega di fornire VAT</string>
+    <string name="err_msg_tax_id_code">Si prega di fornire il codice fiscale</string>
+    <string name="err_msg_shop_address">Si prega di fornire l\'indirizzo del negozio</string>
+    <string name="err_msg_invoice_recipe">Si prega di fornire il codice destinatario della fattura</string>
+    <string name="err_msg_certified_email">Si prega di fornire un indirizzo di posta certificata</string>
+    <string name="back_press_msg">Fare nuovamente clic su INDIETRO per uscire</string>
+    <string name="app_name">bemyrider</string>
+    <string name="btnConnectText">Connect with Stripe</string>
+    <string name="dialogDisconnectText">Disconnect from Stripe?</string>
+    <string name="btnDisconnectText">Disconnect from Stripe</string>
+    <string name="stripe_conncent">Stripe Connect</string>
+    <string name="you_have_successfully_connected_your_stripe_account">You have successfully connected your stripe account</string>
+    <string name="stripe_payment">Stripe Payment</string>
+    <string name="summary">Summary</string>
+    <string name="pay">Pay</string>
+    <string name="payment_date">Payment Date</string>
+    <string name="description">Istruzioni e comunicazioni</string>
+    <string name="duration_of_service">Durata del servizio</string>
+    <string name="name">Nome</string>
+    <string name="sub_total">Totale parziale</string>
+    <string name="fees">Commissioni della piatttaforma</string>
+    <string name="total_amount">Importo totale</string>
+    <string name="priceNew">Prezzo</string>
+    <string name="msg_note_for_provider">Se non desideri attendere l\'approvazione della tua controfferta, puoi andare avanti e procedere con una richiesta di assistenza iniziale. Si prega di scegliere un\'opzione di seguito…</string>
+    <string name="i_agree_to">Sono d\'accordo</string>
+    <string name="terms_and_conditions">Termini e Condizioni</string>
+    <string name="msg_terms_and_conditions">Si prega di accettare i termini e le condizioni</string>
+    <string name="lbl_hour">Ora</string>
+    <string name="lbl_hours">Ore</string>
+
+    <string name="lbl_city_of_birth_with_dot">Città di nascita*</string>
+    <string name="lbl_date_of_birth_with_dot">Data di nascita*</string>
+    <string name="lbl_city_of_residence_with_dot">Città di residenza*</string>
+    <string name="lbl_residential_address_with_dot">Indirizzo di residenza*</string>
+    <string name="lbl_hourly_rate_with_dot">Inserisci la tua tariffa oraria*</string>
+    <string name="lbl_vehicle_detail_with_dot">Modello ed equipaggiamento del veicolo*</string>
+    <string name="err_msg_price_per_hour">La tariffa oraria massima dovrebbe essere di 12,5€/ora</string>
+    <string name="lbl_city_of_birth">Città di nascita</string>
+    <string name="lbl_date_of_birth">Data di nascita</string>
+    <string name="lbl_city_of_residence">Città di residenza</string>
+    <string name="lbl_residential_address">Indirizzo di residenza</string>
+    <string name="lbl_vehicle_model_and_equipment">Modello del mezzo e attrezzatura</string>
+    <string name="err_permission">Autorizzazione negata</string>
+    <string name="err_permission_camera">Nega autorizzazione telecamera</string>
+    <string name="err_permission_storage">Autorizzazione di archiviazione negata</string>
+    <string name="err_no_camera_in_device">Non è presente l\'opzione fotocamera sul tuo dispositivo</string>
+</resources>

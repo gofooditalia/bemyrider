@@ -1,0 +1,735 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/white">
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/_12sdp"
+                android:layout_marginTop="@dimen/_10sdp"
+                android:layout_marginEnd="@dimen/_12sdp"
+                android:orientation="vertical">
+
+                <FrameLayout
+                    android:layout_width="@dimen/_72sdp"
+                    android:layout_height="@dimen/_72sdp"
+                    android:layout_gravity="center">
+
+                    <com.app.bemyrider.utils.CircleImageView
+                        android:id="@+id/img_userprofile"
+                        android:layout_width="@dimen/_72sdp"
+                        android:layout_height="@dimen/_72sdp"
+                        android:foreground="@drawable/gradient_backgroungimg"
+                        app:border_color="#E0E6E4"
+                        app:border_width="2dp"
+                        tools:ignore="UnusedAttribute"
+                        tools:targetApi="m" />
+
+                    <androidx.appcompat.widget.AppCompatImageView
+                        android:id="@+id/ivOverlay"
+                        android:layout_width="@dimen/_27sdp"
+                        android:layout_height="@dimen/_27sdp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/icon_camera" />
+                </FrameLayout>
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:orientation="vertical">
+
+                    <androidx.appcompat.widget.AppCompatTextView
+                        style="@style/font_medium"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/_10sdp"
+                        android:layout_marginBottom="@dimen/_3sdp"
+                        android:gravity="center_horizontal"
+                        android:text="@string/profile"
+                        android:textColor="@color/text"
+                        android:textSize="@dimen/_16ssp" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/till_edit_fname"
+                        style="@style/StyledTilInput"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp">
+
+                        <androidx.appcompat.widget.AppCompatEditText
+                            android:id="@+id/et_edit_fname"
+                            style="@style/StyledTilEditText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="@string/name"
+                            android:inputType="textPersonName"
+                            android:maxLength="50"
+                            android:textColor="@color/text"
+                            android:textSize="@dimen/_12ssp" />
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/till_edit_lname"
+                        style="@style/StyledTilInput"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp">
+
+                        <androidx.appcompat.widget.AppCompatEditText
+                            android:id="@+id/et_edit_lname"
+                            style="@style/StyledTilEditText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="@string/last_name"
+                            android:inputType="textPersonName"
+                            android:maxLength="50"
+                            android:textColor="@color/text"
+                            android:textSize="@dimen/_12ssp" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/till_edit_email"
+                        style="@style/StyledTilInput"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp">
+
+                        <androidx.appcompat.widget.AppCompatEditText
+                            android:id="@+id/et_edit_email"
+                            style="@style/StyledTilEditText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:focusable="false"
+                            android:hint="@string/email_id"
+                            android:inputType="textEmailAddress"
+                            android:textColor="@color/text"
+                            android:textSize="@dimen/_12ssp" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <!--<com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/till_edit_paypal_email"
+                        style="@style/StyledTilInput"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp">
+
+                        <androidx.appcompat.widget.AppCompatEditText
+                            android:id="@+id/et_edit_paypal_email"
+                            style="@style/StyledTilEditText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="@string/paypal_email"
+                            android:inputType="textEmailAddress"
+                            android:textColor="@color/text"
+                            android:textSize="@dimen/_12ssp" />
+                    </com.google.android.material.textfield.TextInputLayout>-->
+
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <androidx.appcompat.widget.AppCompatSpinner
+                        android:id="@+id/sp_code"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginStart="4dp"
+                        android:layout_marginTop="4dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/rounded_spinner_bg"
+                        android:paddingStart="0dp"
+                        android:paddingTop="@dimen/_10sdp"
+                        android:paddingEnd="-5dp"
+                        android:paddingBottom="@dimen/_9sdp"
+                        android:textColor="@color/black"
+                        android:theme="@style/SpinnerTheme"
+                        android:visibility="gone" />
+
+                    <ProgressBar
+                        android:id="@+id/progressCountryCode"
+                        android:layout_width="0dp"
+                        android:layout_height="@dimen/_30sdp"
+                        android:layout_gravity="center_vertical"
+                        android:layout_weight="1"
+                        android:visibility="gone" />
+
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/till_edit_contactno"
+                        style="@style/StyledTilInput"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="5dp"
+                        android:layout_weight="2">
+
+                        <androidx.appcompat.widget.AppCompatEditText
+                            android:id="@+id/et_edit_contactno"
+                            style="@style/StyledTilEditText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="@string/number"
+                            android:inputType="number"
+                            android:textColor="@color/text"
+                            android:textSize="@dimen/_12ssp" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilCityOfBirth"
+                    style="@style/StyledTilInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp">
+
+                    <androidx.appcompat.widget.AppCompatEditText
+                        android:id="@+id/edtCityOfBirth"
+                        style="@style/StyledTilEditText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/lbl_city_of_birth_with_dot"
+                        android:inputType="text"
+                        android:maxLines="1"
+                        android:textColor="@color/text"
+                        android:textSize="@dimen/_12ssp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilDataOfBirth"
+                    style="@style/StyledTilInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp">
+
+                    <androidx.appcompat.widget.AppCompatEditText
+                        android:id="@+id/edtDateOfBirth"
+                        style="@style/StyledTilEditText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:drawableEnd="@drawable/ic_calender_resize"
+                        android:focusable="false"
+                        android:hint="@string/lbl_date_of_birth_with_dot"
+                        android:inputType="text"
+                        android:maxLines="1"
+                        android:textColor="@color/text"
+                        android:textSize="@dimen/_12ssp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilCityOfResidence"
+                    style="@style/StyledTilInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp">
+
+                    <androidx.appcompat.widget.AppCompatEditText
+                        android:id="@+id/edtCityOfResidence"
+                        style="@style/StyledTilEditText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/lbl_city_of_residence_with_dot"
+                        android:inputType="text"
+                        android:maxLines="1"
+                        android:textColor="@color/text"
+                        android:textSize="@dimen/_12ssp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilResidentialAddress"
+                    style="@style/StyledTilInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp">
+
+                    <androidx.appcompat.widget.AppCompatEditText
+                        android:id="@+id/edtResidentialAddress"
+                        style="@style/StyledTilEditText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/lbl_residential_address_with_dot"
+                        android:inputType="text"
+                        android:maxLines="1"
+                        android:textColor="@color/text"
+                        android:textSize="@dimen/_12ssp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/font_medium"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/_10sdp"
+                    android:gravity="center_horizontal"
+                    android:text="@string/tax_data"
+                    android:textColor="@color/text"
+                    android:textSize="@dimen/_16ssp" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilCompany"
+                    style="@style/StyledTilInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp">
+
+                    <androidx.appcompat.widget.AppCompatEditText
+                        android:id="@+id/edtCompany"
+                        style="@style/StyledTilEditText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/hint_company_name"
+                        android:inputType="textPersonName"
+                        android:maxLength="50"
+                        android:textColor="@color/text"
+                        android:textSize="@dimen/_12ssp" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilVat"
+                    style="@style/StyledTilInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp">
+
+                    <androidx.appcompat.widget.AppCompatEditText
+                        android:id="@+id/edtVat"
+                        style="@style/StyledTilEditText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/hint_vat"
+                        android:inputType="textPersonName"
+                        android:maxLength="50"
+                        android:textColor="@color/text"
+                        android:textSize="@dimen/_12ssp" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilTaxIdCode"
+                    style="@style/StyledTilInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp">
+
+                    <androidx.appcompat.widget.AppCompatEditText
+                        android:id="@+id/edtTaxIdCode"
+                        style="@style/StyledTilEditText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/hint_tax_id_code"
+                        android:inputType="textPersonName"
+                        android:maxLength="50"
+                        android:textColor="@color/text"
+                        android:textSize="@dimen/_12ssp" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/till_edit_address"
+                    style="@style/StyledTilInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/view_sp_code"
+                    android:layout_marginTop="4dp">
+
+                    <androidx.appcompat.widget.AppCompatAutoCompleteTextView
+                        android:id="@+id/et_edit_address"
+                        style="@style/StyledTilEditText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:drawableEnd="@drawable/ic_location_resize"
+                        android:drawablePadding="@dimen/_4sdp"
+                        android:focusable="false"
+                        android:focusableInTouchMode="false"
+                        android:hint="@string/hint_shop_address"
+                        android:maxLines="3"
+                        android:paddingStart="@dimen/_8sdp"
+                        android:paddingEnd="@dimen/_8sdp"
+                        android:textColor="@color/text"
+                        android:textSize="@dimen/_12ssp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilInvoiceRecipeCode"
+                    style="@style/StyledTilInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp">
+
+                    <androidx.appcompat.widget.AppCompatEditText
+                        android:id="@+id/edtInvoiceRecipeCode"
+                        style="@style/StyledTilEditText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/hint_invoice_recipe_code"
+                        android:inputType="textPersonName"
+                        android:maxLength="50"
+                        android:textColor="@color/text"
+                        android:textSize="@dimen/_12ssp" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilCertifiedMail"
+                    style="@style/StyledTilInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp">
+
+                    <androidx.appcompat.widget.AppCompatEditText
+                        android:id="@+id/edtCertifiedMail"
+                        style="@style/StyledTilEditText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/hint_certified_mail"
+                        android:imeOptions="actionDone"
+                        android:inputType="textEmailAddress"
+                        android:textColor="@color/text"
+                        android:textSize="@dimen/_12ssp" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/till_edit_aboutme"
+                    style="@style/StyledTilInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/till_edit_address"
+                    android:layout_marginTop="4dp">
+
+                    <androidx.appcompat.widget.AppCompatEditText
+                        android:id="@+id/et_edit_aboutme"
+                        style="@style/StyledTilEditText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/about_mea"
+                        android:maxLines="3"
+                        android:textColor="@color/text"
+                        android:textSize="@dimen/_12ssp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/et_edit_aboutme"
+                    android:layout_marginTop="4dp"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/till_edit_starttime"
+                        style="@style/StyledTilInput"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="5dp"
+                        android:layout_weight="1">
+
+                        <androidx.appcompat.widget.AppCompatEditText
+                            android:id="@+id/et_edit_start_time"
+                            style="@style/StyledTilEditText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:focusable="false"
+                            android:hint="@string/start_timea"
+                            android:textAllCaps="true"
+                            android:textColor="@color/text"
+                            android:textSize="@dimen/_12ssp" />
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/till_edit_endtime"
+                        style="@style/StyledTilInput"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="5dp"
+                        android:layout_weight="1">
+
+                        <androidx.appcompat.widget.AppCompatEditText
+                            android:id="@+id/et_edit_end_time"
+                            style="@style/StyledTilEditText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:descendantFocusability="blocksDescendants"
+                            android:focusable="false"
+                            android:hint="@string/end_timea"
+                            android:textAllCaps="true"
+                            android:textColor="@color/text"
+                            android:textSize="@dimen/_12ssp" />
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/_12sdp"
+                android:layout_marginTop="4dp"
+                android:orientation="vertical">
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/font_regular"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/deliveries_type"
+                    android:textColor="@color/text"
+                    android:textSize="@dimen/_12ssp" />
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/switch_small"
+                    style="@style/font_light"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="10dp"
+                    android:paddingBottom="7dp"
+                    android:text="@string/small"
+                    android:textColor="@color/text_light"
+                    android:textSize="@dimen/_12ssp"
+                    android:thumb="@drawable/custom_thumb"
+                    app:track="@null" />
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/switch_medium"
+                    style="@style/font_light"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="7dp"
+                    android:paddingBottom="7dp"
+                    android:text="@string/medium"
+                    android:textColor="@color/text_light"
+                    android:textSize="@dimen/_12ssp"
+                    android:thumb="@drawable/custom_thumb"
+                    app:track="@null" />
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/switch_large"
+                    style="@style/font_light"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="7dp"
+                    android:paddingBottom="7dp"
+                    android:text="@string/large"
+                    android:textColor="@color/text_light"
+                    android:textSize="@dimen/_12ssp"
+                    android:thumb="@drawable/custom_thumb"
+                    app:track="@null" />
+
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
+
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/_12sdp"
+                android:layout_marginTop="4dp"
+                android:orientation="vertical">
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/font_regular"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/working_days"
+                    android:textColor="@color/text"
+                    android:textSize="@dimen/_12ssp" />
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/switch_sunday"
+                    style="@style/font_light"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="10dp"
+                    android:paddingBottom="7dp"
+                    android:text="@string/sunday"
+                    android:textAllCaps="true"
+                    android:textColor="@color/text_light"
+                    android:textSize="@dimen/_12ssp"
+                    android:thumb="@drawable/custom_thumb"
+                    app:track="@null" />
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/switch_monday"
+                    style="@style/font_light"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="7dp"
+                    android:paddingBottom="7dp"
+                    android:text="@string/monday"
+                    android:textAllCaps="true"
+                    android:textColor="@color/text_light"
+                    android:textSize="@dimen/_12ssp"
+                    android:thumb="@drawable/custom_thumb"
+                    app:track="@null" />
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/switch_tuesday"
+                    style="@style/font_light"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="7dp"
+                    android:paddingBottom="7dp"
+                    android:text="@string/tuesday"
+                    android:textAllCaps="true"
+                    android:textColor="@color/text_light"
+                    android:textSize="@dimen/_12ssp"
+                    android:thumb="@drawable/custom_thumb"
+                    app:track="@null" />
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/switch_wednwsday"
+                    style="@style/font_light"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="7dp"
+                    android:paddingBottom="7dp"
+                    android:text="@string/wednesday"
+                    android:textAllCaps="true"
+                    android:textColor="@color/text_light"
+                    android:textSize="@dimen/_12ssp"
+                    android:thumb="@drawable/custom_thumb"
+                    app:track="@null" />
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/switch_thursday"
+                    style="@style/font_light"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="7dp"
+                    android:paddingBottom="7dp"
+                    android:text="@string/thursday"
+                    android:textAllCaps="true"
+                    android:textColor="@color/text_light"
+                    android:textSize="@dimen/_12ssp"
+                    android:thumb="@drawable/custom_thumb"
+                    app:track="@null" />
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/switch_friday"
+                    style="@style/font_light"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="7dp"
+                    android:paddingBottom="7dp"
+                    android:text="@string/friday"
+                    android:textAllCaps="true"
+                    android:textColor="@color/text_light"
+                    android:textSize="@dimen/_12ssp"
+                    android:thumb="@drawable/custom_thumb"
+                    app:track="@null" />
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/switch_saturday"
+                    style="@style/font_light"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="7dp"
+                    android:paddingBottom="7dp"
+                    android:text="@string/saturday"
+                    android:textAllCaps="true"
+                    android:textColor="@color/text_light"
+                    android:textSize="@dimen/_12ssp"
+                    android:thumb="@drawable/custom_thumb"
+                    app:track="@null" />
+
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
+
+            <androidx.appcompat.widget.AppCompatTextView
+                style="@style/font_regular"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="@dimen/_12sdp"
+                android:layout_marginTop="@dimen/_4sdp"
+                android:text="@string/lbl_add_signature"
+                android:textColor="@color/text"
+                android:textSize="@dimen/_12ssp" />
+
+            <RelativeLayout
+                android:layout_width="@dimen/_100sdp"
+                android:layout_height="@dimen/_100sdp"
+                android:layout_marginHorizontal="@dimen/_12sdp">
+
+                <ImageView
+                    android:id="@+id/imgAddSignature"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginTop="@dimen/_6sdp"
+                    android:background="@drawable/border_user_type_select"
+                    android:padding="1dp"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/ic_plus"
+                    app:tint="@color/status_bg_color" />
+
+                <ImageView
+                    android:id="@+id/imgSignaturePreview"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginTop="@dimen/_6sdp"
+                    android:scaleType="fitXY"
+                    android:visibility="gone" />
+            </RelativeLayout>
+
+            <!--Update Profile Button-->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginStart="@dimen/_12sdp"
+                android:layout_marginTop="@dimen/_25sdp"
+                android:layout_marginEnd="@dimen/_12sdp"
+                android:layout_marginBottom="@dimen/_25sdp"
+                android:background="@drawable/button_style_filltype_two"
+                android:orientation="horizontal">
+
+                <ProgressBar
+                    android:id="@+id/progressUpdateProfile"
+                    android:layout_width="@dimen/_28sdp"
+                    android:layout_height="@dimen/_28sdp"
+                    android:layout_centerVertical="true"
+                    android:layout_gravity="center"
+                    android:padding="@dimen/_2sdp"
+                    android:paddingStart="@dimen/_8sdp"
+                    android:paddingEnd="0dp"
+                    android:theme="@style/WhiteAccent"
+                    android:visibility="gone" />
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/btnUpdateProfile"
+                    style="@style/font_regular"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_gravity="center"
+                    android:background="@android:color/transparent"
+                    android:text="@string/update_profile"
+                    android:textAllCaps="false"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/_14ssp" />
+
+            </RelativeLayout>
+
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+
+    </ScrollView>
+
+</layout>

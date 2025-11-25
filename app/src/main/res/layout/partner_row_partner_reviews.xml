@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/layout_provider_review"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/_12sdp">
+
+        <com.app.bemyrider.utils.CircleImageView
+            android:id="@+id/img_customerprofile"
+            android:layout_width="@dimen/_50sdp"
+            android:layout_height="@dimen/_50sdp"
+            android:layout_marginEnd="@dimen/_3sdp" />
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/_3sdp"
+            android:layout_toEndOf="@+id/img_customerprofile"
+            android:orientation="vertical">
+
+            <RelativeLayout
+                android:id="@+id/layout_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/txt_customername"
+                    style="@style/font_regular"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_marginEnd="2dp"
+                    android:layout_toStartOf="@+id/txt_date"
+                    android:textColor="@color/text"
+                    android:textSize="@dimen/_12ssp" />
+
+                <TextView
+                    android:id="@+id/txt_date"
+                    style="@style/font_light"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginStart="2dp"
+                    android:gravity="end"
+                    android:maxWidth="@dimen/_100sdp"
+                    android:maxLines="1"
+                    android:textColor="@color/text_light"
+                    android:textSize="@dimen/_10ssp" />
+
+            </RelativeLayout>
+
+            <RatingBar
+                android:id="@+id/ratignbar"
+                style="?attr/ratingBarStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/_3sdp" />
+
+            <TextView
+                android:id="@+id/txt_review"
+                style="@style/font_regular"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_marginTop="@dimen/_3sdp"
+                android:textColor="@color/text_light"
+                android:textSize="@dimen/_11ssp" />
+
+
+            <TextView
+                android:id="@+id/txt_service_name"
+                style="@style/font_light"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_marginTop="@dimen/_3sdp"
+                android:textColor="@color/text_light"
+                android:textSize="@dimen/_11ssp" />
+
+            <RelativeLayout
+                android:id="@+id/layout_address"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/layout_service_name"
+                android:layout_marginTop="@dimen/_3sdp">
+
+                <androidx.appcompat.widget.AppCompatImageView
+                    android:id="@+id/imgAddressPin"
+                    android:layout_width="@dimen/_10sdp"
+                    android:layout_height="@dimen/_16sdp"
+                    android:layout_marginEnd="@dimen/_3sdp"
+                    android:padding="@dimen/_1sdp"
+                    android:src="@drawable/ic_location"
+                    app:tint="@color/text_light" />
+
+                <TextView
+                    android:id="@+id/txtAddress"
+                    style="@style/font_light"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginStart="@dimen/_3sdp"
+                    android:layout_toEndOf="@id/imgAddressPin"
+                    android:textColor="@color/text_light"
+                    android:textSize="@dimen/_10ssp" />
+
+            </RelativeLayout>
+
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+    </RelativeLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/edit_border_color" />
+
+
+</LinearLayout>

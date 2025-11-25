@@ -1,0 +1,607 @@
+<resources>
+    <string name="app_name">bemyrider</string>
+
+    <!--login-->
+    <string name="signup">Sign Up</string>
+    <string name="username">User Name</string>
+    <string name="login">LOGIN</string>
+    <string name="reset_password">Reset Password</string>
+    <string name="forgot"><u>Forgot password?</u></string>
+    <string name="password">Password*</string>
+
+    <string name="provide_uname">Please Provide Email.</string>
+    <string name="provide_valid_uname">Please Provide Valid Email.</string>
+    <string name="provide_pass">Please Provide Password</string>
+    <string name="provide_address">Please Provide Address</string>
+    <string name="provide_pass_length">Minimum Password length is six</string>
+
+    <string name="fb_error">Error. Please provide all the required details via facebook.</string>
+    <string name="signup_with_email">Error. Please sign up with email.</string>
+
+    <!--Facebook App Id-->
+    <string name="facebook_app_id" translatable="false">497104782137385</string>
+    <string name="fb_login_protocol_scheme" translatable="false">fb497104782137385</string>
+    <string name="facebook_client_token" translatable="false">59590fb4b4cbae3b4091dd6c9907ef19</string>
+
+    <!--AsyncTask-->
+    <string name="connection_time_out">Connection has timed out. Do you want to retry?</string>
+    <string name="unexpected_error">Unexpected error has occurred</string>
+    <string name="error">Error!</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="ok">OK</string>
+    <string name="connect_account">Connect Account?</string>
+    <string name="loading">Loading...</string>
+    <string name="wait_while_loading">Please Wait While Loading</string>
+    <string name="no_internet">No Internet Connection.</string>
+
+
+    <!--SIGN UP-->
+    <string name="first_name">Manager name*</string>
+    <string name="last_name">Last Name*</string>
+    <string name="email_id">Email*</string>
+    <string name="number">Contact No*</string>
+    <string name="confirmpassword">Confirm Password*</string>
+
+    <string name="provide_fname">Please Provide First Name.</string>
+    <string name="provide_lname">Please Provide Last Name.</string>
+    <string name="provide_number">Please Provide Contact No.</string>
+    <string name="cpass_not_match">Password and Confirm Password dose not match.</string>
+    <string name="provide_country_code_id">Please Select Country Code.</string>
+
+    <!--HOME-->
+    <string name="iamlookingfor">I am looking for</string>
+    <string name="home">Home</string>
+    <string name="provide_service_id">Please Select a Service*.</string>
+    <string name="provide_category_id">Please Select a Category*.</string>
+    <string name="provide_subcategory_id">Please Select a subCategory*.</string>
+    <string name="select_valid_address">Please Enter a Valid Address.</string>
+    <string name="provide_date">Please Provide Date.</string>
+    <string name="provide_time">Please Provide Time.</string>
+    <string name="no_services_found">No Services Found.</string>
+    <string name="select_datea">Select Date*</string>
+    <string name="select_date">Select Date</string>
+
+    <!--PROFILE-->
+    <string name="payment_method">Default Payment Method</string>
+    <string name="address">Address</string>
+    <string name="cash">Cash</string>
+    <string name="can_not_edit_now">You can not edit profile now, Please try again later.</string>
+
+    <!--EDIT PROFILE-->
+    <string name="default_method">Default Method</string>
+    <string name="update_profile">Update Profile</string>
+    <string name="landmark">Landmark</string>
+
+    <!--GEO LOCATION-->
+    <string name="error_connecting_api">Error contacting API: </string>
+
+    <!--PROVIDER LISTING-->
+    <string name="provider_count">Provider(s) Found</string>
+    <string name="no_provider_found">No Providers Found</string>
+
+    <!--SERVICE DETAIL-->
+    <string name="status_accepted">Accepted</string>
+    <string name="status_cancelled">Cancelled</string>
+    <string name="status_closed">Closed</string>
+    <string name="status_completed">Completed</string>
+    <string name="status_dispute">Dispute</string>
+    <string name="status_pending">Pending</string>
+    <string name="status_ongoing">Ongoing</string>
+    <string name="status_rejected">Rejected</string>
+    <string name="send_msg">Send Message</string>
+    <string name="raise_dispute">Raise Dispute</string>
+    <string name="category">Category</string>
+    <string name="report_user">Report User</string>
+    <string name="favourite">Favourite</string>
+    <string name="start_service">Start Service</string>
+    <string name="cancel">Cancel</string>
+    <string name="view_dispute">View Dispute</string>
+    <string name="view_summary">View Summary</string>
+    <string name="provider_services">Provider Services</string>
+    <string name="about_provider">About Provider</string>
+    <string name="wallet_current_balance">Credits can be used for making new projects, and that can be redeem anytime.</string>
+    <string name="wallet_fund_deposit">Credits to be redeemed at the end of the services</string>
+    <string name="wallet_redeem_request">This is the balance which you have requested for redeem.</string>
+    <string name="contact">Contact</string>
+    <string name="time">Time</string>
+    <string name="booked_time">Booked Time</string>
+    <string name="price">Rate</string>
+    <string name="payment_pref">Payment Preference</string>
+    <string name="service_address">Service Address</string>
+    <string name="cancel_by">Cancelled By</string>
+    <string name="invalid_time">Time must be greater than current time</string>
+    <string name="select_start_date_first">Please select service start time first.</string>
+    <string name="please_select_time_and_address">Please select service time and address first.</string>
+    <string name="current_bal">Current Balance</string>
+
+
+    <!--Wallet Activity-->
+
+    <string name="fund_deposit">Funds deposited</string>
+    <string name="redeem_request">Redeem Request</string>
+    <string name="deposit_fund">Deposit Fund</string>
+    <string name="availbalance">Available Balance:</string>
+
+    <!--Redeem Activity-->
+    <string name="amount">Amount</string>
+    <string name="desc">Description</string>
+    <string name="submit">Submit</string>
+    <string name="deposit_amount">Enter Deposit Amount*</string>
+
+    <!--DEPOSIT ACTIVITY-->
+    <string name="type_messsage">Type a message here*</string>
+
+    <!--MESSAGE ACTIVITY-->
+    <string name="select_prize">Select Price</string>
+
+    <!--FILTER ACTIVITY-->
+    <string name="provide_subject">Please Provide Subject.</string>
+
+    <!--RAISE DISPUTE ACTIVITY-->
+    <string name="provide_desc">Please Provide Description.</string>
+    <string name="error_required">*required</string>
+
+
+    <!--PARTNER-->
+
+
+    <string name="error_valid_email">*required valid email</string><!--Error String-->
+    <string name="error_min_pwd">*required minimum 6 characters</string>
+    <string name="error_character_required">*only characters allowed</string>
+    <string name="error_pwd_not_match">Password and Confirm Password must match</string>
+    <string name="error_valid_contact_required">*required valid contact number</string>
+    <string name="enter_price">Enter Price*</string>
+    <string name="upload_image">Upload Image*</string>
+    <string name="viewall"><u>View All</u></string>
+    <string name="accept_dispute"><u>ACCEPT DISPUTE</u></string>
+    <string name="escalate"><u>ESCALATE TO ADMIN</u></string>
+    <string name="myrating">My Ratings &amp; Reviews</string>
+    <string name="servicename">Service Name:</string>
+    <string name="servicecat">Service Category:</string>
+    <string name="servicetime">Service Time:</string>
+    <string name="serviceprice">Service Price:</string>
+    <string name="rate_provider">Please Rate the Provider</string>
+    <string name="bycash">By Cash</string><!--Service summary-->
+    <string name="bywallet">By Wallet</string>
+    <string name="subject">Subject:</string>
+    <string name="raised_by">Raised By:</string>
+    <string name="total_earned">Total Earned</string>
+    <string name="complete_service">Complete Services</string>
+    <string name="commision">Commision</string>
+    <string name="net_earned">Net Earned</string>
+    <string name="no_of_book">No. of Bookings</string>
+    <string name="rating_me">Ratings For Me</string><!--financial info-->
+    <string name="searh_service">Search Services...</string>
+    <string name="accept">Accept</string>
+    <string name="reject">Reject</string>
+    <string name="end_service">End Service</string><!--partner service detail-->
+    <string name="add_review">Add Review</string><!--partner servicerequest detail-->
+    <string name="service_start_end">Service Start-End Time</string>
+    <string name="about_me">About Me</string><!--user / partner request detail-->
+    <string name="service_time">Service Time</string>
+    <string name="change_pass">Change Password</string>
+    <string name="old_pass">Enter Old Password*</string>
+    <string name="new_pass">Enter New Password*</string>
+    <string name="confirmnew_pass">Re-Enter New Password*</string>
+    <string name="cashon">Cash on Delivery</string><!--servicedetail_service detail-->
+    <string name="payment_gateway">Payment online via Payment Gateway</string><!--Account setting-->
+    <string name="payment_id">Payment Gateway ID</string>
+    <string name="change_lang">Change Language</string>
+    <string name="email_noti1">Notify me when merchant accept/reject my requested service</string>
+    <string name="email_noti2">Notify me when requested service is cancelled by the merchant/salon owner</string>
+    <string name="email_noti3">Notify me for my upcoming booked service</string>
+    <string name="partial_book">Partial Booked Dates</string>
+    <string name="booked_date">Booked Dates</string>
+    <string name="free_date">Free Dates</string>
+    <string name="str_and"> &amp; </string>
+    <string name="aboutme">About Me</string>
+    <string name="start_time">Start Time</string>
+    <string name="end_time">End Time</string><!--calendar-->
+    <string name="enter_duration">Enter Duration In Minute</string>
+    <string name="enter_date">Enter Date</string>
+    <string name="enter_discription">Enter Description*</string>
+    <string name="reset">Reset</string>
+    <string name="update">Update</string>
+    <string name="no_record_founf">No Record Found</string>
+    <string name="no_service">Not having any services</string>
+    <string name="assigned_tasks">Assigned Tasks</string>
+    <string name="available_on">Available On</string>
+    <string name="positive_rating">Positive Rating</string>
+    <string name="worked_on">Worked On Tasks</string>
+    <string name="str_worked_on">Worked On</string>
+    <string name="edit_service">Edit Service</string>
+    <string name="add_new_service">Add New Service</string>
+    <string name="select_category">Select Category*</string>
+    <string name="select_subcategory">Select Subcategory*</string>
+    <string name="select_service">Select Service*</string>
+    <string name="take_photo">Take Photo</string>
+    <string name="chose_from_library">Choose from Library</string>
+    <string name="add_photo">Add Photo!</string>
+    <string name="please_select_category">Please Select Category</string>
+    <string name="please_select_subcategory">Please Select Subcategory</string>
+    <string name="please_select_services">Please Select Service</string>
+    <string name="camcel_image_service">Cancelled Image Select</string>
+    <string name="dispute_list">Dispute List</string>
+    <string name="denine_permission">You have denied one or more permissions please allow all the permission and try again</string>
+    <string name="my_profile">My Profile</string>
+    <string name="profile">Profile</string>
+    <string name="service_request">Service Requests</string>
+    <string name="financial_info">Accounting</string>
+    <string name="my_services">My Services</string>
+    <string name="services">Services</string>
+    <string name="message">Messages</string>
+    <string name="notifications">Notification</string>
+    <string name="resolution_center">Dispute management</string>
+    <string name="help">Help</string>
+    <string name="feedback">Feedback</string>
+    <string name="comtact_us">Contact Us</string>
+    <string name="logout">Go out</string>
+    <string name="edit_profile">Edit Profile</string>
+    <string name="select_start_time">Select Start Time</string>
+    <string name="select_end_time">Select End Time</string>
+    <string name="cancelling_granted">Cancelling, required permissions are not granted</string>
+    <string name="please_select_country_code">Please Select Country Code</string>
+    <string name="select_time">Select Time</string>
+    <string name="dispute_details">Dispute Detail</string>
+    <string name="please_enter_message_first">Please enter message first</string>
+    <string name="send_proposal">Send Proposal</string>
+    <string name="please_enter_message">Please Enter Message*</string>
+    <string name="please_select_hours_first">Please select hours first</string>
+    <string name="proposal_data">Proposal Data</string>
+    <string name="none">none</string>
+    <string name="wallet">Wallet</string>
+    <string name="cod">COD</string>
+    <string name="status_hired">Hired</string>
+    <string name="expired">Expired</string>
+    <string name="reviews">Reviews</string>
+    <string name="please_enter_deposit_amount_first">Please enter deposit amount first</string>
+    <string name="amount_to_deposit">Amount to deposit</string>
+    <string name="please_enter_description">Please Enter Description*</string>
+    <string name="favorite_services">Favorite Services</string>
+    <string name="filter_by">Filter By</string>
+    <string name="find_services">Find Services</string>
+    <string name="title_select_service">Select Service</string>
+    <string name="notification_settings">Notification Settings</string>
+    <string name="please_select_ratting">Please select rating*</string>
+    <string name="service_name">Service Name</string>
+    <string name="extend_service">Extend Service</string>
+    <string name="please_provide_review">Please provide review</string>
+    <string name="please_select_rating">Please select rating</string>
+    <string name="please_enter_address">Please enter address*</string>
+    <string name="please_enter_end_time">Please enter end time*</string>
+    <string name="please_enter_start_time">Please select start time*</string>
+    <string name="user_profile">User Profile</string>
+    <string name="my_wallet">My Wallet</string>
+    <string name="please_select_user_type">Please Select User Type...</string>
+    <string name="status_expired">Expired</string>
+    <string name="no_reviews">No Reviews</string>
+    <string name="paypal">PAYPAL</string>
+    <string name="upload_your_photo">Upload your photo*</string>
+    <string name="enter_feedback">Enter Feedback*</string>
+    <string name="location">Location</string>
+    <string name="locationa">Location</string>
+    <string name="apply_filter">Apply Filter</string>
+    <string name="search_providers">Search Providers</string>
+    <string name="save_change">Save Change</string>
+    <string name="you_have_new_proposal">You have new proposal</string>
+    <string name="click_to_show">click to show</string>
+    <string name="book_now">Book Now</string>
+    <string name="send_requerst">Check availability</string>
+    <string name="current_password">Current Password*</string>
+    <string name="re_enter_new_password">Re-Enter New Password*</string>
+    <string name="deactivate_your_account">Deactivate Your Account</string>
+    <string name="deactivate">Deactivate</string>
+    <string name="send">Send</string>
+    <string name="service_description">Service details</string>
+    <string name="service_start_time">Calendar*</string>
+    <string name="service_end_time">Service End Time*</string>
+    <string name="enter_message_here">Enter message here*</string>
+    <string name="i_am_looking">I am looking for</string>
+    <string name="search_provider">Search Providers</string>
+    <string name="sunday">Sunday</string>
+    <string name="monday">Monday</string>
+    <string name="tuesday">Tuesday</string>
+    <string name="wednesday">Wednesday</string>
+    <string name="thursday">Thursday</string>
+    <string name="friday">Friday</string>
+    <string name="saturday">Saturday</string>
+    <string name="proposal_message">Proposal Messages</string>
+    <string name="hours">Hours</string>
+    <string name="please_select_multipleof_15">please select only multiple of 15 for time</string>
+    <string name="booking_start_time">Booking Start Time</string>
+    <string name="booking_end_time">Booking End Time</string>
+    <string name="booking_amount">Booking Amount</string>
+    <string name="extend_hours">Extend Hours</string>
+    <string name="extend_service_request">Extend Service Request</string>
+    <string name="provider_profile">Provider Profile</string>
+    <string name="credits">Credits</string>
+    <string name="hold">Hold</string>
+    <string name="per_hours">/hour</string>
+    <string name="fixed">fixed</string>
+    <string name="expand_service">Extend Service</string>
+    <string name="download_invoice">Download Receipts</string>
+    <string name="are_you_cancel">Are you sure you want to cancel this service?</string>
+    <string name="provider_name">Provider Name</string>
+    <string name="search_keyword">Search Keyword</string>
+    <string name="pay_for_extend_service">Pay for extend service</string>
+    <string name="please_update_profile">Your profile may not updated, please update first</string>
+    <string name="admin_fees">Admin Fees</string>
+    <string name="date">Date</string>
+    <string name="transaction_id">Transaction ID</string>
+    <string name="deposit_history">Deposit History</string>
+    <string name="requested_amount">Requested Amount</string>
+    <string name="redeem_request_history">Redeem Request History</string>
+    <string name="payment_history">Accounting</string>
+    <string name="requested_date">Requested Date</string>
+    <string name="redeemed_amount">Redeemed Amount</string>
+    <string name="redeemed_date">Redeemed Date</string>
+    <string name="create_new_account">Create New Account</string>
+    <string name="available_now">Available Now</string>
+    <string name="booking_description">Booking Description</string>
+    <string name="new_password">New Password*</string>
+    <string name="confirm_new_password">Confirm New Password*</string>
+    <string name="continues">Continue</string>
+    <string name="please_enter_current_pass">Please enter current password</string>
+    <string name="please_enter_new_pass">Please enter new password</string>
+    <string name="password_miss_match">Password miss match</string>
+    <string name="account_settings">Account Settings</string>
+    <string name="please_enter_confirm_pass">Please enter confirm password</string>
+    <string name="descr">Description*</string>
+    <string name="enter_message">Enter Message*</string>
+    <string name="subjecta">Subject*</string>
+    <string name="about_mea">About Me*</string>
+    <string name="start_timea">Start*</string>
+    <string name="end_timea">End of service*</string>
+    <string name="completed_services">Services completed</string>
+
+
+    <string name="addressa">Address*</string>
+    <string name="raise_by_me">Raised by me</string>
+    <string name="paypal_email">Paypal Email*</string>
+    <string name="admin_feesa">Admin Fees</string>
+    <string name="task_hours">Task Hours</string>
+    <string name="status">Status</string>
+    <string name="extend_service_messages">Extend Service Messages</string>
+    <string name="duration">Duration</string>
+    <string name="cost">Cost</string>
+    <string name="paid">Paid</string>
+    <string name="total_services">Total Services</string>
+    <string name="sure_exit_app">Are you sure you want to exit app?</string>
+    <string name="sure_logout">Are you sure you want to logout?</string>
+    <string name="please_upload_your_photo">Please upload your photo</string>
+    <string name="enter_review">Enter Review*</string>
+    <string name="invoice">Invoice</string>
+    <string name="service_s_time">Service Start Time</string>
+    <string name="service_e_time">Service End Time</string>
+    <string name="booking_id">Booking Id</string>
+    <string name="booking_details">Booking Details</string>
+    <string name="admin_feesb">Admin Fees</string>
+    <string name="payment_type">Payment Type</string>
+    <string name="total_payable_amount">Total Payable Amount</string>
+    <string name="total_receivable_amount">Total Receivable Amount</string>
+    <string name="admin_commission">Admin Commission</string>
+    <string name="minimum_rating">Minimum Rating</string>
+    <string name="deposit_commission">Deposit Commission</string>
+    <string name="dispute_has_been_escalate_to_admin">Dispute has been escalated to admin</string>
+    <string name="close">Close</string>
+    <string name="haven_t_received_activation_email_yet"><u>Haven\'t received activation email yet?</u></string>
+    <string name="resend_activation_mail">Resend Activation Mail</string>
+    <string name="something_went_wrong">Something went wrong</string>
+    <string name="oops_brace_yourself_till_we_get_the_error_fixed">Oops..!! Brace yourself till we get the error fixed</string>
+    <string name="please_retry_after_sometime">Please retry after sometime.</string>
+    <string name="retry">Retry</string>
+    <string name="exit">Exit</string>
+    <string name="view_attachment"><u>View Attachment</u></string>
+    <string name="sync_data_message">Internet connection is not available. Last synced providerData will be displayed</string>
+
+
+    <string name="hours_to_complete">Please select hours to complete</string>
+    <string name="hours_required_by_provider">Service Hours</string>
+    <string name="hours_with_space">Hours</string>
+    <string name="service_hours">Service Hours</string>
+    <string name="wait_while_payment_confirm">Please wait while your payment is confirmed</string>
+    <string name="channel_name">Notification</string>
+
+    <string name="channel_description">this channel contains all the notification for this application.</string>
+    <string name="taskers">Taskers</string>
+    <string name="about">About</string>
+    <string name="availability">Availability</string>
+    <string name="my_ratings">My Ratings</string>
+    <string name="no_positive_ratings">No Positive Ratings</string>
+    <string name="positive_ratings">Positive Ratings</string>
+    <string name="tasks">Tasks</string>
+    <string name="search_service">Search Services</string>
+    <string name="confirm_delete_service">Are you sure you want to delete this service?</string>
+    <string name="delete">Delete</string>
+    <string name="service_detail">Service Detail</string>
+    <string name="confirm_account_deactivate">Are you sure you want to deactivate your account?</string>
+    <string name="please_enter_proper_deposit_amount">Please enter proper deposit amount.</string>
+    <string name="please_enter_valid_password">Password should be minimum 6 character long</string>
+    <string name="vali_contact_num">Contact Number should be between 10 to 15 digits only</string>
+    <string name="received_amount">Received Amount</string>
+    <string name="date_of_completion">Date of Completion</string>
+    <string name="per_hour_rate">Per hour rate</string>
+    <string name="total_working_hours">Total Working Hours</string>
+    <string name="currency">€</string>
+    <string name="message_no_connection">No Internet Connection</string>
+    <string name="message_internet_connected">Internet Connected</string>
+    <string name="enable_permission_from_setting">Permission Denied, Enable it from settings</string>
+    <string name="cancel_permissions">Required permissions are not granted</string>
+    <string name="info">Info</string>
+    <string name="customer">Customer</string>
+    <string name="individual_provider">Individual Provider</string>
+    <string name="company">Company</string>
+    <string name="company_name">Company name</string>
+    <string name="camera">Camera</string>
+    <string name="gallery">Gallery</string>
+    <string name="signin">Log in</string>
+    <string name="signup_login">Don\'t have account? <u>Sign up</u></string>
+    <string name="signin_text">Enter your credentials here</string>
+    <!--<string name="already_signin">Already Registered Sign In</string>-->
+    <string name="already_signin">Do you already have an account? <u>Login here!</u></string>
+    <string name="deactivate_account_content">If you do not think you will use bemyrider again and would like your account deleted, we can take  care of  this for you. Keep in mind that  you will not be able to reactivate  your account or retrieve any of the content or information you have  added. \n\n If you would still like your account deleted, click \"DEACTIVE MY ACCOUNT\".</string>
+    <!--<string name="signup_text">Enter your informations below in account</string>-->
+    <string name="signup_text">The first community of autonomous riders at the direct service of exhibitors</string>
+    <string name="contact_us_text">Enter your informations below in Contact us</string>
+    <string name="ratings_review">Ratings &amp; Reviews</string>
+    <string name="upcoming">UPCOMING</string>
+    <string name="ongoing">ON GOING</string>
+    <string name="past">PAST</string>
+    <string name="deliveries_type">Vehicle</string>
+    <string name="small_deliveries">E-Bike Deliveries</string>
+    <string name="medium_deliveries">Moto Deliveries</string>
+    <string name="large_deliveries">Auto Deliveries</string>
+    <string name="small">E-BIKE</string>
+    <string name="medium">MOTO</string>
+    <string name="large">AUTO</string>
+    <string name="sort">You choose</string>
+    <string name="ascending">Ascending</string>
+    <string name="descending">Descending</string>
+    <string name="delivery_type">Vehicle type</string>
+    <string name="courier_person_name">Courier Person Name</string>
+    <string name="notifications_title">Notifications</string>
+    <string name="edit">Edit</string>
+    <string name="create_account">Welcome to bemyrider</string>
+    <string name="signup_now">Sign Up Now</string>
+    <string name="guest_user">Guest User</string>
+    <string name="login_menu">Login</string>
+    <string name="please_select_delivery_type">Please Select Delivery Type...</string>
+    <string name="quick">Quick</string>
+    <string name="scheduled">Scheduled</string>
+    <string name="request_type">Request Type</string>
+    <string name="reset_filter">Reset Filter</string>
+    <string name="working_time">Hourly availability</string>
+    <string name="working_days">Daily availability</string>
+    <string name="time_validation">Minimum working hours must be 8</string>
+    <string name="past_time_validation">Current/Past time not allowed, please select future time</string>
+    <string name="uploaded_images">Uploaded Images</string>
+    <string name="cancel_dispute"><u>CANCEL DISPUTE</u></string>
+    <!--<string name="intro_lets_start"><![CDATA[<u>let\'s start</u>]]></string>-->
+    <string name="intro_lets_start">let\'s start</string>
+    <string name="intro_first_page_text"><![CDATA[<b>Welcome</b> to the first <b>community</b> of <b>autonomous riders</b> in <b>your city</b>]]></string>
+    <string name="skip">SKIP</string>
+    <string name="intro_second_page_text">Rider you are looking for, professional you find</string>
+    <string name="intro_third_page_text">Read the reviews, compare the service and choose the rider that best suits your needs</string>
+    <string name="intron_fourth_text">Chat with your rider in real time for timely management of the service</string>
+    <string name="intro_fifth_text"><![CDATA[Right <b>planning</b> is the <b>key</b> to any <b>successful</b> <b>business</b>]]></string>
+    <string name="intro_signin"><![CDATA[<u>Sign up</u>]]></string>
+
+    <string-array name="PayMethod">
+        <item>Wallet</item>
+        <item>Cash</item>
+    </string-array>
+    <string-array name="deliveryType_item">
+        <item>Select Delivery Type</item>
+        <item>Quick</item>
+        <item>Scheduled</item>
+    </string-array>
+    <string-array name="userType_item">
+        <item>Select User Type</item>
+        <item>Restaurant Owner</item>
+        <item>Courier Person</item>
+    </string-array>
+    <string-array name="navigation_drawer_items_array">
+        <item>Connect</item>
+        <item>Fixtures</item>
+        <item>Table</item>
+    </string-array>
+    <string-array name="spinnerItems">
+        <item>Select Category</item>
+        <item>Hair Cutting</item>
+        <item>Hair Cut</item>
+        <item>Why Hair Cut</item>
+    </string-array>
+    <string-array name="spinnerItems1">
+        <item>Select Service</item>
+        <item>Hair Cutting</item>
+        <item>Hair Cut</item>
+        <item>Why Hair Cut</item>
+    </string-array>
+    <string-array name="spinnerTime">
+        <item>Select Time</item>
+    </string-array>
+    <string-array name="spinnerMobile">
+        <item>+91</item>
+        <item>+90</item>
+        <item>+101</item>
+        <item>+80</item>
+    </string-array>
+    <string-array name="select_hours">
+        <item>Select Hours*</item>
+        <item>1 Hour</item>
+        <item>2 Hours</item>
+<!--        <item>3 Hours</item>-->
+<!--        <item>4 Hours</item>-->
+    </string-array>
+
+    <!-- Added by Keval-->
+    <string name="user_type_provider">Rider</string>
+    <string name="user_type_customer">Agency / Private</string>
+    <string name="signup_as">Sign Up As</string>
+    <string name="owner_profile_data">Owner Profile Data</string>
+    <string name="tax_data">Tax Data</string>
+    <string name="hint_company_name">Company name*</string>
+    <string name="vat">VAT</string>
+    <string name="hint_vat">VAT*</string>
+    <string name="hint_tax_id_code">Tax ID Code*</string>
+    <string name="tax_id_code">Tax ID Code</string>
+    <string name="hint_shop_address">Shop address*</string>
+    <string name="shop_address">Shop address</string>
+    <string name="hint_invoice_recipe_code">Electronic invoice recipient code</string>
+    <string name="invoice_recipe_code">Electronic Invoice Recipient Code</string>
+    <string name="hint_certified_mail">Certified mail address</string>
+    <string name="certified_mail">Certified Mail Address</string>
+    <string name="err_msg_company">Please provide company name</string>
+    <string name="err_msg_vat">Please provide VAT</string>
+    <string name="err_msg_tax_id_code">Please provide tax ID code</string>
+    <string name="err_msg_shop_address">Please provide shop address</string>
+    <string name="err_msg_invoice_recipe">Please provide invoice recipient code</string>
+    <string name="err_msg_certified_email">Please provide certified mail address</string>
+    <string name="back_press_msg">Please click BACK again to exit</string>
+    <string name="btnConnectText">Connect with Stripe</string>
+    <string name="dialogDisconnectText">Disconnect from Stripe?</string>
+    <string name="btnDisconnectText">Disconnect from Stripe</string>
+    <string name="stripe_conncent">Stripe Connect</string>
+    <string name="you_have_successfully_connected_your_stripe_account">You have successfully connected your stripe account</string>
+    <string name="stripe_payment">Stripe Payment</string>
+    <string name="summary">Summary</string>
+    <string name="pay">Pay</string>
+    <string name="payment_date">Payment Date</string>
+    <string name="description">Instructions and communications</string>
+    <string name="duration_of_service">Duration of service</string>
+    <string name="name">Name</string>
+    <string name="sub_total">Subtotal</string>
+    <string name="fees">Fees</string>
+    <string name="total_amount">Total Amount</string>
+    <string name="priceNew">Price</string>
+    <string name="msg_note_for_provider">If you do not wish to wait for your counter offer to be approved, you may go ahead and proceed with an initial service request. Please choose an option below…</string>
+    <string name="i_agree_to">I agree to</string>
+    <string name="terms_and_conditions">terms and conditions</string>
+    <string name="msg_terms_and_conditions">Please agree with terms and conditions</string>
+    <string name="lbl_hour">Hour</string>
+    <string name="lbl_hours">Hours</string>
+
+    <string name="lbl_city_of_birth">City of Birth</string>
+    <string name="lbl_city_of_birth_with_dot">City of Birth*</string>
+    <string name="lbl_date_of_birth">Date of Birth</string>
+    <string name="lbl_date_of_birth_with_dot">Date of Birth*</string>
+    <string name="lbl_city_of_residence">City of Residence</string>
+    <string name="lbl_city_of_residence_with_dot">City of Residence*</string>
+    <string name="lbl_residential_address">Residential Address</string>
+    <string name="lbl_residential_address_with_dot">Residential Address*</string>
+    <string name="lbl_hourly_rate_with_dot">Enter your hourly rate*</string>
+    <string name="lbl_vehicle_detail_with_dot">Vehicle model and equipment*</string>
+    <string name="err_msg_price_per_hour">Maximum hourly rate should be 12.5€/hour</string>
+    <string name="lbl_city_of_company">City of Company</string>
+    <string name="lbl_city_of_company_with_dot">City of Company*</string>
+    <string name="err_msg_city_of_company">Please Provide City of Company</string>
+    <string name="lbl_add_signature">Add Signature</string>
+    <string name="lbl_reset">Reset</string>
+    <string name="err_msg_signature">Please draw your signature</string>
+    <string name="lbl_vehicle_model_and_equipment">Vehicle model and Equipment</string>
+    <string name="err_permission">Permission Deny</string>
+    <string name="err_permission_camera">Camera Permission Deny</string>
+    <string name="err_permission_storage">Storage Permission Deny</string>
+    <string name="err_no_camera_in_device">There is not camera option on your device</string>
+</resources>

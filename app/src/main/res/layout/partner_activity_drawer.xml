@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/drawer_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="true">
+
+        <FrameLayout
+            android:id="@+id/content_frame_partner"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@+id/container_toolbar"
+            android:background="@mipmap/ic_search_background"
+            android:fitsSystemWindows="true">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:fitsSystemWindows="true"
+                android:layout_height="match_parent">
+
+                <include
+                    layout="@layout/toolbar"
+                    android:layout_width="match_parent"
+                    android:layout_height="?attr/actionBarSize" />
+
+            </RelativeLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_below="@+id/toolbar"
+                android:fitsSystemWindows="true"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="50dp"
+                    android:gravity="center"
+                    android:text="@string/i_am_looking"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/_15ssp"
+                    android:textStyle="bold" />
+
+                <Spinner
+                    android:id="@+id/sp_selectCat"
+                    style="@style/Base.Widget.AppCompat.Spinner.Underlined"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:backgroundTint="@color/white" />
+
+
+                <Spinner
+                    android:id="@+id/sp_selectSubCat"
+                    android:layout_width="match_parent"
+                    style="@style/Base.Widget.AppCompat.Spinner.Underlined"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:backgroundTint="@color/white" />
+
+
+                <Spinner
+                    android:id="@+id/sp_selectService"
+                    style="@style/Base.Widget.AppCompat.Spinner.Underlined"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:backgroundTint="@color/white" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/til_location"
+                    style="@style/TextLabel1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="5dp"
+                    android:layout_marginTop="12dp"
+                    android:layout_toEndOf="@+id/Sp_code"
+                    android:layout_marginLeft="5dp"
+                    android:layout_toRightOf="@+id/Sp_code">
+
+                    <AutoCompleteTextView
+                        android:id="@+id/txt_location_drawer"
+                        style="@style/StyledTilEditText1"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:drawableRight="@mipmap/ic_location"
+                        android:drawableEnd="@mipmap/ic_location"
+                        android:hint="@string/location"
+                        android:maxLines="3"
+                        android:textColor="@color/white"
+                        android:textColorHint="@color/white"
+                        android:textSize="@dimen/_13ssp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/til_date"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="5dp"
+                    android:layout_marginTop="12dp"
+                    android:layout_toEndOf="@+id/Sp_code"
+                    android:textColorHint="@color/white"
+                    app:theme="@style/TextLabel1"
+                    android:layout_marginLeft="5dp"
+                    android:layout_toRightOf="@+id/Sp_code">
+
+                    <EditText
+                        android:id="@+id/edt_date"
+                        style="@style/StyledTilEditText1"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:drawableRight="@mipmap/ic_calender"
+                        android:drawableEnd="@mipmap/ic_calender"
+                        android:focusable="false"
+                        android:hint="@string/select_date"
+                        android:inputType="date"
+                        android:maxLines="1"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/_13ssp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+
+                <!--<android.support.design.widget.TextInputLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="5dp"
+                            android:layout_marginTop="12dp"
+                            android:layout_toEndOf="@+id/Sp_code"
+                            android:textColorHint="@color/white"
+                            app:theme="@style/TextLabel1">
+
+                            <EditText
+                                android:id="@+id/Edt_selTime"
+                                style="@style/StyledTilEditText1"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:drawableEnd="@mipmap/ic_watch"
+                                android:drawableEnd="@mipmap/ic_calender"
+                                android:hint="Select Time"
+                                android:inputType="time"
+                                android:maxLines="1"
+                                android:textColor="@color/white"
+                                android:textSize="16dp" />
+                        </android.support.design.widget.TextInputLayout>-->
+
+
+                <Button
+                    android:id="@+id/btn_Search"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginBottom="5dp"
+                    android:layout_marginTop="30dp"
+                    android:background="@drawable/button_border_white"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
+                    android:textSize="@dimen/_12ssp"
+                    android:text="@string/search_provider"
+                    android:textColor="@color/white" />
+
+            </LinearLayout>
+        </FrameLayout>
+    </ScrollView>
+
+    <!--</RelativeLayout>-->
+
+    <!-- custom drawer --><!--<RelativeLayout--><!--android:id="@+id/layout_drawer"--><!--android:layout_gravity="start"--><!--android:layout_width="100dp"--><!--android:layout_height="wrap_content">-->
+
+    <ListView
+        android:id="@+id/left_drawer"
+        android:layout_width="100dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:background="@color/purple"
+        android:clickable="true"
+        android:divider="@null"
+        android:dividerHeight="@null"
+        android:listSelector="@drawable/list_back_selector" />
+
+    <!--</RelativeLayout>-->
+
+</androidx.drawerlayout.widget.DrawerLayout>

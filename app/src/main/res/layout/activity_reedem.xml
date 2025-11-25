@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_marginTop="20dp"
+    android:layout_marginStart="16dp"
+    android:layout_marginRight="16dp"
+    android:layout_marginBottom="8dp"
+    android:orientation="vertical"
+    android:layout_height="match_parent">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/Txt_show_balvalue"
+            android:textSize="@dimen/_12ssp"
+            android:textColor="@color/button"
+            android:layout_alignParentRight="true"
+            android:layout_width="wrap_content"
+            android:layout_marginStart="5dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_marginLeft="5dp" />
+
+        <TextView
+            android:id="@+id/Txt_availBal"
+            android:layout_toStartOf="@+id/Txt_show_balvalue"
+            android:layout_width="wrap_content"
+            android:text="@string/availbalance"
+            android:textSize="@dimen/_12ssp"
+            android:textColor="@color/text"
+            android:layout_height="wrap_content"
+            android:layout_toLeftOf="@+id/Txt_show_balvalue" />
+
+    </RelativeLayout>
+
+    <!--<TextView-->
+        <!--android:layout_marginLeft="8dp"-->
+        <!--android:layout_marginRight="8dp"-->
+        <!--android:layout_marginTop="10dp"-->
+        <!--android:text="@string/email_id"-->
+        <!--android:textColor="@color/button"-->
+        <!--android:textSize="16dp"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content" />-->
+    <!---->
+    <!--<RelativeLayout-->
+        <!--android:layout_marginLeft="8dp"-->
+        <!--android:layout_marginRight="8dp"-->
+        <!--android:layout_marginTop="5dp"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content">-->
+
+        <!--<ImageView-->
+            <!--android:id="@+id/Img_edit"-->
+            <!--android:background="@mipmap/ic_edit_03"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_marginLeft="4dp"-->
+            <!--android:layout_centerVertical="true"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_alignParentEnd="true"-->
+            <!--android:layout_alignParentRight="true" />-->
+
+        <!--<TextView-->
+            <!--android:id="@+id/Edt_emailId"-->
+            <!--android:textSize="18dp"-->
+            <!--android:textColorHint="@color/text"-->
+            <!--android:text="Sumitrathod01@gmail.com"-->
+            <!--android:layout_toLeftOf="@+id/Img_edit"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:textColor="@color/black"-->
+            <!--android:layout_height="wrap_content" />-->
+
+    <!--</RelativeLayout>-->
+
+    <LinearLayout
+        android:layout_marginStart="6dp"
+        android:layout_marginRight="6dp"
+        android:layout_marginTop="10dp"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="6dp">
+
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_marginTop="12dp"
+            android:layout_height="wrap_content">
+
+            <EditText
+                android:id="@+id/Edt_enterEmail"
+                android:hint="@string/email_id"
+                android:singleLine="true"
+                android:inputType="textEmailAddress"
+                android:textSize="@dimen/_13ssp"
+                android:textColor="@color/text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                style="@style/StyledTilEditText"
+                />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_marginTop="8dp"
+            android:layout_height="wrap_content">
+
+            <EditText
+                android:id="@+id/Edt_enterAmount"
+                android:hint="@string/amount"
+                android:singleLine="true"
+                android:inputType="number"
+                android:textSize="@dimen/_13ssp"
+                android:textColor="@color/text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                style="@style/StyledTilEditText"
+                />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_marginTop="8dp"
+            android:layout_height="wrap_content">
+
+            <EditText
+                android:id="@+id/Edt_desc"
+                android:hint="@string/desc"
+                android:maxLines="3"
+                android:textSize="@dimen/_13ssp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                style="@style/StyledTilEditText"
+                />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <Button
+            android:id="@+id/Btn_submit"
+            android:layout_marginTop="30dp"
+            android:layout_width="120dp"
+            android:textSize="@dimen/_12ssp"
+            android:layout_gravity="center"
+            android:background="@drawable/button_style_filltype_two"
+            android:textColor="@color/white"
+            android:text="@string/submit"
+            android:layout_marginBottom="5dp"
+            android:layout_height="40dp" />
+
+
+    </LinearLayout>
+
+
+</LinearLayout>
