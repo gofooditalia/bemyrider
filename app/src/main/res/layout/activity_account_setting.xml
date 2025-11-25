@@ -4,7 +4,9 @@
     <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="true"
+        android:paddingTop="?attr/actionBarSize">
 
         <androidx.appcompat.widget.LinearLayoutCompat
             android:layout_width="match_parent"
@@ -155,6 +157,20 @@
                 android:layout_marginTop="@dimen/_14sdp"
                 android:background="@drawable/button_style_filltype_two"
                 android:text="@string/continues"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="@dimen/_13ssp" />
+
+            <!-- Test Notification Button (Debug) -->
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_test_notification"
+                style="@style/font_regular"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="@dimen/_14sdp"
+                android:background="@drawable/button_style_filltype_two"
+                android:text="🔔 Test Notifiche Push"
                 android:textAllCaps="false"
                 android:textColor="@color/white"
                 android:textSize="@dimen/_13ssp" />

@@ -18,7 +18,6 @@
             android:contentInsetEnd="0dp"
             android:contentInsetRight="0dp"
             android:elevation="0dp"
-            android:fitsSystemWindows="false"
             app:contentInsetEnd="0dp"
             app:contentInsetLeft="0dp"
             app:contentInsetRight="0dp"

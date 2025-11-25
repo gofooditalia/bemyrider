@@ -311,7 +311,7 @@
             android:name="com.yalantis.ucrop.UCropActivity"
             android:exported="false"
             android:screenOrientation="portrait"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+            android:theme="@style/UCropTheme" />
         <activity
             android:name=".activity.SignupActivity"
             android:configChanges="keyboardHidden|screenSize|screenLayout|orientation"

@@ -7,7 +7,11 @@
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:background="@color/white"
-        android:padding="@dimen/_14sdp">
+        android:fitsSystemWindows="true"
+        android:paddingTop="?attr/actionBarSize"
+        android:paddingStart="@dimen/_14sdp"
+        android:paddingEnd="@dimen/_14sdp"
+        android:paddingBottom="@dimen/_14sdp">
 
         <androidx.appcompat.widget.LinearLayoutCompat
             android:id="@+id/layout_subject"

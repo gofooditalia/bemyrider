@@ -96,6 +96,7 @@ public class EditProfileActivity extends AppCompatActivity {
     private static final String TAG = "EditProfileActivity";
     private Context mContext;
     private Activity mActivity;
+    private boolean isDestroyed = false; // Flag per evitare callback dopo distruzione
 
     private PermissionUtils permissionUtils;
     private ConnectionManager connectionManager;
@@ -575,6 +576,11 @@ public class EditProfileActivity extends AppCompatActivity {
                 ProfilePojo.class, false, new WebServiceCall.OnResultListener() {
             @Override
             public void onResult(boolean status, Object obj) {
+                // Evita callback se l'activity è stata distrutta
+                if (isDestroyed || isFinishing()) {
+                    return;
+                }
+                
                 binding.progressUpdateProfile.setVisibility(View.GONE);
                 binding.btnUpdateProfile.setClickable(true);
 
@@ -602,7 +608,10 @@ public class EditProfileActivity extends AppCompatActivity {
                     }
                     finish();
                 } else {
-                    Toast.makeText(mContext, (String) obj, Toast.LENGTH_SHORT).show();
+                    // Mostra messaggio solo se l'activity è ancora valida
+                    if (!isFinishing() && !isDestroyed()) {
+                        Toast.makeText(mContext, (String) obj, Toast.LENGTH_SHORT).show();
+                    }
                 }
 
             }
@@ -1068,6 +1077,10 @@ public class EditProfileActivity extends AppCompatActivity {
     private void openCropActivity(Uri sourceUri, Uri destinationUri) {
         UCrop.Options options = new UCrop.Options();
         options.setActiveControlsWidgetColor(ContextCompat.getColor(mContext, R.color.button));
+        options.setToolbarTitle("Edit Photo");
+        options.setStatusBarColor(ContextCompat.getColor(mContext, R.color.white));
+        options.setToolbarColor(ContextCompat.getColor(mContext, R.color.white));
+        options.setToolbarWidgetColor(ContextCompat.getColor(mContext, R.color.button));
         Intent myIntent = UCrop.of(sourceUri, destinationUri)
                 .withOptions(options)
                 .withAspectRatio(5f, 5f)
@@ -1458,13 +1471,20 @@ public class EditProfileActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
+        isDestroyed = true; // Imposta flag prima di distruggere
+        
         try {
             connectionManager.unregisterReceiver();
         } catch (Exception e) {
             e.printStackTrace();
         }
+        // Cancella le chiamate API in corso per evitare Toast dopo la distruzione
         Utils.cancelAsyncTask(editProfileAsync);
         Utils.cancelAsyncTask(countryCodeAsync);
+        
+        // Imposta flag per evitare callback dopo la distruzione
+        editProfileAsync = null;
+        countryCodeAsync = null;
 
         /** clear cache dir of picture which is taken photo from camera */
         Utils.clearCameraCache(mContext);

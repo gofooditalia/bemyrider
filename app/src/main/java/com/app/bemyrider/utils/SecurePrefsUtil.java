@@ -87,10 +87,11 @@ public class SecurePrefsUtil {
     }
 
     public void clearPrefs() {
-        // Mantieni token e impostazioni lingua durante il logout se necessario
+        // Mantieni token, impostazioni lingua e flag intro durante il logout se necessario
         String device_id = sharedPreferences.getString("device_token", DEFAULT_STRING);
         String lanId = sharedPreferences.getString("lanId", DEFAULT_STRING);
         String currency = sharedPreferences.getString("CurrencySign", DEFAULT_STRING);
+        boolean hasSeenIntro = sharedPreferences.getBoolean("hasSeenIntro", false);
         
         sharedPreferences.edit().clear().apply();
         
@@ -98,6 +99,7 @@ public class SecurePrefsUtil {
         sharedPreferences.edit().putString("device_token", device_id).apply();
         sharedPreferences.edit().putString("lanId", lanId).apply();
         sharedPreferences.edit().putString("CurrencySign", currency).apply();
+        sharedPreferences.edit().putBoolean("hasSeenIntro", hasSeenIntro).apply();
     }
     
     /**

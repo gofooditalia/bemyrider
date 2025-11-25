@@ -6,7 +6,8 @@
         android:id="@+id/activity_service_detail_"
         android:background="@color/white"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="true">
 
         <RelativeLayout
             android:id="@+id/rlMain"

@@ -5,6 +5,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/white"
+        android:fitsSystemWindows="true"
+        android:paddingTop="?attr/actionBarSize"
         android:overScrollMode="never">
 
         <androidx.appcompat.widget.LinearLayoutCompat
@@ -12,6 +14,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/_14sdp"
+            android:layout_marginTop="@dimen/_20sdp"
             android:background="@color/white"
             android:orientation="vertical">
 

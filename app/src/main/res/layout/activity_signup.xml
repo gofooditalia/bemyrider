@@ -15,12 +15,13 @@
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="@dimen/_12sdp">
+                android:layout_margin="@dimen/_12sdp"
+                android:paddingTop="@dimen/_40sdp"
+                android:paddingBottom="@dimen/_40sdp">
 
                 <androidx.appcompat.widget.LinearLayoutCompat
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentTop="true"
                     android:gravity="center"
                     android:orientation="vertical">
 
@@ -28,9 +29,11 @@
                         style="@style/font_medium"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/_20sdp"
+                        android:layout_marginBottom="@dimen/_10sdp"
                         android:text="@string/create_account"
                         android:textColor="@color/text"
-                        android:textSize="@dimen/_20ssp" />
+                        android:textSize="@dimen/_22ssp" />
 
                     <RadioGroup
                         android:id="@+id/rgUserType"
@@ -68,27 +71,28 @@
                         style="@style/font_light"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:paddingTop="@dimen/_8sdp"
+                        android:layout_marginTop="@dimen/_8sdp"
+                        android:layout_marginBottom="@dimen/_15sdp"
                         android:text="@string/signup_text"
                         android:textColor="@color/text_light"
-                        android:textSize="@dimen/_12ssp" />
+                        android:textSize="@dimen/_13ssp" />
 
                     <androidx.appcompat.widget.AppCompatTextView
                         style="@style/font_medium"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/_10sdp"
-                        android:layout_marginBottom="@dimen/_3sdp"
+                        android:layout_marginTop="@dimen/_15sdp"
+                        android:layout_marginBottom="@dimen/_10sdp"
                         android:gravity="center_horizontal"
                         android:text="@string/signup_as"
                         android:textColor="@color/text"
-                        android:textSize="@dimen/_16ssp" />
+                        android:textSize="@dimen/_15ssp" />
 
                     <RelativeLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="@dimen/_10sdp"
-                        android:layout_marginBottom="@dimen/_3sdp">
+                        android:layout_marginBottom="@dimen/_20sdp">
 
                         <androidx.appcompat.widget.LinearLayoutCompat
                             android:id="@+id/linlayProvider"
@@ -104,8 +108,8 @@
 
                             <ImageView
                                 android:id="@+id/imgProvider"
-                                android:layout_width="@dimen/_100sdp"
-                                android:layout_height="@dimen/_100sdp"
+                                android:layout_width="@dimen/_90sdp"
+                                android:layout_height="@dimen/_90sdp"
                                 android:src="@drawable/ic_user_type_provider" />
 
                             <androidx.appcompat.widget.AppCompatTextView
@@ -131,8 +135,8 @@
 
                             <ImageView
                                 android:id="@+id/imgCustomer"
-                                android:layout_width="@dimen/_100sdp"
-                                android:layout_height="@dimen/_100sdp"
+                                android:layout_width="@dimen/_90sdp"
+                                android:layout_height="@dimen/_90sdp"
                                 android:src="@drawable/ic_user_type_customer" />
 
                             <androidx.appcompat.widget.AppCompatTextView
@@ -199,7 +203,8 @@
                         android:id="@+id/til_signup_email"
                         style="@style/StyledTilInput"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/_15sdp">
 
                         <androidx.appcompat.widget.AppCompatEditText
                             android:id="@+id/et_signup_email"
@@ -270,6 +275,7 @@
                         style="@style/StyledTilInput"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/_10sdp"
                         app:passwordToggleDrawable="@drawable/show_password_selector"
                         app:passwordToggleEnabled="true">
 
@@ -290,6 +296,7 @@
                         style="@style/StyledTilInput"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/_10sdp"
                         app:passwordToggleDrawable="@drawable/show_password_selector"
                         app:passwordToggleEnabled="true">
 
@@ -309,6 +316,7 @@
                     <androidx.appcompat.widget.LinearLayoutCompat
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/_15sdp"
                         android:orientation="horizontal">
 
                         <CheckBox
@@ -338,8 +346,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
-                        android:layout_marginTop="@dimen/_16sdp"
-                        android:layout_marginBottom="@dimen/_16sdp"
+                        android:layout_marginTop="@dimen/_20sdp"
+                        android:layout_marginBottom="@dimen/_20sdp"
                         android:background="@drawable/button_style_filltype_two"
                         android:orientation="horizontal">
 
@@ -373,6 +381,7 @@
                     <androidx.appcompat.widget.LinearLayoutCompat
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/_20sdp"
                         android:orientation="vertical">
 
                         <androidx.appcompat.widget.AppCompatTextView
@@ -380,7 +389,8 @@
                             style="@style/font_light"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginBottom="@dimen/_16sdp"
+                            android:layout_marginTop="@dimen/_10sdp"
+                            android:layout_marginBottom="@dimen/_15sdp"
                             android:gravity="center"
                             android:text="@string/already_signin"
                             android:textColor="@color/button"

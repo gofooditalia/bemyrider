@@ -304,4 +304,12 @@
         <item name="colorAccent">@color/tex</item>
     </style>
 
+    <!-- Tema personalizzato per UCropActivity per gestire correttamente la status bar -->
+    <style name="UCropTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:statusBarColor">@color/white</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
+        <item name="android:windowTranslucentStatus">false</item>
+        <item name="android:fitsSystemWindows">true</item>
+    </style>
+
 </resources>

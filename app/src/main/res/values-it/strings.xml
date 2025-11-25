@@ -97,7 +97,7 @@
     <string name="contact">Contatto</string>
     <string name="time">Tempo</string>
     <string name="booked_time">Tempo prenotato</string>
-    <string name="price">Tariffa</string>
+    <string name="price">Tariffa Oraria</string>
     <string name="payment_pref">Preferenza di pagamento</string>
     <string name="service_address">Indirizzo del servizio</string>
     <string name="cancel_by">Annullato da</string>

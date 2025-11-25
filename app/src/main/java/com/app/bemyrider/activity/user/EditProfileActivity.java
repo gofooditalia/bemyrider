@@ -849,6 +849,10 @@ public class EditProfileActivity extends AppCompatActivity {
     private void openCropActivity(Uri sourceUri, Uri destinationUri) {
         UCrop.Options options = new UCrop.Options();
         options.setActiveControlsWidgetColor(ContextCompat.getColor(mContext, R.color.button));
+        options.setToolbarTitle("Edit Photo");
+        options.setStatusBarColor(ContextCompat.getColor(mContext, R.color.white));
+        options.setToolbarColor(ContextCompat.getColor(mContext, R.color.white));
+        options.setToolbarWidgetColor(ContextCompat.getColor(mContext, R.color.button));
         Intent myIntent = UCrop.of(sourceUri, destinationUri)
                 .withOptions(options)
                 .withAspectRatio(5f, 5f)

@@ -33,6 +33,7 @@ import com.app.bemyrider.model.CommonPojo;
 import com.app.bemyrider.model.LanguagePojo;
 import com.app.bemyrider.model.LanguagePojoItem;
 import com.app.bemyrider.utils.ConnectionManager;
+import com.app.bemyrider.utils.NotificationTestHelper;
 import com.app.bemyrider.utils.PrefsUtil;
 import com.app.bemyrider.utils.Utils;
 
@@ -87,6 +88,12 @@ public class AccountSettingActivity extends AppCompatActivity {
         });
 
         binding.imgDown.setOnClickListener(v -> binding.spSelectLanSetting.performClick());
+
+        // Pulsante di test notifiche push
+        binding.btnTestNotification.setOnClickListener(v -> {
+            NotificationTestHelper.testNotification(AccountSettingActivity.this);
+            Toast.makeText(AccountSettingActivity.this, "Notifica di test inviata! Controlla il suono e la notifica.", Toast.LENGTH_LONG).show();
+        });
 
         binding.btnContinueSetting.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -380,6 +387,20 @@ public class AccountSettingActivity extends AppCompatActivity {
             finish();
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 1001) { // POST_NOTIFICATIONS permission
+            if (grantResults.length > 0 && grantResults[0] == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                // Permesso concesso, mostra la notifica
+                NotificationTestHelper.testNotification(AccountSettingActivity.this);
+                Toast.makeText(AccountSettingActivity.this, "Permesso concesso! Notifica di test inviata.", Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(AccountSettingActivity.this, "Permesso notifiche negato. Vai alle impostazioni per abilitarlo.", Toast.LENGTH_LONG).show();
+            }
+        }
     }
 
     @Override

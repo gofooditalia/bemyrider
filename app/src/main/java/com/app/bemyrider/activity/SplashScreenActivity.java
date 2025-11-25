@@ -445,7 +445,24 @@ public class SplashScreenActivity extends AppCompatActivity {
     }
     
     private void proceedWithLoginFlow() {
-        if (securePrefs.readString("lanId").equals("")) {
+        // Controlla se le slide di introduzione sono state già mostrate
+        boolean hasSeenIntro = securePrefs.readBoolean("hasSeenIntro");
+        
+        if (!hasSeenIntro) {
+            // Prima volta: mostra le slide di introduzione
+            String langCode = "it"; // Default italiano
+            if (!securePrefs.readString("lanId").equals("")) {
+                // Se c'è già una lingua salvata, usala
+                if ("2".equals(securePrefs.readString("lanId"))) langCode = "fr";
+                else if ("3".equals(securePrefs.readString("lanId"))) langCode = "pt";
+                else if ("4".equals(securePrefs.readString("lanId"))) langCode = "it";
+                else if ("1".equals(securePrefs.readString("lanId"))) langCode = "en";
+            }
+            LocaleManager.setLocale(context, langCode);
+            Intent intent = new Intent(SplashScreenActivity.this, IntroductionActivity.class);
+            startActivity(intent);
+            finish();
+        } else if (securePrefs.readString("lanId").equals("")) {
             // Se non c'è lingua, mostra i controlli per sceglierla
             if (sp_select_lan != null) sp_select_lan.setVisibility(View.VISIBLE);
             if (btn_continue != null) btn_continue.setVisibility(View.VISIBLE);

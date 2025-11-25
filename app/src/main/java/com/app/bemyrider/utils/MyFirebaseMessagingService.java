@@ -12,6 +12,7 @@ import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
+import android.util.Log;
 
 import com.app.bemyrider.activity.SignupActivity;
 import com.app.bemyrider.activity.partner.Partner_DisputeDetail_Activity;
@@ -20,7 +21,10 @@ import com.app.bemyrider.activity.partner.PartnerServiceRequestDetailsActivity;
 import com.app.bemyrider.activity.user.BookedServiceDetailActivity;
 import com.app.bemyrider.activity.user.MessageDetailActivity;
 
+import com.app.bemyrider.AsyncTask.WebServiceCall;
 import com.app.bemyrider.R;
+import com.app.bemyrider.WebServices.WebServiceUrl;
+import com.app.bemyrider.model.CommonPojo;
 import com.app.bemyrider.model.EventBusMessage;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
@@ -28,6 +32,7 @@ import com.google.firebase.messaging.RemoteMessage;
 import org.greenrobot.eventbus.EventBus;
 
 import java.util.Date;
+import java.util.LinkedHashMap;
 
 /**
  * Created by nct33 on 13/9/17.
@@ -38,9 +43,87 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     private static final String TAG = "MyFirebaseMessaging";
 
     @Override
-    public void onNewToken(String s) {
-        PrefsUtil.with(getApplicationContext()).write("device_token", s);
-        super.onNewToken(s);
+    public void onNewToken(String token) {
+        Log.d(TAG, "New FCM token received: " + token);
+        
+        // Salva il token usando SecurePrefsUtil per coerenza con il resto dell'app
+        SecurePrefsUtil securePrefs = null;
+        try {
+            securePrefs = SecurePrefsUtil.with(getApplicationContext());
+            securePrefs.write("device_token", token);
+            Log.d(TAG, "Token saved to SecurePrefsUtil");
+        } catch (Exception e) {
+            Log.e(TAG, "Error saving token to SecurePrefsUtil, falling back to PrefsUtil", e);
+            // Fallback al vecchio sistema se SecurePrefsUtil non è disponibile
+            PrefsUtil.with(getApplicationContext()).write("device_token", token);
+        }
+        
+        super.onNewToken(token);
+        
+        // Invia il token al backend se l'utente è già loggato
+        sendTokenToBackend(token, securePrefs);
+    }
+    
+    /**
+     * Invia il device token al backend se l'utente è loggato.
+     * Usa l'endpoint edit profile con solo user_id e device_token.
+     */
+    private void sendTokenToBackend(String token, SecurePrefsUtil securePrefs) {
+        try {
+            // Usa SecurePrefsUtil se disponibile, altrimenti PrefsUtil
+            String userId = null;
+            if (securePrefs != null) {
+                userId = securePrefs.readString("UserId");
+            } else {
+                userId = PrefsUtil.with(getApplicationContext()).readString("UserId");
+            }
+            
+            // Verifica se l'utente è loggato
+            if (userId == null || userId.isEmpty()) {
+                Log.d(TAG, "User not logged in, skipping token update to backend");
+                return;
+            }
+            
+            Log.d(TAG, "User logged in (ID: " + userId + "), sending token to backend");
+            
+            // Prepara i parametri per la chiamata API
+            LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
+            textParams.put("user_id", userId);
+            textParams.put("device_token", token);
+            
+            // Chiama l'endpoint edit profile con solo user_id e device_token
+            // Il backend dovrebbe accettare solo questi parametri per aggiornare il token
+            new WebServiceCall(
+                getApplicationContext(),
+                WebServiceUrl.URL_EDIT_PROFILE,
+                textParams,
+                CommonPojo.class,
+                false, // Non mostrare dialog di progresso per chiamate in background
+                new WebServiceCall.OnResultListener() {
+                    @Override
+                    public void onResult(boolean status, Object obj) {
+                        if (status) {
+                            Log.d(TAG, "Device token successfully updated on backend");
+                        } else {
+                            Log.e(TAG, "Failed to update device token on backend: " + obj);
+                        }
+                    }
+                    
+                    @Override
+                    public void onAsync(android.os.AsyncTask asyncTask) {
+                        // Non necessario per la nuova implementazione
+                    }
+                    
+                    @Override
+                    public void onCancelled() {
+                        Log.w(TAG, "Token update request cancelled");
+                    }
+                }
+            );
+            
+        } catch (Exception e) {
+            Log.e(TAG, "Error sending token to backend", e);
+        }
     }
 
     @Override
@@ -207,13 +290,18 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
                 int importance = NotificationManager.IMPORTANCE_HIGH;
 
-                NotificationChannel mChannel = new NotificationChannel(Ch_id, name, importance);
-                AudioAttributes audioAttributes = new AudioAttributes.Builder()
-                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                        .setUsage(AudioAttributes.USAGE_ALARM)
-                        .build();
-                mChannel.setSound(defaultSoundUri, audioAttributes);
-                notificationManager.createNotificationChannel(mChannel);
+                NotificationChannel mChannel = notificationManager.getNotificationChannel(Ch_id);
+                if (mChannel == null) {
+                    mChannel = new NotificationChannel(Ch_id, name, importance);
+                    AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                            .setUsage(AudioAttributes.USAGE_NOTIFICATION_RINGTONE)
+                            .build();
+                    mChannel.setSound(defaultSoundUri, audioAttributes);
+                    mChannel.enableVibration(true);
+                    mChannel.setShowBadge(true);
+                    notificationManager.createNotificationChannel(mChannel);
+                }
 
                 // Create a notification and set the notification channel.
                 /*.setSmallIcon(R.drawable.notify)*/

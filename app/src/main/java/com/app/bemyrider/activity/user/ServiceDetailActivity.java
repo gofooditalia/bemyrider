@@ -11,8 +11,12 @@ import android.text.Html;
 import android.text.TextUtils;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Toast;
+import android.os.Build;
+import android.graphics.Color;
+import androidx.core.view.WindowInsetsControllerCompat;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;

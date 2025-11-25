@@ -33,8 +33,7 @@ public class PermissionUtils {
     }
 
     public static boolean isAndroid13() {
-//        return (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU);
-        return false;
+        return (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU);
     }
 
     public void checkNotificationPermission(int REQ_CODE_NOTIFICATION) {
@@ -50,21 +49,15 @@ public class PermissionUtils {
     }
 
     public void checkStoragePermission() {
-//        String camera = Manifest.permission.CAMERA;
-        String read = Manifest.permission.READ_EXTERNAL_STORAGE;
-
-//        if (isAndroid13())
-//            read = Manifest.permission.READ_MEDIA_IMAGES;
-//        else
-//            read = Manifest.permission.READ_EXTERNAL_STORAGE;
-
-//        if (isCameraPermissionAlso) {
-//            if (isGranted(read) && isGranted(camera)) {
-//                listener.onPermissionGranted();
-//            } else {
-//                checkPermission(camera, read);
-//            }
-//        } else {
+        String read;
+        
+        // Android 13+ usa READ_MEDIA_IMAGES invece di READ_EXTERNAL_STORAGE
+        if (isAndroid13()) {
+            read = Manifest.permission.READ_MEDIA_IMAGES;
+        } else {
+            read = Manifest.permission.READ_EXTERNAL_STORAGE;
+        }
+        
         if (isGranted(read)) {
             listener.onStoragePermissionGranted();
         } else {
@@ -72,7 +65,6 @@ public class PermissionUtils {
                     mActivity, new String[]{read}, REQ_CODE_STORAGE
             );
         }
-//        }
     }
 
     public void checkCameraPermission() {

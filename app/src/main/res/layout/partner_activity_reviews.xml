@@ -7,6 +7,8 @@
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:background="@color/white"
+        android:fitsSystemWindows="true"
+        android:paddingTop="?attr/actionBarSize"
         tools:context="com.app.bemyrider.activity.partner.PartnerReviewsActivity">
 
         <androidx.swiperefreshlayout.widget.SwipeRefreshLayout

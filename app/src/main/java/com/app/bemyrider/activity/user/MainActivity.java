@@ -53,6 +53,7 @@ import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.LocaleManager;
 import com.app.bemyrider.utils.Log;
 import com.app.bemyrider.utils.PrefsUtil;
+import com.app.bemyrider.utils.SecurePrefsUtil;
 import com.app.bemyrider.utils.Utils;
 
 import org.greenrobot.eventbus.EventBus;
@@ -363,25 +364,48 @@ public class MainActivity extends AppCompatActivity {
     private void serviceCallLogout() {
         LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
 
-        textParams.put("user_id", PrefsUtil.with(MainActivity.this).readString("UserId"));
-        textParams.put("device_token", PrefsUtil.with(MainActivity.this).readString("device_token"));
+        SecurePrefsUtil securePrefs = SecurePrefsUtil.with(MainActivity.this);
+        PrefsUtil prefsUtil = PrefsUtil.with(MainActivity.this);
+        
+        // Fallback a PrefsUtil se SecurePrefsUtil non ha UserId
+        String userId = securePrefs.readString("UserId");
+        if (userId == null || userId.isEmpty()) {
+            userId = prefsUtil.readString("UserId");
+        }
+        
+        String deviceToken = securePrefs.readString("device_token");
+        if (deviceToken == null || deviceToken.isEmpty()) {
+            deviceToken = prefsUtil.readString("device_token");
+        }
+        
+        textParams.put("user_id", userId != null ? userId : "");
+        textParams.put("device_token", deviceToken != null ? deviceToken : "");
 
 
         new WebServiceCall(MainActivity.this, WebServiceUrl.URL_LOGOUT, textParams,
                 CommonPojo.class, true, new WebServiceCall.OnResultListener() {
             @Override
             public void onResult(boolean status, Object obj) {
-                if (status) {
-                    File offlineFile = new File(getFilesDir().getPath(), "/offline.json");
-                    if (offlineFile.exists()) {
-                        Log.e(TAG, "Delete Offline File :: ");
-                        offlineFile.delete();
-                    }
-                    PrefsUtil.with(MainActivity.this).clearPrefs();
-                    startActivity(new Intent(MainActivity.this, LoginActivity.class));
-                    finish();
-                } else {
-                    Toast.makeText(MainActivity.this, (String) obj, Toast.LENGTH_SHORT).show();
+                // Anche se l'API fallisce, procediamo con il logout locale
+                File offlineFile = new File(getFilesDir().getPath(), "/offline.json");
+                if (offlineFile.exists()) {
+                    Log.e(TAG, "Delete Offline File :: ");
+                    offlineFile.delete();
+                }
+                
+                // Pulisci sia SecurePrefsUtil che PrefsUtil per sicurezza
+                SecurePrefsUtil.with(MainActivity.this).clearPrefs();
+                PrefsUtil.with(MainActivity.this).clearPrefs();
+                
+                // Vai a LoginActivity con flag per pulire lo stack
+                Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+                finish();
+                
+                if (!status) {
+                    // Mostra messaggio solo se necessario, ma procedi comunque
+                    Toast.makeText(MainActivity.this, getString(R.string.logout), Toast.LENGTH_SHORT).show();
                 }
             }
 

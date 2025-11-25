@@ -19,6 +19,7 @@ import com.app.bemyrider.R;
 
 import com.app.bemyrider.activity.SignupActivity;
 import com.app.bemyrider.model.IntroductionModel;
+import com.app.bemyrider.utils.SecurePrefsUtil;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -55,6 +56,12 @@ public class IntroSliderAdapter extends RecyclerView.Adapter<IntroSliderAdapter.
                     Picasso.get().load(R.drawable.intro_logo).placeholder(R.drawable.intro_logo).into(viewHolder.logoPage1);
                     viewHolder.txtPage1.setText(HtmlCompat.fromHtml(sliderItem.getPageText(),HtmlCompat.FROM_HTML_MODE_LEGACY));
                     viewHolder.txtBtn1.setText(HtmlCompat.fromHtml(sliderItem.getBtnText(),HtmlCompat.FROM_HTML_MODE_LEGACY));
+                    
+                    // Listener per il pulsante "Let's Start" nella prima slide
+                    viewHolder.txtBtn1.setOnClickListener(v -> {
+                        // Vai alla slide successiva
+                        // Il ViewPager gestirà lo scroll
+                    });
                 } else {
                     viewHolder.relPageFirst.setVisibility(View.GONE);
                     viewHolder.relPageAnother.setVisibility(View.VISIBLE);
@@ -70,6 +77,8 @@ public class IntroSliderAdapter extends RecyclerView.Adapter<IntroSliderAdapter.
                 }
 
                 viewHolder.txtSkip.setOnClickListener(v -> {
+                    // Segna che le slide sono state viste
+                    SecurePrefsUtil.with(context).write("hasSeenIntro", true);
                     Intent intent = new Intent(context, SignupActivity.class);
                     /*intent.putExtra("from","intro");*/
                     context.startActivity(intent);
@@ -77,6 +86,8 @@ public class IntroSliderAdapter extends RecyclerView.Adapter<IntroSliderAdapter.
                 });
 
                 viewHolder.txtBtn2.setOnClickListener(v -> {
+                    // Segna che le slide sono state viste
+                    SecurePrefsUtil.with(context).write("hasSeenIntro", true);
                     Intent intent = new Intent(context, SignupActivity.class);
                     context.startActivity(intent);
                     mActivity.finish();

@@ -25,7 +25,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom|center"
                 android:layout_marginTop="@dimen/_12sdp"
-                android:layout_marginBottom="@dimen/_20sdp"
+                android:layout_marginBottom="@dimen/_50sdp"
                 android:gravity="center"
                 android:orientation="horizontal"
                 android:overScrollMode="never"

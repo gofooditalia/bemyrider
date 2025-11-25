@@ -15,7 +15,8 @@ public class MyApp extends Application {
     public void onCreate() {
         super.onCreate();
         FirebaseApp.initializeApp(this);
-        LocaleManager.setLocale(getApplicationContext(), "it");
+        // Non forzare la lingua qui, lascia che LocaleManager la legga dalle preferenze
+        // LocaleManager.setLocale(getApplicationContext(), "it");
         // Our nct test
         /* PaymentConfiguration.init(
                 getApplicationContext(),
@@ -23,15 +24,15 @@ public class MyApp extends Application {
         ); */
 
         // client test
-        PaymentConfiguration.init(
-                getApplicationContext(),
-                "pk_test_51LSl2XJZvpOu0PgrR5R8dmsO4uMdLVJLeuCfH5MHJJnDz80CPKHscsAsaDnY7jlMkBTyuRQJp3d4TXvQdihQtju500Lsd1sY9r"
-        );
-
-        // client live
         /*PaymentConfiguration.init(
                 getApplicationContext(),
-                "pk_live_51LSl2XJZvpOu0Pgr61B8L0FeCIyOoSM9yveiIIJJH4KuUbPMtcli9zknQ0cSX6ZjkWwOzgwYmgAnTFTssdfgV3uP00fyN2HAdo"
+                "pk_test_51LSl2XJZvpOu0PgrR5R8dmsO4uMdLVJLeuCfH5MHJJnDz80CPKHscsAsaDnY7jlMkBTyuRQJp3d4TXvQdihQtju500Lsd1sY9r"
         );*/
+
+        // client live - PRODUCTION
+        PaymentConfiguration.init(
+                getApplicationContext(),
+                "pk_live_51LSl2XJZvpOu0Pgr61B8L0FeCIyOoSM9yveiIIJJH4KuUbPMtcli9zknQ0cSX6ZjkWwOzgwYmgAnTFTssdfgV3uP00fyN2HAdo"
+        );
     }
 }

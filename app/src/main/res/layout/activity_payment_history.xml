@@ -7,7 +7,11 @@
         android:layout_height="match_parent"
         android:gravity="center"
         android:orientation="vertical"
-        android:padding="@dimen/_7sdp"
+        android:fitsSystemWindows="true"
+        android:paddingTop="?attr/actionBarSize"
+        android:paddingStart="@dimen/_7sdp"
+        android:paddingEnd="@dimen/_7sdp"
+        android:paddingBottom="@dimen/_7sdp"
         android:background="@color/white"
         tools:context="com.app.bemyrider.activity.user.PaymentHistoryActivity">
 

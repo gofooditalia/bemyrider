@@ -5,7 +5,8 @@
         android:id="@+id/activity_service_detail_"
         android:background="@color/white"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="true">
 
         <RelativeLayout
             android:id="@+id/rlMain"
@@ -17,7 +18,10 @@
                 android:id="@+id/layout_profile"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:padding="@dimen/_14sdp">
+                android:paddingStart="@dimen/_14sdp"
+                android:paddingTop="@dimen/_14sdp"
+                android:paddingEnd="@dimen/_14sdp"
+                android:paddingBottom="@dimen/_14sdp">
 
                 <com.app.bemyrider.utils.CircleImageView
                     android:id="@+id/img_profile"

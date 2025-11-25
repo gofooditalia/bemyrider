@@ -30,6 +30,7 @@ import com.app.bemyrider.activity.InfoPageActivity;
 
 import com.app.bemyrider.activity.MyStripeConnectActivity;
 import com.app.bemyrider.activity.NotificationListingActivity;
+import com.app.bemyrider.activity.LoginActivity;
 import com.app.bemyrider.activity.SignupActivity;
 import com.app.bemyrider.activity.partner.EditProfileActivity;
 import com.app.bemyrider.activity.partner.PartnerPaymentHistoryActivity;
@@ -45,6 +46,7 @@ import com.app.bemyrider.model.ProfilePojo;
 import com.app.bemyrider.myinterfaces.MenuItemClickListener;
 import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.PrefsUtil;
+import com.app.bemyrider.utils.SecurePrefsUtil;
 import com.app.bemyrider.utils.Utils;
 import com.squareup.picasso.Picasso;
 
@@ -301,24 +303,47 @@ public class ProviderMenuFragment extends Fragment implements MenuItemClickListe
     private void serviceCallLogout() {
         LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
 
-        textParams.put("user_id", PrefsUtil.with(activity).readString("UserId"));
-        textParams.put("device_token", PrefsUtil.with(activity).readString("device_token"));
+        SecurePrefsUtil securePrefs = SecurePrefsUtil.with(activity);
+        PrefsUtil prefsUtil = PrefsUtil.with(activity);
+        
+        // Fallback a PrefsUtil se SecurePrefsUtil non ha UserId
+        String userId = securePrefs.readString("UserId");
+        if (userId == null || userId.isEmpty()) {
+            userId = prefsUtil.readString("UserId");
+        }
+        
+        String deviceToken = securePrefs.readString("device_token");
+        if (deviceToken == null || deviceToken.isEmpty()) {
+            deviceToken = prefsUtil.readString("device_token");
+        }
+        
+        textParams.put("user_id", userId != null ? userId : "");
+        textParams.put("device_token", deviceToken != null ? deviceToken : "");
 
 
         new WebServiceCall(context, WebServiceUrl.URL_LOGOUT, textParams,
                 CommonPojo.class, true, new WebServiceCall.OnResultListener() {
             @Override
             public void onResult(boolean status, Object obj) {
-                if (status) {
-                    File offlineFile = new File(activity.getFilesDir().getPath(), "/offline.json");
-                    if (offlineFile.exists()) {
-                        offlineFile.delete();
-                    }
-                    PrefsUtil.with(activity).clearPrefs();
-                    startActivity(new Intent(activity, SignupActivity.class));
-                    activity.finish();
-                } else {
-                    Toast.makeText(context, (String) obj, Toast.LENGTH_SHORT).show();
+                // Anche se l'API fallisce, procediamo con il logout locale
+                File offlineFile = new File(activity.getFilesDir().getPath(), "/offline.json");
+                if (offlineFile.exists()) {
+                    offlineFile.delete();
+                }
+                
+                // Pulisci sia SecurePrefsUtil che PrefsUtil per sicurezza
+                SecurePrefsUtil.with(activity).clearPrefs();
+                PrefsUtil.with(activity).clearPrefs();
+                
+                // Vai a LoginActivity con flag per pulire lo stack
+                Intent intent = new Intent(activity, LoginActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+                activity.finish();
+                
+                if (!status) {
+                    // Mostra messaggio solo se necessario, ma procedi comunque
+                    Toast.makeText(context, getString(R.string.logout), Toast.LENGTH_SHORT).show();
                 }
             }
 
