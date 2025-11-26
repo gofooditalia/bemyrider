@@ -127,12 +127,13 @@ public class WebServiceCall {
             boolean success = false;
 
             if (fileParams != null && !fileParams.isEmpty()) {
-                // TODO: Implementare logica Multipart se servono upload file (UploadImageAsyncTask)
-                // Per ora gestiamo solo richieste testuali standard per login/registrazione
-                // result = performMultipartRequest(url, textParams, fileParams);
-                // Fallback temporaneo: logica upload complessa da migrare separatamente se necessario
-                success = false;
-                result = "File upload migration pending";
+                // Upload multipart con file
+                result = performMultipartRequest(url, textParams, fileParams);
+                // Se il risultato non è un messaggio di errore di rete, assumiamo successo HTTP
+                if (!result.equals(WebServiceConfig.CONNECTION_TIMEOUT_ERROR) 
+                        && !result.equals(WebServiceConfig.UNEXPECTED_ERROR)) {
+                    success = true;
+                }
             } else {
                 // Richiesta Standard POST
                 result = performPostRequest(url, textParams);
@@ -159,6 +160,69 @@ public class WebServiceCall {
                 }
             });
         });
+    }
+
+    private String performMultipartRequest(String requestUrl, LinkedHashMap<String, String> textParams, 
+                                           LinkedHashMap<String, File> fileParams) {
+        String final_url = requestUrl.replaceAll(" ", "%20");
+        Log.e(TAG, "Multipart URL: " + final_url);
+        String charset = "UTF-8";
+        
+        try {
+            MultipartUtility multipart = new MultipartUtility(final_url, charset, config);
+            
+            // Aggiungi parametri testuali
+            for (Map.Entry<String, String> entry : textParams.entrySet()) {
+                if (entry.getKey() != null && entry.getValue() != null) {
+                    Log.e(TAG, "Multipart Param: " + entry.getKey() + ":" + entry.getValue());
+                    multipart.addFormField(entry.getKey(), entry.getValue());
+                }
+            }
+            
+            // Aggiungi file
+            int filesAdded = 0;
+            for (Map.Entry<String, File> entry : fileParams.entrySet()) {
+                if (entry.getKey() != null && entry.getValue() != null) {
+                    File file = entry.getValue();
+                    if (file.exists()) {
+                        Log.e(TAG, "Multipart File: " + entry.getKey() + ":" + file.getAbsolutePath() + " (size: " + file.length() + " bytes)");
+                        multipart.addFilePart(entry.getKey(), file);
+                        filesAdded++;
+                    } else {
+                        Log.e(TAG, "Multipart File NOT FOUND: " + entry.getKey() + ":" + file.getAbsolutePath());
+                    }
+                }
+            }
+            Log.e(TAG, "Total files added to multipart: " + filesAdded + " out of " + fileParams.size());
+            
+            // Completa la richiesta e ottieni la risposta
+            String response = multipart.finish();
+            Log.e(TAG, "Multipart Response: " + response);
+            return response;
+            
+        } catch (SocketTimeoutException e1) {
+            Log.e(TAG, "Multipart timeout: " + e1.getMessage());
+            return WebServiceConfig.CONNECTION_TIMEOUT_ERROR;
+        } catch (IOException e) {
+            Log.e(TAG, "Multipart IOException: " + e.getMessage());
+            e.printStackTrace();
+            // Se l'eccezione contiene una risposta del server (formato: "Server returned status X: {response}")
+            String errorMsg = e.getMessage();
+            if (errorMsg != null && errorMsg.contains("Server returned status")) {
+                // Estrai la risposta JSON dal messaggio di errore
+                int colonIndex = errorMsg.indexOf(": ");
+                if (colonIndex > 0 && colonIndex < errorMsg.length() - 1) {
+                    String serverResponse = errorMsg.substring(colonIndex + 2);
+                    Log.e(TAG, "Server error response: " + serverResponse);
+                    return serverResponse; // Restituisci la risposta del server per gestirla
+                }
+            }
+            return WebServiceConfig.UNEXPECTED_ERROR;
+        } catch (Exception e) {
+            Log.e(TAG, "Multipart error: " + e.getMessage());
+            e.printStackTrace();
+            return WebServiceConfig.UNEXPECTED_ERROR;
+        }
     }
 
     private String performPostRequest(String requestUrl, LinkedHashMap<String, String> params) {

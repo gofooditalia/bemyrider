@@ -736,7 +736,14 @@ public class EditProfileActivity extends AppCompatActivity {
         textParams.put("lastName", binding.edtLname.getText().toString().trim());
 
         if (!selectedImagePath.isEmpty()) {
-            fileParams.put("profile_pic", new File(selectedImagePath));
+            File imageFile = new File(selectedImagePath);
+            if (imageFile.exists()) {
+                Log.e(TAG, "Adding profile image: " + selectedImagePath + " (size: " + imageFile.length() + " bytes)");
+                fileParams.put("profile_pic", imageFile);
+            } else {
+                Log.e(TAG, "Profile image file NOT FOUND: " + selectedImagePath);
+                Toast.makeText(EditProfileActivity.this, "Immagine non trovata. Riprova a selezionare l'immagine.", Toast.LENGTH_SHORT).show();
+            }
         }
         textParams.put("contact_number", binding.edtNumber.getText().toString().trim());
         textParams.put("country_code", countryCodeId);

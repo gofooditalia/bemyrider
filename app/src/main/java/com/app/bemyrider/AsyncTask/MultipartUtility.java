@@ -142,20 +142,28 @@ public class MultipartUtility {
 
         // checks server's status code first
         int status = httpConn.getResponseCode();
+        InputStream in;
         if (status == HttpURLConnection.HTTP_OK) {
-			/*BufferedReader reader = new BufferedReader(new InputStreamReader(
-					httpConn.getInputStream()));
-			String line = null;
-			while ((line = reader.readLine()) != null) {
-				response.add(line);
-			}
-			reader.close();*/
-            InputStream in = new BufferedInputStream(httpConn.getInputStream());
-            //String response = org.apache.commons.io.IOUtils.toString(in, "UTF-8");
+            in = new BufferedInputStream(httpConn.getInputStream());
+        } else {
+            // Leggi la risposta di errore invece di lanciare un'eccezione
+            in = httpConn.getErrorStream();
+            if (in == null) {
+                in = httpConn.getInputStream();
+            }
+        }
+        
+        if (in != null) {
             response = getStringFromInputStream(in);
             httpConn.disconnect();
         } else {
-            throw new IOException("Server returned non-OK status: " + status);
+            httpConn.disconnect();
+            throw new IOException("Server returned status: " + status + " and no response body");
+        }
+        
+        // Se il server ha restituito un errore, lancia un'eccezione con la risposta
+        if (status != HttpURLConnection.HTTP_OK) {
+            throw new IOException("Server returned status " + status + ": " + response);
         }
 
         return response;
