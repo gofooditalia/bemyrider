@@ -129,7 +129,24 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
         boolean needNotification = true;
+        
+        // Log dettagliato per debugging
+        Log.e(TAG, "========== onMessageReceived CALLED ==========");
         Log.e("WithoutBalancePojoItem", "Received");
+
+        // Verifica se c'è un campo "notification" (che causa gestione automatica quando app è in background)
+        if (remoteMessage.getNotification() != null) {
+            Log.w(TAG, "WARNING: Notification has 'notification' field - Firebase may handle it automatically when app is in background");
+            Log.w(TAG, "Notification title: " + remoteMessage.getNotification().getTitle());
+            Log.w(TAG, "Notification body: " + remoteMessage.getNotification().getBody());
+            Log.w(TAG, "IMPORTANT: If app is in background, onMessageReceived may NOT be called!");
+            Log.w(TAG, "SOLUTION: Backend should send ONLY 'data' payload (without 'notification' field)");
+        } else {
+            Log.d(TAG, "Notification has only 'data' field - onMessageReceived will always be called");
+        }
+        
+        // Log dello stato dell'app (foreground/background)
+        Log.d(TAG, "App state: " + (isAppInForeground() ? "FOREGROUND" : "BACKGROUND"));
 
         Log.e("WithoutBalancePojoItem", remoteMessage.getData().get("notification_type"));
         Log.e("WithoutBalancePojoItem", "Message Data : " + remoteMessage.getData().toString());
@@ -143,8 +160,18 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         String type = remoteMessage.getData().get("notification_type");
         String userType = remoteMessage.getData().get("user_type");
         String notificationConstant = remoteMessage.getData().get("notification_constant");
+        
+        Log.d(TAG, "Notification type: " + type + ", userType: " + userType);
 
         PendingIntent pendingIntent = null;
+        
+        // Verifica che type e userType non siano null
+        if (type == null || userType == null) {
+            Log.e(TAG, "ERROR: type or userType is null! type=" + type + ", userType=" + userType);
+            Log.e(TAG, "Cannot process notification without type and userType");
+            return;
+        }
+        
         /*---------- Customer side message notification ----------*/
         if (type.equals("m") && userType.equals("c")) {
             EventBus.getDefault().post(new EventBusMessage("msg", remoteMessage.getData()));
@@ -191,8 +218,9 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             }
         }
         /*---------- Provider side service notification ----------*/
-        else if (type.equals("s") && userType.equals("p")) {
-            if (notificationConstant.equalsIgnoreCase("AC_NT_NOTIFY_ME_WHEN_SERVICE_COMPLETED")) {
+        else if (type != null && type.equals("s") && userType != null && userType.equals("p")) {
+            Log.d(TAG, "Processing PROVIDER service notification (rider booking request)");
+            if (notificationConstant != null && notificationConstant.equalsIgnoreCase("AC_NT_NOTIFY_ME_WHEN_SERVICE_COMPLETED")) {
                 Intent intent = new Intent(this, Partner_ServiceRequestDetail_Tablayout_Activity.class);
                 intent.putExtra("serviceRequestId", remoteMessage.getData().get("service_request_id"));
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -216,6 +244,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 }
             }
             EventBus.getDefault().post(new EventBusMessage("s", remoteMessage.getData()));
+            Log.d(TAG, "EventBus message posted for provider service notification");
         }
         /*---------- Customer and Provider side dispute notification ----------*/
         else if (type.equals("d")) {
@@ -301,6 +330,16 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                     mChannel.enableVibration(true);
                     mChannel.setShowBadge(true);
                     notificationManager.createNotificationChannel(mChannel);
+                    Log.d(TAG, "Notification channel created with sound");
+                } else {
+                    // Verifica che il canale abbia il suono configurato
+                    // Se il canale esiste ma non ha suono, non possiamo modificarlo direttamente
+                    // ma possiamo almeno loggare un avviso
+                    if (mChannel.getSound() == null) {
+                        Log.w(TAG, "Notification channel exists but has no sound configured. Playing sound directly.");
+                    } else {
+                        Log.d(TAG, "Notification channel exists with sound: " + mChannel.getSound());
+                    }
                 }
 
                 // Create a notification and set the notification channel.
@@ -330,7 +369,15 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             int m = (int) ((new Date().getTime() / 1000L) % Integer.MAX_VALUE);
 
             notificationManager.notify(m, notification);
-            //playNotificationSound();
+            Log.d(TAG, "Notification displayed with ID: " + m);
+            
+            // Riproduci sempre il suono direttamente per garantire che venga sentito
+            // Questo è importante perché anche se il canale ha il suono configurato,
+            // riprodurlo direttamente garantisce che venga sempre sentito
+            playNotificationSound();
+            Log.d(TAG, "========== Notification processing completed ==========");
+        } else {
+            Log.d(TAG, "Notification not needed (needNotification = false)");
         }
 
     }
@@ -338,12 +385,35 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     // Playing notification sound
     public void playNotificationSound() {
         try {
-            Uri defaultSoundUri =  Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + getApplicationContext().getPackageName() + "/" + R.raw.notify); //Here is FILE_NAME is the name of file that you want to play
-
+            Uri defaultSoundUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + 
+                    getApplicationContext().getPackageName() + "/" + R.raw.notify);
+            
+            Log.d(TAG, "Playing notification sound: " + defaultSoundUri);
             Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), defaultSoundUri);
-            r.play();
+            if (r != null) {
+                r.play();
+                Log.d(TAG, "Notification sound played successfully");
+            } else {
+                Log.w(TAG, "Could not play notification sound - ringtone is null");
+            }
         } catch (Exception e) {
+            Log.e(TAG, "Error playing notification sound", e);
             e.printStackTrace();
+        }
+    }
+    
+    /**
+     * Verifica se l'app è in foreground
+     */
+    private boolean isAppInForeground() {
+        try {
+            android.app.ActivityManager.RunningAppProcessInfo appProcessInfo = 
+                    new android.app.ActivityManager.RunningAppProcessInfo();
+            android.app.ActivityManager.getMyMemoryState(appProcessInfo);
+            return (appProcessInfo.importance == android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND);
+        } catch (Exception e) {
+            Log.e(TAG, "Error checking app state", e);
+            return false;
         }
     }
 }

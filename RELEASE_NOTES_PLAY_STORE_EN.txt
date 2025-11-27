@@ -1,0 +1,13 @@
+v1.1.4 - Important Fixes
+
+🔧 Fixed critical profile image upload issue
+🔧 Improved error handling during uploads
+📦 Technical optimizations for multipart uploads
+
+Includes all improvements from version 1.1.3:
+🎯 Play Store 2025 Compliance
+✨ UI/UX improvements on splash screen, onboarding, and registration
+🔧 Layout fixes on all pages
+🔔 Push notification improvements with Android 13+ support
+🐛 Fixed logout, language, and permissions bugs
+🔒 Security improvements and dependency updates
