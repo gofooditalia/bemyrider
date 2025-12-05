@@ -66,6 +66,17 @@ public class MyApp extends Application {
             // Verifica se il canale esiste già
             NotificationChannel existingChannel = notificationManager.getNotificationChannel(CHANNEL_ID);
             
+            // IMPORTANTE: Se il canale esiste ma non ha suono, eliminalo e ricrealo
+            // Android non permette di modificare il suono di un canale esistente
+            Uri defaultSoundUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + 
+                    getPackageName() + "/" + R.raw.notify);
+            
+            if (existingChannel != null && existingChannel.getSound() == null) {
+                Log.w(TAG, "Channel exists but has no sound. Deleting and recreating...");
+                notificationManager.deleteNotificationChannel(CHANNEL_ID);
+                existingChannel = null;
+            }
+            
             if (existingChannel == null) {
                 // Crea il canale se non esiste
                 CharSequence channelName = getString(R.string.channel_name);
@@ -73,11 +84,10 @@ public class MyApp extends Application {
                 NotificationChannel channel = new NotificationChannel(CHANNEL_ID, channelName, importance);
                 
                 // Configura il suono
-                Uri defaultSoundUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + 
-                        getPackageName() + "/" + R.raw.notify);
                 AudioAttributes audioAttributes = new AudioAttributes.Builder()
                         .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
                         .setUsage(AudioAttributes.USAGE_NOTIFICATION_RINGTONE)
+                        .setFlags(AudioAttributes.FLAG_AUDIBILITY_ENFORCED) // Forza la riproduzione
                         .build();
                 channel.setSound(defaultSoundUri, audioAttributes);
                 
@@ -88,12 +98,31 @@ public class MyApp extends Application {
                 channel.setDescription("Canale per le notifiche push di BeMyRider");
                 
                 notificationManager.createNotificationChannel(channel);
-                Log.d(TAG, "Notification channel created at app startup with sound and vibration");
+                Log.d(TAG, "Notification channel created at app startup with sound: " + defaultSoundUri);
             } else {
                 // Il canale esiste già, verifica la configurazione
                 Log.d(TAG, "Notification channel already exists. Importance: " + existingChannel.getImportance());
                 if (existingChannel.getSound() != null) {
                     Log.d(TAG, "Channel has sound configured: " + existingChannel.getSound());
+                    // Verifica che il suono sia quello corretto
+                    if (!existingChannel.getSound().equals(defaultSoundUri)) {
+                        Log.w(TAG, "Channel sound mismatch! Expected: " + defaultSoundUri + ", Got: " + existingChannel.getSound());
+                        // Elimina e ricrea il canale con il suono corretto
+                        notificationManager.deleteNotificationChannel(CHANNEL_ID);
+                        NotificationChannel channel = new NotificationChannel(CHANNEL_ID, getString(R.string.channel_name), NotificationManager.IMPORTANCE_HIGH);
+                        AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                                .setUsage(AudioAttributes.USAGE_NOTIFICATION_RINGTONE)
+                                .setFlags(AudioAttributes.FLAG_AUDIBILITY_ENFORCED)
+                                .build();
+                        channel.setSound(defaultSoundUri, audioAttributes);
+                        channel.enableVibration(true);
+                        channel.setVibrationPattern(new long[]{100, 200, 300, 400, 500, 400, 300, 200, 400});
+                        channel.setShowBadge(true);
+                        channel.setDescription("Canale per le notifiche push di BeMyRider");
+                        notificationManager.createNotificationChannel(channel);
+                        Log.d(TAG, "Notification channel recreated with correct sound");
+                    }
                 } else {
                     Log.w(TAG, "Channel exists but has no sound configured!");
                 }

@@ -40,9 +40,9 @@ public class DetailImagesAdapter extends RecyclerView.Adapter<DetailImagesAdapte
 
     @Override
     public void onBindViewHolder(SolventViewHolders holder, int position) {
-        /*holder.countryPhoto.setImageResource(imageList.get(position));*/
+        /* holder.countryPhoto.setImageResource(imageList.get(position)); */
         if (imageList.size() > 0) {
-            /*.transform(new RoundedCornersTransformation(50, 20))*/
+            /* .transform(new RoundedCornersTransformation(50, 20)) */
             Picasso.get().load(imageList.get(position).getMediaUrl()).placeholder(R.drawable.loading).into(holder.img);
             holder.img.setScaleType(ImageView.ScaleType.CENTER_CROP);
             holder.img.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 400));
@@ -50,7 +50,11 @@ public class DetailImagesAdapter extends RecyclerView.Adapter<DetailImagesAdapte
             holder.img.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    context.startActivity(new Intent(context, ImagesSliderActivity.class).putExtra("position", position).putExtra("images", (Serializable) imageList));
+                    int adapterPosition = holder.getAdapterPosition();
+                    if (adapterPosition == RecyclerView.NO_POSITION)
+                        return;
+                    context.startActivity(new Intent(context, ImagesSliderActivity.class)
+                            .putExtra("position", adapterPosition).putExtra("images", (Serializable) imageList));
                 }
             });
         }

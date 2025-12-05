@@ -33,7 +33,8 @@ public class MessageDetailItemAdapter extends RecyclerView.Adapter<MessageDetail
     private Context context;
     private String toUserName, toUserImg, myUserName, myUserImg;
 
-    public MessageDetailItemAdapter(ArrayList<MessageListDetailPojoItem> detailPojoItems, Context context, String myUserImg, String toUserName, String toUserImg) {
+    public MessageDetailItemAdapter(ArrayList<MessageListDetailPojoItem> detailPojoItems, Context context,
+            String myUserImg, String toUserName, String toUserImg) {
         this.detailPojoItems = detailPojoItems;
         this.context = context;
         this.myUserImg = myUserImg;
@@ -67,25 +68,29 @@ public class MessageDetailItemAdapter extends RecyclerView.Adapter<MessageDetail
             Picasso.get().load((String) null).placeholder(R.drawable.loading).into(holder.img_receiver);
             holder.l_receiver.setVisibility(View.GONE);
 
-
-            Log.e("Adapter", " onBindViewHolder: isNullOrEmpty receiver " + isNullOrEmpty(detailPojoItems.get(position).getAppAttUrl()));
+            Log.e("Adapter", " onBindViewHolder: isNullOrEmpty receiver "
+                    + isNullOrEmpty(detailPojoItems.get(position).getAppAttUrl()));
             if (!isNullOrEmpty(detailPojoItems.get(position).getAppAttUrl())) {
                 holder.txt_sender_msg.setVisibility(View.GONE);
                 holder.txtAttachment.setVisibility(View.VISIBLE);
                 holder.txtAttachment.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        if (detailPojoItems.get(position).getAppAttUrl().contains("https://")) {
-                            Intent intentView = new Intent(Intent.ACTION_VIEW, Uri.parse(detailPojoItems.get(position).getAppAttUrl()));
+                        int adapterPosition = holder.getAdapterPosition();
+                        if (adapterPosition == RecyclerView.NO_POSITION)
+                            return;
+                        if (detailPojoItems.get(adapterPosition).getAppAttUrl().contains("https://")) {
+                            Intent intentView = new Intent(Intent.ACTION_VIEW,
+                                    Uri.parse(detailPojoItems.get(adapterPosition).getAppAttUrl()));
                             context.startActivity(intentView);
                         } else {
                             Intent myIntent = new Intent(Intent.ACTION_VIEW);
                             myIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                             myIntent.setData(FileProvider.getUriForFile(context,
                                     context.getApplicationContext().getPackageName() + ".provider",
-                                    new File(detailPojoItems.get(position).getAppAttUrl())));
+                                    new File(detailPojoItems.get(adapterPosition).getAppAttUrl())));
                             Intent i = Intent.createChooser(myIntent, "Choose an application to open with:");
-                            //i.setDataAndType(Uri.parse(detailPojoItems.get(position).getAppAttUrl()),"video/mp4");
+                            // i.setDataAndType(Uri.parse(detailPojoItems.get(adapterPosition).getAppAttUrl()),"video/mp4");
                             context.startActivity(i);
                         }
                     }
@@ -111,25 +116,29 @@ public class MessageDetailItemAdapter extends RecyclerView.Adapter<MessageDetail
             Picasso.get().load((String) null).placeholder(R.drawable.loading).into(holder.img_sender);
             holder.l_sender.setVisibility(View.GONE);
 
-
-            Log.e("Adapter", "onBindViewHolder: isNullOrEmpty sender " + isNullOrEmpty(detailPojoItems.get(position).getAppAttUrl()));
+            Log.e("Adapter", "onBindViewHolder: isNullOrEmpty sender "
+                    + isNullOrEmpty(detailPojoItems.get(position).getAppAttUrl()));
             if (!isNullOrEmpty(detailPojoItems.get(position).getAppAttUrl())) {
                 holder.txt_receiver_msg.setVisibility(View.GONE);
                 holder.txtUserAttachment.setVisibility(View.VISIBLE);
                 holder.txtUserAttachment.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        if (detailPojoItems.get(position).getAppAttUrl().contains("https://")) {
-                            Intent intentView = new Intent(Intent.ACTION_VIEW, Uri.parse(detailPojoItems.get(position).getAppAttUrl()));
+                        int adapterPosition = holder.getAdapterPosition();
+                        if (adapterPosition == RecyclerView.NO_POSITION)
+                            return;
+                        if (detailPojoItems.get(adapterPosition).getAppAttUrl().contains("https://")) {
+                            Intent intentView = new Intent(Intent.ACTION_VIEW,
+                                    Uri.parse(detailPojoItems.get(adapterPosition).getAppAttUrl()));
                             context.startActivity(intentView);
                         } else {
                             Intent myIntent = new Intent(Intent.ACTION_VIEW);
                             myIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                             myIntent.setData(FileProvider.getUriForFile(context,
                                     context.getApplicationContext().getPackageName() + ".provider",
-                                    new File(detailPojoItems.get(position).getAppAttUrl())));
+                                    new File(detailPojoItems.get(adapterPosition).getAppAttUrl())));
                             Intent i = Intent.createChooser(myIntent, "Choose an application to open with:");
-                            //i.setDataAndType(Uri.parse(detailPojoItems.get(position).getAppAttUrl()),"video/mp4");
+                            // i.setDataAndType(Uri.parse(detailPojoItems.get(adapterPosition).getAppAttUrl()),"video/mp4");
                             context.startActivity(i);
                         }
                     }
@@ -165,7 +174,7 @@ public class MessageDetailItemAdapter extends RecyclerView.Adapter<MessageDetail
                 return false;
             }
         } catch (Exception e) {
-            //e.printStackTrace();
+            // e.printStackTrace();
             return true;
         }
     }
@@ -174,7 +183,8 @@ public class MessageDetailItemAdapter extends RecyclerView.Adapter<MessageDetail
 
         private RelativeLayout l_sender, l_receiver;
         private ImageView img_receiver, img_sender;
-        private TextView txt_receiver_name, txt_receiver_msg, txt_sender_name, txt_sender_msg, txt_datetime_receiver, txt_datetime_sender, txtAttachment, txtUserAttachment;
+        private TextView txt_receiver_name, txt_receiver_msg, txt_sender_name, txt_sender_msg, txt_datetime_receiver,
+                txt_datetime_sender, txtAttachment, txtUserAttachment;
 
         public ViewHolder(View itemView) {
             super(itemView);

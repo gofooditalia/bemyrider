@@ -585,4 +585,6 @@
     <string name="err_permission_camera">Nega autorizzazione telecamera</string>
     <string name="err_permission_storage">Autorizzazione di archiviazione negata</string>
     <string name="err_no_camera_in_device">Non è presente l\'opzione fotocamera sul tuo dispositivo</string>
+    <string name="lbl_city_of_company">Sede dell\'azienda</string>
+    <string name="lbl_city_of_company_with_dot">Sede dell\'azienda*</string>
 </resources>

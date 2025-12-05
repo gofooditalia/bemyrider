@@ -71,10 +71,10 @@ public class WalletFragment extends Fragment {
     private ConnectionManager connectionManager;
     ActivityResultLauncher<Intent> myActivityResultLauncher;
 
-
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_wallet, container, false);
 
         initViews();
@@ -82,7 +82,7 @@ public class WalletFragment extends Fragment {
         if (PrefsUtil.with(activity).readString("UserType").equals("c")) {
             binding.layoutRedeem.setVisibility(View.GONE);
             binding.llBtnRedeem.setVisibility(View.GONE);
-            //binding.viewRedeem.setVisibility(View.GONE);
+            // binding.viewRedeem.setVisibility(View.GONE);
             serviceCallGetDepositHistory();
         } else {
             binding.btnDeposite.setVisibility(View.GONE);
@@ -116,7 +116,7 @@ public class WalletFragment extends Fragment {
 
         activity.setSupportActionBar(binding.toolbar);
 
-        /*Init Internet Connection Class For No Internet Banner*/
+        /* Init Internet Connection Class For No Internet Banner */
         connectionManager = new ConnectionManager(context);
         connectionManager.registerInternetCheckReceiver();
         connectionManager.checkConnection(context);
@@ -139,15 +139,16 @@ public class WalletFragment extends Fragment {
     }
 
     private void myActivityResult() {
-        myActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
-            @Override
-            public void onActivityResult(ActivityResult result) {
-                if (result.getResultCode() == RESULT_OK) {
-                    serviceCallGetWalletDetails();
-                    serviceCallGetDepositHistory();
-                }
-            }
-        });
+        myActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
+                new ActivityResultCallback<ActivityResult>() {
+                    @Override
+                    public void onActivityResult(ActivityResult result) {
+                        if (result.getResultCode() == RESULT_OK) {
+                            serviceCallGetWalletDetails();
+                            serviceCallGetDepositHistory();
+                        }
+                    }
+                });
     }
 
     /*-------------- Get Redeem History Api Call ----------------*/
@@ -161,33 +162,33 @@ public class WalletFragment extends Fragment {
 
         new WebServiceCall(context, WebServiceUrl.URL_REDEEM_HISTORY,
                 textParams, RedeemHistoryPojo.class, false, new WebServiceCall.OnResultListener() {
-            @Override
-            public void onResult(boolean status, Object obj) {
-                binding.llProgress.setVisibility(View.GONE);
-                binding.layoutRedeemRequest.setVisibility(View.VISIBLE);
-                if (status) {
-                    RedeemHistoryPojo redeemHistoryPojo = (RedeemHistoryPojo) obj;
-                    redeemHistoryPojoItems.addAll(redeemHistoryPojo.getData());
-                    if (redeemHistoryPojoItems.size() == 0) {
-                        binding.layoutRedeemRequest.setVisibility(View.GONE);
-                        //binding.viewSep.setVisibility(View.GONE);
+                    @Override
+                    public void onResult(boolean status, Object obj) {
+                        binding.llProgress.setVisibility(View.GONE);
+                        binding.layoutRedeemRequest.setVisibility(View.VISIBLE);
+                        if (status) {
+                            RedeemHistoryPojo redeemHistoryPojo = (RedeemHistoryPojo) obj;
+                            redeemHistoryPojoItems.addAll(redeemHistoryPojo.getData());
+                            if (redeemHistoryPojoItems.size() == 0) {
+                                binding.layoutRedeemRequest.setVisibility(View.GONE);
+                                // binding.viewSep.setVisibility(View.GONE);
+                            }
+                            redeemRequestAdapter.notifyDataSetChanged();
+                        } else {
+                            Toast.makeText(context, obj.toString(), Toast.LENGTH_SHORT).show();
+                        }
                     }
-                    redeemRequestAdapter.notifyDataSetChanged();
-                } else {
-                    Toast.makeText(context, obj.toString(), Toast.LENGTH_SHORT).show();
-                }
-            }
 
-            @Override
-            public void onAsync(AsyncTask asyncTask) {
-                redeemHistoryAsync = asyncTask;
-            }
+                    @Override
+                    public void onAsync(AsyncTask asyncTask) {
+                        redeemHistoryAsync = asyncTask;
+                    }
 
-            @Override
-            public void onCancelled() {
-                redeemHistoryAsync = null;
-            }
-        });
+                    @Override
+                    public void onCancelled() {
+                        redeemHistoryAsync = null;
+                    }
+                });
     }
 
     /*------------- Get Deposit History Api Call ---------------*/
@@ -201,34 +202,34 @@ public class WalletFragment extends Fragment {
 
         new WebServiceCall(context, WebServiceUrl.URL_DEPOSITE_HISTORY,
                 textParams, DepositHistoryPojo.class, false, new WebServiceCall.OnResultListener() {
-            @Override
-            public void onResult(boolean status, Object obj) {
-                binding.llProgress.setVisibility(View.GONE);
-                binding.layoutDeposit.setVisibility(View.VISIBLE);
-                if (status) {
-                    depositHistoryItems.clear();
-                    DepositHistoryPojo depositHistoryPojo = (DepositHistoryPojo) obj;
-                    depositHistoryItems.addAll(depositHistoryPojo.getData());
-                    if (depositHistoryItems.size() == 0) {
-                        binding.layoutDeposit.setVisibility(View.GONE);
-                       // binding.viewSep.setVisibility(View.GONE);
+                    @Override
+                    public void onResult(boolean status, Object obj) {
+                        binding.llProgress.setVisibility(View.GONE);
+                        binding.layoutDeposit.setVisibility(View.VISIBLE);
+                        if (status) {
+                            depositHistoryItems.clear();
+                            DepositHistoryPojo depositHistoryPojo = (DepositHistoryPojo) obj;
+                            depositHistoryItems.addAll(depositHistoryPojo.getData());
+                            if (depositHistoryItems.size() == 0) {
+                                binding.layoutDeposit.setVisibility(View.GONE);
+                                // binding.viewSep.setVisibility(View.GONE);
+                            }
+                            depositHistoryAdapter.notifyDataSetChanged();
+                        } else {
+                            Toast.makeText(context, obj.toString(), Toast.LENGTH_SHORT).show();
+                        }
                     }
-                    depositHistoryAdapter.notifyDataSetChanged();
-                } else {
-                    Toast.makeText(context, obj.toString(), Toast.LENGTH_SHORT).show();
-                }
-            }
 
-            @Override
-            public void onAsync(AsyncTask asyncTask) {
-                depositHistoryAsync = asyncTask;
-            }
+                    @Override
+                    public void onAsync(AsyncTask asyncTask) {
+                        depositHistoryAsync = asyncTask;
+                    }
 
-            @Override
-            public void onCancelled() {
-                depositHistoryAsync = null;
-            }
-        });
+                    @Override
+                    public void onCancelled() {
+                        depositHistoryAsync = null;
+                    }
+                });
     }
 
     /*---------------- Redeem Request Api Call -------------------*/
@@ -241,28 +242,28 @@ public class WalletFragment extends Fragment {
 
         new WebServiceCall(context, WebServiceUrl.URL_REDDEMRE_REQUEST,
                 textParams, CommonPojo.class, false, new WebServiceCall.OnResultListener() {
-            @Override
-            public void onResult(boolean status, Object obj) {
-                binding.pgRedeem.setVisibility(View.GONE);
-                binding.btnReedem.setClickable(true);
-                if (status) {
-                    Toast.makeText(context, ((CommonPojo) obj).getMessage(), Toast.LENGTH_SHORT).show();
-                    activity.onBackPressed();
-                } else {
-                    Toast.makeText(context, (String) obj, Toast.LENGTH_SHORT).show();
-                }
-            }
+                    @Override
+                    public void onResult(boolean status, Object obj) {
+                        binding.pgRedeem.setVisibility(View.GONE);
+                        binding.btnReedem.setClickable(true);
+                        if (status) {
+                            Toast.makeText(context, ((CommonPojo) obj).getMessage(), Toast.LENGTH_SHORT).show();
+                            activity.onBackPressed();
+                        } else {
+                            Toast.makeText(context, (String) obj, Toast.LENGTH_SHORT).show();
+                        }
+                    }
 
-            @Override
-            public void onAsync(AsyncTask asyncTask) {
-                requestRedeemAsync = asyncTask;
-            }
+                    @Override
+                    public void onAsync(AsyncTask asyncTask) {
+                        requestRedeemAsync = asyncTask;
+                    }
 
-            @Override
-            public void onCancelled() {
-                requestRedeemAsync = null;
-            }
-        });
+                    @Override
+                    public void onCancelled() {
+                        requestRedeemAsync = null;
+                    }
+                });
     }
 
     /*--------------- Get Wallet Detail Api Call -----------------*/
@@ -278,43 +279,46 @@ public class WalletFragment extends Fragment {
 
         new WebServiceCall(context, WebServiceUrl.URL_GET_WALLET_DETAILS,
                 textParams, WalletDetailsPojo.class, false, new WebServiceCall.OnResultListener() {
-            @Override
-            public void onResult(boolean status, Object obj) {
-                binding.pgShowCurBal.setVisibility(View.GONE);
-                binding.pgShowFund.setVisibility(View.GONE);
-                binding.pgShowRedeemReq.setVisibility(View.GONE);
-                if (status) {
-                    WalletDetailsPojo walletDetailsPojo = (WalletDetailsPojo) obj;
-                    binding.TxtShowCurBal.setText(String.format("%s%s", PrefsUtil.with(activity).readString("CurrencySign"), walletDetailsPojo.getData().getWalletAmount()));
-                    binding.TxtShowFund.setText(String.format("%s%s", PrefsUtil.with(activity).readString("CurrencySign"), walletDetailsPojo.getData().getHoldAmount()));
-                    binding.TxtShowReedemRequest.setText(String.format("%s%s", PrefsUtil.with(activity).readString("CurrencySign"), walletDetailsPojo.getData().getRedeemRequestedAmount()));
-                    binding.btnDeposite.setClickable(true);
-                } else {
-                    Toast.makeText(context, (String) obj, Toast.LENGTH_SHORT).show();
-                }
-            }
+                    @Override
+                    public void onResult(boolean status, Object obj) {
+                        binding.pgShowCurBal.setVisibility(View.GONE);
+                        binding.pgShowFund.setVisibility(View.GONE);
+                        binding.pgShowRedeemReq.setVisibility(View.GONE);
+                        if (status) {
+                            WalletDetailsPojo walletDetailsPojo = (WalletDetailsPojo) obj;
+                            binding.TxtShowCurBal
+                                    .setText(String.format("%s%s", PrefsUtil.with(activity).readString("CurrencySign"),
+                                            walletDetailsPojo.getData().getWalletAmount()));
+                            binding.TxtShowFund
+                                    .setText(String.format("%s%s", PrefsUtil.with(activity).readString("CurrencySign"),
+                                            walletDetailsPojo.getData().getHoldAmount()));
+                            binding.TxtShowReedemRequest
+                                    .setText(String.format("%s%s", PrefsUtil.with(activity).readString("CurrencySign"),
+                                            walletDetailsPojo.getData().getRedeemRequestedAmount()));
+                            binding.btnDeposite.setClickable(true);
+                        } else {
+                            Toast.makeText(context, (String) obj, Toast.LENGTH_SHORT).show();
+                        }
+                    }
 
-            @Override
-            public void onAsync(AsyncTask asyncTask) {
-                walletDetailAsync = asyncTask;
-            }
+                    @Override
+                    public void onAsync(AsyncTask asyncTask) {
+                        walletDetailAsync = asyncTask;
+                    }
 
-            @Override
-            public void onCancelled() {
-                walletDetailAsync = null;
-            }
-        });
+                    @Override
+                    public void onCancelled() {
+                        walletDetailAsync = null;
+                    }
+                });
     }
-
 
     @Override
     public void onStart() {
         super.onStart();
-        if(!EventBus.getDefault().isRegistered(this))
-        EventBus.getDefault().register(this);
+        if (!EventBus.getDefault().isRegistered(this))
+            EventBus.getDefault().register(this);
     }
-
-
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMessageEvent(MessageEvent event) {
@@ -327,7 +331,7 @@ public class WalletFragment extends Fragment {
                     binding.llBtnRedeem.setVisibility(View.GONE);
                     // binding.viewRedeem.setVisibility(View.GONE);
                     binding.layoutDeposit.setVisibility(View.GONE);
-                    //binding.viewSep.setVisibility(View.GONE);
+                    // binding.viewSep.setVisibility(View.GONE);
                 }
             }
         } catch (Exception e) {
@@ -344,7 +348,7 @@ public class WalletFragment extends Fragment {
             binding.pgShowRedeemReq.setVisibility(View.GONE);
             Log.e("Offline", "onMessageEvent: My Resolution");
             File f = new File(context.getFilesDir().getPath() + "/" + "offline.json");
-            //check whether file exists
+            // check whether file exists
             FileInputStream is = new FileInputStream(f);
             int size = is.available();
             byte[] buffer = new byte[size];
@@ -355,23 +359,26 @@ public class WalletFragment extends Fragment {
             JSONObject dataObj = object.getJSONObject("data");
             JSONObject serviceList = dataObj.getJSONObject("walletDetails");
             GsonBuilder gsonBuilder = new GsonBuilder();
-            gsonBuilder.setDateFormat("M/d/yy hh:mm a"); //Format of our JSON dates
+            gsonBuilder.setDateFormat("M/d/yy hh:mm a"); // Format of our JSON dates
             Gson gson = gsonBuilder.create();
             WalletDetailsPojoItem walletDetails = gson.fromJson(serviceList.toString(), WalletDetailsPojoItem.class);
             WalletDetailsPojo walletDetailsPojo = new WalletDetailsPojo();
             walletDetailsPojo.setData(walletDetails);
-            binding.TxtShowCurBal.setText(String.format("%s%s", PrefsUtil.with(activity).readString("CurrencySign"), walletDetailsPojo.getData().getWalletAmount()));
-            binding.TxtShowFund.setText(String.format("%s%s", PrefsUtil.with(activity).readString("CurrencySign"), walletDetailsPojo.getData().getHoldAmount()));
-            binding.TxtShowReedemRequest.setText(String.format("%s%s", PrefsUtil.with(activity).readString("CurrencySign"), walletDetailsPojo.getData().getRedeemRequestedAmount()));
+            binding.TxtShowCurBal.setText(String.format("%s%s", PrefsUtil.with(activity).readString("CurrencySign"),
+                    walletDetailsPojo.getData().getWalletAmount()));
+            binding.TxtShowFund.setText(String.format("%s%s", PrefsUtil.with(activity).readString("CurrencySign"),
+                    walletDetailsPojo.getData().getHoldAmount()));
+            binding.TxtShowReedemRequest
+                    .setText(String.format("%s%s", PrefsUtil.with(activity).readString("CurrencySign"),
+                            walletDetailsPojo.getData().getRedeemRequestedAmount()));
 
-//            new ConnectionCheck().showDialogWithMessage(activity, getString(R.string.sync_data_message)).show();
-
+            // new ConnectionCheck().showDialogWithMessage(activity,
+            // getString(R.string.sync_data_message)).show();
 
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-
 
     @Override
     public void onDestroy() {

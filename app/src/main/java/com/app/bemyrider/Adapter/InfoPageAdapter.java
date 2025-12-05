@@ -34,7 +34,8 @@ public class InfoPageAdapter extends RecyclerView.Adapter<InfoPageAdapter.ViewHo
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        ItemInfoPageBinding binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()), R.layout.item_info_page,
+        ItemInfoPageBinding binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()),
+                R.layout.item_info_page,
                 parent, false);
         return new ViewHolder(binding);
     }
@@ -46,9 +47,12 @@ public class InfoPageAdapter extends RecyclerView.Adapter<InfoPageAdapter.ViewHo
         holder.binding.getRoot().setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                int adapterPosition = holder.getAdapterPosition();
+                if (adapterPosition == RecyclerView.NO_POSITION)
+                    return;
                 context.startActivity(new Intent(context, WebViewActivity.class)
-                        .putExtra("webUrl", arrayList.get(position).getUrl())
-                        .putExtra("title", arrayList.get(position).getPageTitle()));
+                        .putExtra("webUrl", arrayList.get(adapterPosition).getUrl())
+                        .putExtra("title", arrayList.get(adapterPosition).getPageTitle()));
             }
         });
 

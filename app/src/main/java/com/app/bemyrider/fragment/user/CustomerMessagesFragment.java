@@ -49,17 +49,17 @@ public class CustomerMessagesFragment extends Fragment {
 
     private ConnectionManager connectionManager;
 
-    /*pagination vars start*/
+    /* pagination vars start */
     private boolean loading = true;
     private int page = 1;
     private int total_records = 0;
     private int pastVisibleItems = 0, visibleItemCount, totalItemCount;
-    /*pagination vars end*/
-
+    /* pagination vars end */
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
         binding = DataBindingUtil.inflate(inflater, R.layout.activity_messages, container, false);
         context = getContext();
         activity = (AppCompatActivity) getActivity();
@@ -94,7 +94,7 @@ public class CustomerMessagesFragment extends Fragment {
 
     private void initViews() {
         activity.setSupportActionBar(binding.toolbar);
-        /*Init Internet Connection Class For No Internet Banner*/
+        /* Init Internet Connection Class For No Internet Banner */
         connectionManager = new ConnectionManager(context);
         connectionManager.registerInternetCheckReceiver();
         connectionManager.checkConnection(context);
@@ -129,64 +129,66 @@ public class CustomerMessagesFragment extends Fragment {
 
         new WebServiceCall(context, WebServiceUrl.URL_GET_MESSAGE_LIST,
                 textParams, MessageListPojo.class, false, new WebServiceCall.OnResultListener() {
-            @Override
-            public void onResult(boolean status, Object obj) {
-                if (binding.swipeRefresh.isRefreshing()) {
-                    binding.swipeRefresh.setRefreshing(false);
-                }
-                if (status) {
-                    MessageListPojo messageListPojo = (MessageListPojo) obj;
-                    if (isClear) {
-                        messageListPojoItems.clear();
-                    }
-                    binding.progress.setVisibility(View.GONE);
-                    binding.recyclerMessageList.setVisibility(View.VISIBLE);
+                    @Override
+                    public void onResult(boolean status, Object obj) {
+                        if (binding.swipeRefresh.isRefreshing()) {
+                            binding.swipeRefresh.setRefreshing(false);
+                        }
+                        if (status) {
+                            MessageListPojo messageListPojo = (MessageListPojo) obj;
+                            if (isClear) {
+                                messageListPojoItems.clear();
+                            }
+                            binding.progress.setVisibility(View.GONE);
+                            binding.recyclerMessageList.setVisibility(View.VISIBLE);
 
-                    messageListPojoItems.addAll(messageListPojo.getData().getMessageList());
-                    messageListAdapter.notifyDataSetChanged();
-                    loading = true;
-                    if (messageListPojoItems.size() > 0) {
-                        binding.txtNoRecordMes.setVisibility(View.GONE);
-                        binding.recyclerMessageList.setVisibility(View.VISIBLE);
-                    } else {
-                        binding.recyclerMessageList.setVisibility(View.GONE);
-                        binding.txtNoRecordMes.setVisibility(View.VISIBLE);
+                            messageListPojoItems.addAll(messageListPojo.getData().getMessageList());
+                            messageListAdapter.notifyDataSetChanged();
+                            loading = true;
+                            if (messageListPojoItems.size() > 0) {
+                                binding.txtNoRecordMes.setVisibility(View.GONE);
+                                binding.recyclerMessageList.setVisibility(View.VISIBLE);
+                            } else {
+                                binding.recyclerMessageList.setVisibility(View.GONE);
+                                binding.txtNoRecordMes.setVisibility(View.VISIBLE);
+                            }
+                            try {
+                                total_records = messageListPojo.getData().getPagination().getTotalRecords();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        } else {
+                            binding.progress.setVisibility(View.GONE);
+                            Toast.makeText(context, obj.toString(), Toast.LENGTH_SHORT).show();
+                        }
                     }
-                    try {
-                        total_records = messageListPojo.getData().getPagination().getTotalRecords();
-                    } catch (Exception e) {
-                        e.printStackTrace();
+
+                    @Override
+                    public void onAsync(AsyncTask asyncTask) {
+                        messageListAsync = asyncTask;
                     }
-                } else {
-                    binding.progress.setVisibility(View.GONE);
-                    Toast.makeText(context, obj.toString(), Toast.LENGTH_SHORT).show();
-                }
-            }
 
-            @Override
-            public void onAsync(AsyncTask asyncTask) {
-                messageListAsync = asyncTask;
-            }
-
-            @Override
-            public void onCancelled() {
-                messageListAsync = null;
-            }
-        });
+                    @Override
+                    public void onCancelled() {
+                        messageListAsync = null;
+                    }
+                });
     }
 
     @Override
     public void onStart() {
         super.onStart();
         if (!EventBus.getDefault().isRegistered(this))
-        EventBus.getDefault().register(this);
+            EventBus.getDefault().register(this);
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMessageEvent(EventBusMessage event) {
         try {
-            //{customer_id=2, service_id=19, notification_type=m, user_id=2, title=Robert Brown sent you message on Room Lighting service, user_type=c, service_request_id=233, provider_id=1}
-            //JSONObject object = new JSONObject(event.getData());
+            // {customer_id=2, service_id=19, notification_type=m, user_id=2, title=Robert
+            // Brown sent you message on Room Lighting service, user_type=c,
+            // service_request_id=233, provider_id=1}
+            // JSONObject object = new JSONObject(event.getData());
             if (event.getType().equalsIgnoreCase("msg")) {
                 serviceCallGetMessageList(true);
             }

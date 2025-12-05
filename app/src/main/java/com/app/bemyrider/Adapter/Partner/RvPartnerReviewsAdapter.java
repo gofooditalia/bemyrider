@@ -37,7 +37,8 @@ public class RvPartnerReviewsAdapter extends RecyclerView.Adapter<RvPartnerRevie
 
     @Override
     public Holder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.partner_row_partner_reviews, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.partner_row_partner_reviews, parent,
+                false);
         return new Holder(view);
     }
 
@@ -73,7 +74,10 @@ public class RvPartnerReviewsAdapter extends RecyclerView.Adapter<RvPartnerRevie
         holder.layout_provider_review.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (!(arrayList.get(position).getIsActive().equalsIgnoreCase("du"))) {
+                int adapterPosition = holder.getAdapterPosition();
+                if (adapterPosition == RecyclerView.NO_POSITION)
+                    return;
+                if (!(arrayList.get(adapterPosition).getIsActive().equalsIgnoreCase("du"))) {
                     Intent intent = new Intent(context, UserProfileActivity.class);
                     intent.putExtra("userId", item.getCreatedUser());
                     context.startActivity(intent);

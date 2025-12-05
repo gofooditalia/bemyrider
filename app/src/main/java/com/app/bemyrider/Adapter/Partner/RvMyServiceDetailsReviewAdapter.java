@@ -51,7 +51,8 @@ public class RvMyServiceDetailsReviewAdapter extends RecyclerView.Adapter<RvMySe
                 holder.Img_profile.setImageResource(R.mipmap.user);
             } else {
                 try {
-                    Picasso.get().load(arrayLis.get(position).getUserImage()).placeholder(R.drawable.loading).into(holder.Img_profile);
+                    Picasso.get().load(arrayLis.get(position).getUserImage()).placeholder(R.drawable.loading)
+                            .into(holder.Img_profile);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -60,9 +61,12 @@ public class RvMyServiceDetailsReviewAdapter extends RecyclerView.Adapter<RvMySe
             holder.layout_rating_review.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    if (!(arrayLis.get(position).getIsActive().equalsIgnoreCase("du"))) {
+                    int adapterPosition = holder.getAdapterPosition();
+                    if (adapterPosition == RecyclerView.NO_POSITION)
+                        return;
+                    if (!(arrayLis.get(adapterPosition).getIsActive().equalsIgnoreCase("du"))) {
                         Intent intent = new Intent(mContext, UserProfileActivity.class);
-                        intent.putExtra("userId", arrayLis.get(position).getCreatedUser());
+                        intent.putExtra("userId", arrayLis.get(adapterPosition).getCreatedUser());
                         mContext.startActivity(intent);
                     }
                 }

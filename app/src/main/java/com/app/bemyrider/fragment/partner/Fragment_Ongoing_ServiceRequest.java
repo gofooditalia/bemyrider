@@ -7,6 +7,7 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.util.Log;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Toast;
 
@@ -22,8 +23,13 @@ import com.app.bemyrider.WebServices.WebServiceUrl;
 import com.app.bemyrider.databinding.PartnerServicehistoryOngoingListBinding;
 import com.app.bemyrider.model.ProviderHistoryPojo;
 import com.app.bemyrider.model.ProviderHistoryPojoItem;
+import com.app.bemyrider.model.EventBusMessage;
 import com.app.bemyrider.utils.PrefsUtil;
 import com.app.bemyrider.utils.Utils;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -186,8 +192,60 @@ public class Fragment_Ongoing_ServiceRequest extends Fragment {
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+        // Registra EventBus per ascoltare le notifiche push
+        if (!EventBus.getDefault().isRegistered(this)) {
+            EventBus.getDefault().register(this);
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Ricarica i dati quando l'utente torna alla schermata
+        // Solo se non è già in caricamento per evitare chiamate multiple
+        if (!isLoading && page == 1) {
+            serviceCallGetOngoingServices(true);
+        }
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        // Deregistra EventBus quando il fragment non è più visibile
+        if (EventBus.getDefault().isRegistered(this)) {
+            EventBus.getDefault().unregister(this);
+        }
+    }
+
+    /**
+     * Ascolta le notifiche push tramite EventBus e aggiorna automaticamente la lista
+     * quando arriva una nuova richiesta di servizio
+     */
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMessageEvent(EventBusMessage event) {
+        try {
+            // Aggiorna la lista quando arriva una notifica di tipo "s" (service)
+            // Questo viene inviato da MyFirebaseMessagingService quando arriva una notifica push
+            if (event.getType() != null && event.getType().equalsIgnoreCase("s")) {
+                Log.d(TAG, "Service notification received via EventBus, refreshing list...");
+                // Ricarica la lista delle richieste in corso
+                serviceCallGetOngoingServices(true);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error handling EventBus message", e);
+            e.printStackTrace();
+        }
+    }
+
+    @Override
     public void onDestroy() {
         Utils.cancelAsyncTask(ongoingServiceAsync);
+        // Deregistra EventBus se non già fatto
+        if (EventBus.getDefault().isRegistered(this)) {
+            EventBus.getDefault().unregister(this);
+        }
         super.onDestroy();
     }
 }

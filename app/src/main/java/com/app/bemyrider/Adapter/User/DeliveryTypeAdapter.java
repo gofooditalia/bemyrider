@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatTextView;
@@ -20,7 +21,6 @@ import com.app.bemyrider.activity.user.ServiceDetailActivity;
 import com.app.bemyrider.model.user.ProviderItem;
 import com.app.bemyrider.utils.PrefsUtil;
 import com.squareup.picasso.Picasso;
-
 
 import java.util.List;
 
@@ -74,7 +74,8 @@ public class DeliveryTypeAdapter extends RecyclerView.Adapter<DeliveryTypeAdapte
     public class MyViewHolder extends RecyclerView.ViewHolder {
         RelativeLayout relDetail;
         ImageView imgProvider;
-        AppCompatTextView txtName, txtAddress, txtRateCount, txtRate;
+        AppCompatTextView txtName, txtAddress;
+        TextView txtRateCount, txtRate;
 
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);

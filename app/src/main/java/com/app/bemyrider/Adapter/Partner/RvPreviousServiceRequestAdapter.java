@@ -36,16 +36,19 @@ public class RvPreviousServiceRequestAdapter extends RecyclerView.Adapter<RvPrev
 
     @Override
     public Holder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.partner_row_upcoming_servicerequest, parent, false);
+        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.partner_row_upcoming_servicerequest, parent,
+                false);
         return new Holder(v);
     }
 
     @Override
     public void onBindViewHolder(Holder holder, final int position) {
 
-        holder.txt_uname.setText(String.format("%s %s", arrayList.get(position).getCustomerFname(), arrayList.get(position).getCustomerLname()));
+        holder.txt_uname.setText(String.format("%s %s", arrayList.get(position).getCustomerFname(),
+                arrayList.get(position).getCustomerLname()));
         holder.txt_service.setText(arrayList.get(position).getServiceName());
-        holder.txt_price.setText(String.format("%s%s", PrefsUtil.with(context).readString("CurrencySign"), arrayList.get(position).getBookingAmount()));
+        holder.txt_price.setText(String.format("%s%s", PrefsUtil.with(context).readString("CurrencySign"),
+                arrayList.get(position).getBookingAmount()));
         holder.txt_date.setText(arrayList.get(position).getBookingStartTime());
 
         /*----- Set Status text & background color -----*/
@@ -88,7 +91,8 @@ public class RvPreviousServiceRequestAdapter extends RecyclerView.Adapter<RvPrev
             holder.img_request_userprofile.setImageResource(R.mipmap.user);
         } else {
             try {
-                Picasso.get().load(arrayList.get(position).getCustomerImage()).placeholder(R.drawable.loading).into(holder.img_request_userprofile);
+                Picasso.get().load(arrayList.get(position).getCustomerImage()).placeholder(R.drawable.loading)
+                        .into(holder.img_request_userprofile);
             } catch (IllegalArgumentException e) {
                 e.printStackTrace();
             }
@@ -97,15 +101,18 @@ public class RvPreviousServiceRequestAdapter extends RecyclerView.Adapter<RvPrev
         holder.layout_item.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (arrayList.get(position).getServiceStatus().equals("completed")) {
+                int adapterPosition = holder.getAdapterPosition();
+                if (adapterPosition == RecyclerView.NO_POSITION)
+                    return;
+                if (arrayList.get(adapterPosition).getServiceStatus().equals("completed")) {
                     Intent intent = new Intent(context, Partner_ServiceRequestDetail_Tablayout_Activity.class);
-                    intent.putExtra("serviceRequestId", arrayList.get(position).getServiceRequestId());
-                    intent.putExtra("serviceName", arrayList.get(position).getServiceName());
+                    intent.putExtra("serviceRequestId", arrayList.get(adapterPosition).getServiceRequestId());
+                    intent.putExtra("serviceName", arrayList.get(adapterPosition).getServiceName());
                     context.startActivity(intent);
                 } else {
                     Intent intent = new Intent(context, PartnerServiceRequestDetailsActivity.class);
-                    intent.putExtra("serviceRequestId", arrayList.get(position).getServiceRequestId());
-                    intent.putExtra("serviceName", arrayList.get(position).getServiceName());
+                    intent.putExtra("serviceRequestId", arrayList.get(adapterPosition).getServiceRequestId());
+                    intent.putExtra("serviceName", arrayList.get(adapterPosition).getServiceName());
                     context.startActivity(intent);
                 }
             }

@@ -40,14 +40,19 @@ public class SolventRecyclerViewAdapter extends RecyclerView.Adapter<SolventRecy
 
     @Override
     public void onBindViewHolder(SolventViewHolders holder, int position) {
-        //holder.countryPhoto.setImageResource(gaggeredList.get(position).getPhoto());
-        Picasso.get().load(gaggeredList.get(position).getMediaUrl()).placeholder(R.drawable.loading).into(holder.countryPhoto);
+        // holder.countryPhoto.setImageResource(gaggeredList.get(position).getPhoto());
+        Picasso.get().load(gaggeredList.get(position).getMediaUrl()).placeholder(R.drawable.loading)
+                .into(holder.countryPhoto);
         holder.countryPhoto.setScaleType(ImageView.ScaleType.CENTER_CROP);
         holder.countryPhoto.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 400));
         holder.countryPhoto.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                context.startActivity(new Intent(context, ImagesSliderActivity.class).putExtra("position", position).putExtra("images", (Serializable) gaggeredList));
+                int adapterPosition = holder.getAdapterPosition();
+                if (adapterPosition == RecyclerView.NO_POSITION)
+                    return;
+                context.startActivity(new Intent(context, ImagesSliderActivity.class)
+                        .putExtra("position", adapterPosition).putExtra("images", (Serializable) gaggeredList));
             }
         });
     }

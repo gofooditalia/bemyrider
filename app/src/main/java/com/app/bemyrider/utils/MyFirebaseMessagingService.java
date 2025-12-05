@@ -320,6 +320,15 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 int importance = NotificationManager.IMPORTANCE_HIGH;
 
                 NotificationChannel mChannel = notificationManager.getNotificationChannel(Ch_id);
+                
+                // IMPORTANTE: Se il canale esiste ma non ha suono, eliminalo e ricrealo
+                // Android non permette di modificare il suono di un canale esistente
+                if (mChannel != null && mChannel.getSound() == null) {
+                    Log.w(TAG, "Channel exists but has no sound. Deleting and recreating...");
+                    notificationManager.deleteNotificationChannel(Ch_id);
+                    mChannel = null;
+                }
+                
                 if (mChannel == null) {
                     mChannel = new NotificationChannel(Ch_id, name, importance);
                     AudioAttributes audioAttributes = new AudioAttributes.Builder()
@@ -328,22 +337,42 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                             .build();
                     mChannel.setSound(defaultSoundUri, audioAttributes);
                     mChannel.enableVibration(true);
+                    mChannel.setVibrationPattern(new long[]{100, 200, 300, 400, 500, 400, 300, 200, 400});
                     mChannel.setShowBadge(true);
+                    mChannel.setDescription("Canale per le notifiche push di BeMyRider");
                     notificationManager.createNotificationChannel(mChannel);
-                    Log.d(TAG, "Notification channel created with sound");
+                    Log.d(TAG, "Notification channel created/recreated with sound: " + defaultSoundUri);
                 } else {
                     // Verifica che il canale abbia il suono configurato
-                    // Se il canale esiste ma non ha suono, non possiamo modificarlo direttamente
-                    // ma possiamo almeno loggare un avviso
-                    if (mChannel.getSound() == null) {
-                        Log.w(TAG, "Notification channel exists but has no sound configured. Playing sound directly.");
-                    } else {
+                    if (mChannel.getSound() != null) {
                         Log.d(TAG, "Notification channel exists with sound: " + mChannel.getSound());
+                        // Verifica che il suono sia quello corretto
+                        if (!mChannel.getSound().equals(defaultSoundUri)) {
+                            Log.w(TAG, "Channel sound mismatch! Expected: " + defaultSoundUri + ", Got: " + mChannel.getSound());
+                            // Elimina e ricrea il canale con il suono corretto
+                            notificationManager.deleteNotificationChannel(Ch_id);
+                            mChannel = new NotificationChannel(Ch_id, name, importance);
+                            AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                                    .setUsage(AudioAttributes.USAGE_NOTIFICATION_RINGTONE)
+                                    .build();
+                            mChannel.setSound(defaultSoundUri, audioAttributes);
+                            mChannel.enableVibration(true);
+                            mChannel.setVibrationPattern(new long[]{100, 200, 300, 400, 500, 400, 300, 200, 400});
+                            mChannel.setShowBadge(true);
+                            mChannel.setDescription("Canale per le notifiche push di BeMyRider");
+                            notificationManager.createNotificationChannel(mChannel);
+                            Log.d(TAG, "Notification channel recreated with correct sound");
+                        }
+                    } else {
+                        Log.w(TAG, "Notification channel exists but has no sound configured!");
                     }
                 }
 
                 // Create a notification and set the notification channel.
                 /*.setSmallIcon(R.drawable.notify)*/
+                // IMPORTANTE: Per Android O+, il suono viene gestito dal canale di notifica
+                // Assicuriamoci che il canale abbia il suono configurato correttamente
                 notification = new Notification.Builder(this, Ch_id)
                         .setSmallIcon(R.mipmap.ic_launcher)
                         .setContentTitle(getResources().getString(R.string.app_name))
@@ -352,6 +381,8 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                         .setContentIntent(pendingIntent)
                         .setStyle(new Notification.BigTextStyle().bigText(remoteMessage.getData().get("title")))
                         .setChannelId(Ch_id)
+                        .setDefaults(Notification.DEFAULT_ALL) // Aggiunge suono, vibrazione, LED
+                        .setPriority(Notification.PRIORITY_HIGH) // Priorità alta per garantire il suono
                         .build();
             } else {
                 // Create a notification
@@ -389,12 +420,53 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                     getApplicationContext().getPackageName() + "/" + R.raw.notify);
             
             Log.d(TAG, "Playing notification sound: " + defaultSoundUri);
+            Log.d(TAG, "App state when playing sound: " + (isAppInForeground() ? "FOREGROUND" : "BACKGROUND"));
+            
+            // Prova prima con Ringtone (più semplice)
             Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), defaultSoundUri);
             if (r != null) {
+                // Imposta il tipo di stream per le notifiche
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    r.setAudioAttributes(new AudioAttributes.Builder()
+                            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                            .setUsage(AudioAttributes.USAGE_NOTIFICATION_RINGTONE)
+                            .setFlags(AudioAttributes.FLAG_AUDIBILITY_ENFORCED) // Forza la riproduzione anche in background
+                            .build());
+                }
                 r.play();
-                Log.d(TAG, "Notification sound played successfully");
+                Log.d(TAG, "Notification sound played successfully via Ringtone");
+                
+                // Verifica che il suono sia effettivamente in riproduzione
+                // (Ringtone.isPlaying() non è disponibile, ma possiamo loggare)
+                Log.d(TAG, "Ringtone playback initiated");
             } else {
                 Log.w(TAG, "Could not play notification sound - ringtone is null");
+                Log.w(TAG, "Sound URI: " + defaultSoundUri);
+                Log.w(TAG, "Package name: " + getApplicationContext().getPackageName());
+                Log.w(TAG, "Resource ID: " + R.raw.notify);
+                
+                // Fallback: usa il suono di default del sistema
+                try {
+                    Uri defaultRingtone = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+                    Log.d(TAG, "Trying fallback sound: " + defaultRingtone);
+                    Ringtone fallbackRingtone = RingtoneManager.getRingtone(getApplicationContext(), defaultRingtone);
+                    if (fallbackRingtone != null) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                            fallbackRingtone.setAudioAttributes(new AudioAttributes.Builder()
+                                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                                    .setUsage(AudioAttributes.USAGE_NOTIFICATION_RINGTONE)
+                                    .setFlags(AudioAttributes.FLAG_AUDIBILITY_ENFORCED)
+                                    .build());
+                        }
+                        fallbackRingtone.play();
+                        Log.d(TAG, "Notification sound played via fallback (system default)");
+                    } else {
+                        Log.e(TAG, "Fallback ringtone is also null!");
+                    }
+                } catch (Exception fallbackException) {
+                    Log.e(TAG, "Error playing fallback notification sound", fallbackException);
+                    fallbackException.printStackTrace();
+                }
             }
         } catch (Exception e) {
             Log.e(TAG, "Error playing notification sound", e);
