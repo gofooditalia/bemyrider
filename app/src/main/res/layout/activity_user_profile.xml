@@ -52,6 +52,7 @@
                             android:layout_width="@dimen/_72sdp"
                             android:layout_height="@dimen/_72sdp"
                             android:layout_gravity="center"
+                            android:contentDescription="@null"
                             app:border_color="#eeeeee"
                             app:border_width="2dp" />
 
@@ -132,6 +133,7 @@
                             android:padding="13dp"
                             android:scaleType="centerCrop"
                             android:src="@drawable/ic_back"
+                            android:contentDescription="@string/back_button_description"
                             app:tint="@color/white"/>
 
                         <TextView
@@ -259,6 +261,7 @@
                                 android:layout_height="@dimen/_40sdp"
                                 android:layout_marginEnd="@dimen/_6sdp"
                                 android:background="@drawable/ic_address_profile"
+                                android:contentDescription="@null"
                                 android:padding="@dimen/_8sdp" />
 
                             <androidx.appcompat.widget.LinearLayoutCompat
@@ -312,6 +315,7 @@
                                 android:layout_height="@dimen/_40sdp"
                                 android:layout_marginEnd="@dimen/_6sdp"
                                 android:background="@drawable/ic_work_task"
+                                android:contentDescription="@null"
                                 android:padding="@dimen/_8sdp" />
 
                             <androidx.appcompat.widget.LinearLayoutCompat
@@ -364,7 +368,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="6dp"
                         android:text="@string/wallet_fund_deposit"
-                        android:textSize="@dimen/_12sdp"
+                        android:textSize="@dimen/_12ssp"
                         android:visibility="gone" />
 
                 </androidx.appcompat.widget.LinearLayoutCompat>

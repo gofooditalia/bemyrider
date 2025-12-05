@@ -132,7 +132,7 @@ public class DeliveryTypeFragment extends Fragment {
         binding.rvDeliveryList.setItemAnimator(new DefaultItemAnimator());
 
         arrayList = new ArrayList<>();
-        deliveryTypeAdapter = new DeliveryTypeAdapter(arrayList, activity);
+        deliveryTypeAdapter = new DeliveryTypeAdapter(activity);
         binding.rvDeliveryList.setAdapter(deliveryTypeAdapter);
 
         binding.swipeRefresh.setOnRefreshListener(() -> {
@@ -224,7 +224,7 @@ public class DeliveryTypeFragment extends Fragment {
                         PrefsUtil.with(activity).write("delivery_type", "small");
                     }
 
-                    deliveryTypeAdapter.notifyDataSetChanged();
+                    deliveryTypeAdapter.submitList(new ArrayList<>(arrayList));
 
                     total_page = providerListData.getPagination().getTotalPages();
                     page = providerListData.getPagination().getCurrentPage();

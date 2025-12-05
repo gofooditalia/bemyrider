@@ -13,7 +13,7 @@
         <FrameLayout
             android:id="@+id/content_frame_partner"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:layout_below="@+id/container_toolbar"
             android:background="@mipmap/ic_search_background"
             android:fitsSystemWindows="true">

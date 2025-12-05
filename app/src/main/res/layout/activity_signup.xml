@@ -110,7 +110,8 @@
                                 android:id="@+id/imgProvider"
                                 android:layout_width="@dimen/_90sdp"
                                 android:layout_height="@dimen/_90sdp"
-                                android:src="@drawable/ic_user_type_provider" />
+                                android:src="@drawable/ic_user_type_provider"
+                                android:contentDescription="@null" />
 
                             <androidx.appcompat.widget.AppCompatTextView
                                 style="@style/font_medium"
@@ -137,7 +138,8 @@
                                 android:id="@+id/imgCustomer"
                                 android:layout_width="@dimen/_90sdp"
                                 android:layout_height="@dimen/_90sdp"
-                                android:src="@drawable/ic_user_type_customer" />
+                                android:src="@drawable/ic_user_type_customer"
+                                android:contentDescription="@null" />
 
                             <androidx.appcompat.widget.AppCompatTextView
                                 style="@style/font_medium"
@@ -417,6 +419,7 @@
                                     android:layout_height="@dimen/_22sdp"
                                     android:layout_marginEnd="@dimen/_5sdp"
                                     android:src="@drawable/ic_contact_us_menu"
+                                    android:contentDescription="@null"
                                     app:tint="@color/button" />
 
                                 <androidx.appcompat.widget.AppCompatTextView
@@ -449,6 +452,7 @@
                                     android:layout_alignParentStart="true"
                                     android:layout_marginEnd="@dimen/_5sdp"
                                     android:src="@drawable/ic_info_menu"
+                                    android:contentDescription="@null"
                                     app:tint="@color/button" />
 
                                 <androidx.appcompat.widget.AppCompatTextView

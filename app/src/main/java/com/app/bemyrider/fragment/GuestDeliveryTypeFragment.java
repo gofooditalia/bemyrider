@@ -122,7 +122,7 @@ public class GuestDeliveryTypeFragment extends Fragment {
         binding.rvDeliveryList.setItemAnimator(new DefaultItemAnimator());
 
         arrayList = new ArrayList<>();
-        deliveryTypeAdapter = new DeliveryTypeAdapter(arrayList, activity);
+        deliveryTypeAdapter = new DeliveryTypeAdapter(activity);
         binding.rvDeliveryList.setAdapter(deliveryTypeAdapter);
 
         binding.swipeRefresh.setOnRefreshListener(() -> {
@@ -206,7 +206,7 @@ public class GuestDeliveryTypeFragment extends Fragment {
                         binding.txtNoRecord.setVisibility(View.VISIBLE);
                     }
 
-                    deliveryTypeAdapter.notifyDataSetChanged();
+                    deliveryTypeAdapter.submitList(new ArrayList<>(arrayList));
 
                     total_page = providerListData.getPagination().getTotalPages();
                     page = providerListData.getPagination().getCurrentPage();

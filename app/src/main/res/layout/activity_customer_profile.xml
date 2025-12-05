@@ -52,6 +52,7 @@
                             android:layout_height="@dimen/_72sdp"
                             android:layout_gravity="center"
                             app:border_color="#eeeeee"
+                            android:contentDescription="@null"
                             app:border_width="2dp" />
 
                         <androidx.appcompat.widget.AppCompatTextView
@@ -92,7 +93,7 @@
                             android:maxLines="1"
                             android:textColor="@color/white"
                             android:textColorLink="@color/white"
-                            android:textSize="@dimen/_11sdp" />
+                            android:textSize="@dimen/_11ssp" />
 
                         <RelativeLayout
                             android:id="@+id/Img_edit"
@@ -104,7 +105,8 @@
                             <com.app.bemyrider.utils.CircleImageView
                                 android:layout_width="@dimen/_36sdp"
                                 android:layout_height="@dimen/_36sdp"
-                                android:src="@color/white" />
+                                android:src="@color/white"
+                                android:contentDescription="@null"/>
 
                             <androidx.appcompat.widget.AppCompatImageView
                                 android:layout_width="@dimen/_24sdp"
@@ -113,6 +115,7 @@
                                 android:adjustViewBounds="true"
                                 android:padding="@dimen/_3sdp"
                                 android:src="@drawable/ic_edit_white"
+                                android:contentDescription="@null"
                                 app:tint="@color/purple" />
 
                         </RelativeLayout>
@@ -154,6 +157,7 @@
                             android:padding="13dp"
                             android:scaleType="centerCrop"
                             android:src="@drawable/ic_back"
+                            android:contentDescription="@string/back_button_description"
                             app:tint="@color/white"/>
 
                         <TextView
@@ -216,6 +220,7 @@
                             android:layout_width="0dp"
                             android:layout_height="40dp"
                             android:layout_weight="1"
+                            android:contentDescription="@null"
                             android:src="@mipmap/fb_unverify" />
 
                         <androidx.appcompat.widget.AppCompatImageView
@@ -223,6 +228,7 @@
                             android:layout_width="0dp"
                             android:layout_height="40dp"
                             android:layout_weight="1"
+                            android:contentDescription="@null"
                             android:src="@mipmap/google_unverify" />
 
                         <androidx.appcompat.widget.AppCompatImageView
@@ -230,6 +236,7 @@
                             android:layout_width="0dp"
                             android:layout_height="40dp"
                             android:layout_weight="1"
+                            android:contentDescription="@null"
                             android:src="@mipmap/linkedin_unverify" />
                     </androidx.appcompat.widget.LinearLayoutCompat>
 
@@ -309,6 +316,7 @@
                                 android:layout_height="@dimen/_40sdp"
                                 android:layout_marginEnd="@dimen/_6sdp"
                                 android:background="@drawable/ic_address_profile"
+                                android:contentDescription="@null"
                                 android:padding="@dimen/_8sdp" />
 
                             <androidx.appcompat.widget.LinearLayoutCompat
@@ -362,6 +370,7 @@
                                 android:layout_height="@dimen/_40sdp"
                                 android:layout_marginEnd="@dimen/_6sdp"
                                 android:background="@drawable/ic_work_task"
+                                android:contentDescription="@null"
                                 android:padding="@dimen/_8sdp" />
 
                             <androidx.appcompat.widget.LinearLayoutCompat
@@ -415,6 +424,7 @@
                                 android:layout_height="@dimen/_40sdp"
                                 android:layout_marginEnd="@dimen/_6sdp"
                                 android:background="@drawable/ic_company"
+                                android:contentDescription="@null"
                                 android:padding="@dimen/_8sdp" />
 
                             <androidx.appcompat.widget.LinearLayoutCompat
@@ -468,6 +478,7 @@
                                 android:layout_height="@dimen/_40sdp"
                                 android:layout_marginEnd="@dimen/_6sdp"
                                 android:background="@drawable/ic_city_of_residence"
+                                android:contentDescription="@null"
                                 android:padding="@dimen/_8sdp" />
 
                             <androidx.appcompat.widget.LinearLayoutCompat
@@ -521,6 +532,7 @@
                                 android:layout_height="@dimen/_40sdp"
                                 android:layout_marginEnd="@dimen/_6sdp"
                                 android:background="@drawable/ic_vat"
+                                android:contentDescription="@null"
                                 android:padding="@dimen/_8sdp" />
 
                             <androidx.appcompat.widget.LinearLayoutCompat
@@ -627,6 +639,7 @@
                                 android:layout_height="@dimen/_40sdp"
                                 android:layout_marginEnd="@dimen/_6sdp"
                                 android:background="@drawable/ic_invoice"
+                                android:contentDescription="@null"
                                 android:padding="@dimen/_8sdp" />
 
                             <androidx.appcompat.widget.LinearLayoutCompat
@@ -680,6 +693,7 @@
                                 android:layout_height="@dimen/_40sdp"
                                 android:layout_marginEnd="@dimen/_6sdp"
                                 android:background="@drawable/ic_email_address"
+                                android:contentDescription="@null"
                                 android:padding="@dimen/_8sdp" />
 
                             <androidx.appcompat.widget.LinearLayoutCompat
@@ -730,7 +744,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="6dp"
                         android:text="@string/wallet_fund_deposit"
-                        android:textSize="@dimen/_12sdp"
+                        android:textSize="@dimen/_12ssp"
                         android:visibility="gone" />
 
                 </androidx.appcompat.widget.LinearLayoutCompat>

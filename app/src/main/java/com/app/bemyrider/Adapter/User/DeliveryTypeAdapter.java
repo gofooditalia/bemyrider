@@ -14,6 +14,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatTextView;
+import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.bemyrider.R;
@@ -22,15 +23,12 @@ import com.app.bemyrider.model.user.ProviderItem;
 import com.app.bemyrider.utils.PrefsUtil;
 import com.squareup.picasso.Picasso;
 
-import java.util.List;
+public class DeliveryTypeAdapter extends ListAdapter<ProviderItem, DeliveryTypeAdapter.MyViewHolder> {
 
-public class DeliveryTypeAdapter extends RecyclerView.Adapter<DeliveryTypeAdapter.MyViewHolder> {
-
-    private List<ProviderItem> providerItemList;
     private Activity act;
 
-    public DeliveryTypeAdapter(List<ProviderItem> providerItemList, Activity act) {
-        this.providerItemList = providerItemList;
+    public DeliveryTypeAdapter(Activity act) {
+        super(new DeliveryTypeDiffCallback());
         this.act = act;
     }
 
@@ -43,8 +41,8 @@ public class DeliveryTypeAdapter extends RecyclerView.Adapter<DeliveryTypeAdapte
 
     @Override
     public void onBindViewHolder(@NonNull DeliveryTypeAdapter.MyViewHolder holder, int position) {
-        if (providerItemList.size() > 0) {
-            ProviderItem item = providerItemList.get(position);
+        ProviderItem item = getItem(position);
+        if (item != null) {
             holder.txtName.setText(item.getProviderFirstName() + " " + item.getProviderLastName());
             holder.txtAddress.setText(item.getAddress());
             holder.txtRateCount.setText(item.getAvgRating());
@@ -64,11 +62,6 @@ public class DeliveryTypeAdapter extends RecyclerView.Adapter<DeliveryTypeAdapte
                 }
             });
         }
-    }
-
-    @Override
-    public int getItemCount() {
-        return providerItemList.size();
     }
 
     public class MyViewHolder extends RecyclerView.ViewHolder {

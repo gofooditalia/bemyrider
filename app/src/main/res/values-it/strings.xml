@@ -587,4 +587,8 @@
     <string name="err_no_camera_in_device">Non è presente l\'opzione fotocamera sul tuo dispositivo</string>
     <string name="lbl_city_of_company">Sede dell\'azienda</string>
     <string name="lbl_city_of_company_with_dot">Sede dell\'azienda*</string>
+    <string name="err_msg_city_of_company">Fornisci la città dell\'azienda</string>
+    <string name="lbl_add_signature">Aggiungi Firma</string>
+    <string name="lbl_reset">Ripristina</string>
+    <string name="err_msg_signature">Disegna la tua firma</string>
 </resources>

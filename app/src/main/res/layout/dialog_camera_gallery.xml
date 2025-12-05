@@ -25,6 +25,7 @@
                 android:layout_marginStart="@dimen/_8sdp"
                 android:layout_marginEnd="@dimen/_4sdp"
                 android:src="@drawable/ic_camera"
+                android:contentDescription="@null"
                 app:tint="@color/text_medium" />
 
             <TextView
@@ -58,6 +59,7 @@
                 android:layout_marginStart="@dimen/_8sdp"
                 android:layout_marginEnd="@dimen/_4sdp"
                 android:src="@drawable/ic_gallery"
+                android:contentDescription="@null"
                 app:tint="@color/text_medium" />
 
             <TextView
