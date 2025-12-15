@@ -1,14 +1,11 @@
 package com.app.bemyrider.activity.partner;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.MenuItem;
@@ -16,69 +13,34 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.AdapterView;
-import android.widget.CompoundButton;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
 import androidx.databinding.DataBindingUtil;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
 
 import com.app.bemyrider.Adapter.Partner.DrawerItemCustomAdapter;
 import com.app.bemyrider.AsyncTask.ConnectionCheck;
-import com.app.bemyrider.AsyncTask.WebServiceCall;
 import com.app.bemyrider.R;
-import com.app.bemyrider.WebServices.WebServiceUrl;
-import com.app.bemyrider.activity.AccountSettingActivity;
-import com.app.bemyrider.activity.ContactUsActivity;
-import com.app.bemyrider.activity.FeedbackActivity;
-import com.app.bemyrider.activity.InfoPageActivity;
 import com.app.bemyrider.activity.LoginActivity;
-import com.app.bemyrider.activity.NotificationListingActivity;
-import com.app.bemyrider.activity.SignupActivity;
-import com.app.bemyrider.activity.user.WalletActivity;
 import com.app.bemyrider.databinding.PartnerActivityProfileBinding;
-import com.app.bemyrider.model.CommonPojo;
 import com.app.bemyrider.model.MessageEvent;
 import com.app.bemyrider.model.ModelForDrawer;
-import com.app.bemyrider.model.NewLoginPojo;
-import com.app.bemyrider.model.NewLoginPojoItem;
-import com.app.bemyrider.model.ProfileItem;
-import com.app.bemyrider.model.ProfilePojo;
 import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.LocaleManager;
 import com.app.bemyrider.utils.Log;
 import com.app.bemyrider.utils.PrefsUtil;
 import com.app.bemyrider.utils.SecurePrefsUtil;
-import com.app.bemyrider.utils.Utils;
-import com.google.android.gms.auth.api.Auth;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.auth.api.signin.GoogleSignInResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.squareup.picasso.Picasso;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
 
 public class DrawerActivity extends AppCompatActivity {
 
@@ -86,77 +48,25 @@ public class DrawerActivity extends AppCompatActivity {
     private PartnerActivityProfileBinding binding;
     private DrawerItemCustomAdapter adapter;
     private ActionBarDrawerToggle mDrawerToggle;
-    private ModelForDrawer[] drawerItem;
-    private GoogleApiClient mGoogleApiClient;
 
     private Context context;
-    private int previousSelectedPos = 0;
-    private int selectedPos = 0;
-    private String strepoc_avl_start_time, strepoc_avl_end_time,
-            countrycodeid, userAddress, smallDelivery, mediumDelivery, largeDelivery;
-    private String clicktype = "";
-    private AsyncTask socialSignInAsync, changeStatusAsync, getProfileAsync, logoutAsync;
     private BroadcastReceiver mMessageReceiver;
     private ConnectionManager connectionManager;
     private Toolbar toolbar;
-    ActivityResultLauncher<Intent> permissionActivityResultLauncher;
 
-    private Activity activity;
-    ActivityResultLauncher<Intent> gmailActivityResult;
-    ActivityResultLauncher<Intent> linkedInActivityResult;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_ACTION_BAR_OVERLAY);
-        binding = DataBindingUtil.setContentView(DrawerActivity.this, R.layout.partner_activity_profile, null);
-
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getResources().getString(R.string.default_web_client_id))
-                .requestEmail()
-                .build();
-
-        mGoogleApiClient = new GoogleApiClient.Builder(DrawerActivity.this)
-                .enableAutoManage(DrawerActivity.this, connectionResult -> {
-
-                })
-                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
-                .build();
+        binding = DataBindingUtil.setContentView(DrawerActivity.this, R.layout.partner_activity_profile);
 
         initView();
 
-        serviceCall();
-
-        binding.switchAvailableNow.setOnCheckedChangeListener((compoundButton, b) -> {
-            if (b) {
-                serviceCallChangeStatus("y");
-            } else {
-                serviceCallChangeStatus("n");
-            }
-        });
-
-        binding.txtViewall.setOnClickListener(v -> {
-            Intent i = new Intent(context, PartnerReviewsActivity.class);
-            startActivity(i);
-        });
-
-        binding.imgVerifyFacebook.setOnClickListener(view -> {
-            clicktype = "f";
-            Toast.makeText(DrawerActivity.this, "Facebook verification is disabled", Toast.LENGTH_SHORT).show();
-        });
-
-        binding.imgVerifyGmail.setOnClickListener(view -> {
-            clicktype = "g";
-            loginWithGooglePlus();
-        });
-
-        binding.imgVerifyLinkedin.setOnClickListener(view -> {
-            clicktype = "l";
-            loginWithLinkedIn();
-        });
-
-        getSupportActionBar().setHomeButtonEnabled(true);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        if(getSupportActionBar() != null){
+            getSupportActionBar().setHomeButtonEnabled(true);
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
 
         mMessageReceiver = new BroadcastReceiver() {
             @Override
@@ -187,35 +97,8 @@ public class DrawerActivity extends AppCompatActivity {
         });
     }
 
-    private void loginWithLinkedIn() {
-    }
-
-    private void loginWithGooglePlus() {
-        Intent intent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
-        gmailActivityResult.launch(intent);
-    }
-
-    private void socialSignIn(final String email, final String firstName, final String lastName, String profileImageUrl,
-                              String logintype, String social_id) {
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-    }
-
-    private void handleSignInResult(GoogleSignInResult result) {
-    }
-
-    private void serviceCallChangeStatus(final String switchstatus) {
-    }
-
-    private void serviceCall() {
-    }
-
     private void initView() {
         context = DrawerActivity.this;
-        activity = DrawerActivity.this;
         setUpToolBar();
 
         binding.appBarLayout.addOnOffsetChangedListener((appBarLayout, verticalOffset) -> {
@@ -225,9 +108,11 @@ public class DrawerActivity extends AppCompatActivity {
                 else
                     binding.txtHeaderName.setText(getResources().getString(R.string.provider_profile));
 
-                binding.toolbar.setBackgroundColor(getResources().getColor(R.color.white));
-                binding.txtHeaderName.setTextColor(getResources().getColor(R.color.text));
-                mDrawerToggle.getDrawerArrowDrawable().setColor(getResources().getColor(R.color.text));
+                binding.toolbar.setBackgroundColor(ContextCompat.getColor(context, R.color.white));
+                binding.txtHeaderName.setTextColor(ContextCompat.getColor(context, R.color.text));
+                if (mDrawerToggle != null) {
+                    mDrawerToggle.getDrawerArrowDrawable().setColor(ContextCompat.getColor(context, R.color.text));
+                }
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                     Window window = getWindow();
@@ -237,10 +122,12 @@ public class DrawerActivity extends AppCompatActivity {
                 }
             } else {
                 binding.txtHeaderName.setText("");
-                binding.txtHeaderName.setTextColor(getResources().getColor(R.color.white));
-                mDrawerToggle.getDrawerArrowDrawable().setColor(getResources().getColor(R.color.white));
+                binding.txtHeaderName.setTextColor(ContextCompat.getColor(context, R.color.white));
+                if (mDrawerToggle != null) {
+                    mDrawerToggle.getDrawerArrowDrawable().setColor(ContextCompat.getColor(context, R.color.white));
+                }
 
-                binding.toolbar.setBackgroundColor(getResources().getColor(R.color.transparent));
+                binding.toolbar.setBackgroundColor(ContextCompat.getColor(context, R.color.transparent));
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                     Window window = getWindow();
                     window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
@@ -255,63 +142,15 @@ public class DrawerActivity extends AppCompatActivity {
         connectionManager.checkConnection(context);
 
         setUpDrawer();
-
-        gmailActivityResult();
-        linkedInActivityResult();
-    }
-
-    private void linkedInActivityResult() {
-        linkedInActivityResult = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
-                result -> {
-                    try {
-                        Intent data = result.getData();
-                        if (clicktype.equals("l")) {
-                            if (result.getResultCode() == RESULT_OK) {
-                                socialSignIn(data.getStringExtra("Email"), data.getStringExtra("FirstName"),
-                                        data.getStringExtra("LatName"), data.getStringExtra("Profile Url"),
-                                        "l", data.getStringExtra("User Id"));
-                            }
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                });
-    }
-
-    private void gmailActivityResult() {
-        gmailActivityResult = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(),
-                result -> {
-                    if (result.getResultCode() == Activity.RESULT_OK) {
-                        try {
-                            if (clicktype.equals("g")) {
-                                GoogleSignInResult gResult = Auth.GoogleSignInApi
-                                        .getSignInResultFromIntent(result.getData());
-                                handleSignInResult(gResult);
-                            }
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                });
     }
 
     private void setUpToolBar() {
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
-        getSupportActionBar().setTitle(R.string.provider_profile);
-    }
-
-    private void permissionMessageDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage(R.string.denine_permission);
-        builder.setPositiveButton("OK", (dialog, which) -> finish());
-        builder.show();
     }
 
     private void setUpDrawer() {
-        drawerItem = new ModelForDrawer[14];
+        ModelForDrawer[] drawerItem = new ModelForDrawer[14];
         drawerItem[0] = new ModelForDrawer(R.mipmap.ic_profile_drawer, getString(R.string.profile));
         drawerItem[1] = new ModelForDrawer(R.mipmap.ic_service_request, getString(R.string.service_request));
         drawerItem[2] = new ModelForDrawer(R.mipmap.ic_financial_information, getString(R.string.financial_info));
@@ -327,7 +166,7 @@ public class DrawerActivity extends AppCompatActivity {
         drawerItem[12] = new ModelForDrawer(R.mipmap.ic_info_drawer, getString(R.string.info));
         drawerItem[13] = new ModelForDrawer(R.mipmap.ic_logout, getString(R.string.logout));
 
-        adapter = new DrawerItemCustomAdapter(this, R.layout.drawerlist_rowitem, drawerItem, selectedPos);
+        adapter = new DrawerItemCustomAdapter(this, R.layout.drawerlist_rowitem, drawerItem, 0);
         binding.leftDrawer.setAdapter(adapter);
         binding.leftDrawer.setOnItemClickListener(new DrawerItemClickListener());
 
@@ -357,24 +196,11 @@ public class DrawerActivity extends AppCompatActivity {
         mDrawerToggle.setDrawerIndicatorEnabled(true);
     }
 
-    private void selectItem(int position) {
-    }
-
-    private void serviceCallLogout() {
-        // Esegui logout locale immediatamente per un'esperienza utente reattiva
-        performLocalLogout();
-
-        // Se c'è rete, prova a inviare una notifica di logout al server in background, senza bloccare l'UI o gestire risposte
-        if (new ConnectionCheck().isNetworkConnected(context)) {
-            // Leggi i dati dell'utente DOPO il performLocalLogout se vuoi mandare una notifica di sessione chiusa al server.
-            // Tuttavia, se il server richiede dati validi per il logout, questi non saranno più nelle SharedPrefs.
-            // La soluzione più robusta è passare i dati al WebServiceCall *prima* di performLocalLogout,
-            // o semplicemente non tentare di notificare il server in questo modo se il logout locale è la priorità assoluta.
-
-            // Data la persistenza del problema e il tuo feedback,
-            // la scelta più sicura è eliminare del tutto la chiamata al server da qui.
-            // Il logout dell'utente è la priorità.
-            Log.i(TAG, "Server logout not attempted from DrawerActivity due to previous issues. Local logout performed.");
+    private class DrawerItemClickListener implements ListView.OnItemClickListener {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            // Implement navigation logic here
+            binding.drawerLayout.closeDrawers();
         }
     }
 
@@ -395,7 +221,6 @@ public class DrawerActivity extends AppCompatActivity {
             finish();
         } catch (Exception e) {
             e.printStackTrace();
-            // Fallback estremo se qualcosa va storto nel logout
             finish();
         }
     }
@@ -416,25 +241,21 @@ public class DrawerActivity extends AppCompatActivity {
 
     @Override
     protected void onResume() {
-        adapter.selectedItem(0);
-        adapter.notifyDataSetChanged();
-        registerReceiver(mMessageReceiver, new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE"));
         super.onResume();
+        registerReceiver(mMessageReceiver, new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE"));
     }
 
     @Override
     public void onDestroy() {
+        super.onDestroy();
         try {
-            connectionManager.unregisterReceiver();
+            if (connectionManager != null) {
+                connectionManager.unregisterReceiver();
+            }
+            unregisterReceiver(mMessageReceiver);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        Utils.cancelAsyncTask(socialSignInAsync);
-        Utils.cancelAsyncTask(changeStatusAsync);
-        Utils.cancelAsyncTask(getProfileAsync);
-        Utils.cancelAsyncTask(logoutAsync);
-        unregisterReceiver(mMessageReceiver);
-        super.onDestroy();
     }
 
     @Override
@@ -445,8 +266,8 @@ public class DrawerActivity extends AppCompatActivity {
 
     @Override
     public void onStop() {
-        EventBus.getDefault().unregister(this);
         super.onStop();
+        EventBus.getDefault().unregister(this);
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -454,25 +275,13 @@ public class DrawerActivity extends AppCompatActivity {
         try {
             if (event.getType().equalsIgnoreCase("connection")) {
                 if (event.getMessage().equalsIgnoreCase("disconnected")) {
-                    getOfflineUserDetails();
+                    // Handle disconnected state
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-    }
-
-    private void getOfflineUserDetails() {
-    }
-
-    private class DrawerItemClickListener implements ListView.OnItemClickListener {
-        @Override
-        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            selectItem(position);
-            adapter.selectedItem(position);
-            binding.drawerLayout.closeDrawers();
-        }
     }
 
     @Override
