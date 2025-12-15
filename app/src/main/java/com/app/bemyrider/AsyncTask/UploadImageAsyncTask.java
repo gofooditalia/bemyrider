@@ -1,19 +1,21 @@
 package com.app.bemyrider.AsyncTask;
 
+import android.os.Handler;
+import android.os.Looper;
 
-import android.os.AsyncTask;
 import com.app.bemyrider.utils.Log;
 
 import java.io.File;
 import java.net.SocketTimeoutException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
- * Created by nct58 on 19/01/2017.
- * http://www.codejava.net/java-se/networking/upload-files-by-sending-multipart-request-programmatically
+ * Modernized by Gemini
  */
-public class UploadImageAsyncTask extends AsyncTask<Void, Void, String> {
+public class UploadImageAsyncTask {
 
     private WebServiceConfig config;
     private String url;
@@ -21,10 +23,11 @@ public class UploadImageAsyncTask extends AsyncTask<Void, Void, String> {
     private Boolean resultFlag;
     private String charset = "UTF-8";
 
-
     private HashMap<String, String> textParams;
     private HashMap<String, File> fileParams;
 
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private final Handler handler = new Handler(Looper.getMainLooper());
 
     public UploadImageAsyncTask(String url, OnAsyncResult listener, HashMap<String, String> textParams, HashMap<String, File> fileParams, WebServiceConfig config) {
         this.url = url;
@@ -35,13 +38,14 @@ public class UploadImageAsyncTask extends AsyncTask<Void, Void, String> {
         this.config = config;
     }
 
-    @Override
-    protected void onPreExecute() {
-        super.onPreExecute();
+    public void execute() {
+        executor.execute(() -> {
+            String result = doInBackground();
+            handler.post(() -> onPostExecute(result));
+        });
     }
 
-    @Override
-    protected String doInBackground(Void... params) {
+    private String doInBackground() {
         try {
             MultipartUtility multipart;
             multipart = new MultipartUtility(String.valueOf(url), charset, config);
@@ -74,14 +78,8 @@ public class UploadImageAsyncTask extends AsyncTask<Void, Void, String> {
             return WebServiceConfig.UNEXPECTED_ERROR;
         }
     }
-    @Override
-    protected void onCancelled() {
-        onAsyncResult.OnCancelled("onCancelled");
-        super.onCancelled();
-    }
 
-    @Override
-    protected void onPostExecute(String result) {
+    private void onPostExecute(String result) {
         if (resultFlag) {
             if (onAsyncResult != null) {
                 onAsyncResult.OnSuccess(result);

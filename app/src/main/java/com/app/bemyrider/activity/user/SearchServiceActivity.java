@@ -8,19 +8,13 @@ import android.location.Geocoder;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Editable;
-import android.text.Html;
 import android.text.TextWatcher;
-
-import com.app.bemyrider.utils.LocaleManager;
-import com.app.bemyrider.utils.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
@@ -40,6 +34,8 @@ import com.app.bemyrider.model.ServiceListPOJO;
 import com.app.bemyrider.model.partner.ServiceListItem;
 import com.app.bemyrider.model.partner.ServiceListPojo;
 import com.app.bemyrider.utils.ConnectionManager;
+import com.app.bemyrider.utils.LocaleManager;
+import com.app.bemyrider.utils.Log;
 import com.app.bemyrider.utils.PrefsUtil;
 import com.app.bemyrider.utils.Utils;
 import com.google.android.gms.common.api.Status;
@@ -57,6 +53,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Modified by Hardik Talaviya on 10/12/19.
@@ -64,50 +61,47 @@ import java.util.List;
 
 public class SearchServiceActivity extends AppCompatActivity {
 
-    private static final String TAG = "SearchServiceActivity";
     private ActivitySearchServicesBinding binding;
     private LatLng selectedLatLng = new LatLng(0.0, 0.0);
-    private ServiceListPojo serviceListPojowithitem;
     private String selectedCatId = "", actualDate = "", selectedServiceId = "",
             selectedServiceName = "", selectedSubCatId = "";
     private ArrayList<ServiceDataItem> serviceDataItems = new ArrayList<>();
-    private ArrayAdapter serviceadapter;
-    private AsyncTask getServiceAsync;
-    private Context context;
+    private ArrayAdapter<ServiceDataItem> serviceadapter;
+    private AsyncTask<Void, Void, ServiceListPOJO> getServiceAsync;
     private ConnectionManager connectionManager;
-    ActivityResultLauncher<Intent> locationActivityResultLauncher;
+    private ActivityResultLauncher<Intent> locationActivityResultLauncher;
 
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = DataBindingUtil.setContentView(SearchServiceActivity.this, R.layout.activity_search_services, null);
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_search_services);
 
         init();
 
-        if (!PrefsUtil.with(SearchServiceActivity.this).readString("customer_address").equals("")) {
-            binding.txtLocation.setText(PrefsUtil.with(SearchServiceActivity.this).readString("customer_address"));
+        if (!Objects.equals(PrefsUtil.with(this).readString("customer_address"), "")) {
+            binding.txtLocation.setText(PrefsUtil.with(this).readString("customer_address"));
 
             Geocoder coder = new Geocoder(this);
             List<Address> address;
 
             try {
-                address = coder.getFromLocationName(PrefsUtil.with(SearchServiceActivity.this).readString("customer_address"), 5);
+                address = coder.getFromLocationName(PrefsUtil.with(this).readString("customer_address"), 5);
                 if (address != null) {
                     Address location = address.get(0);
                     selectedLatLng = new LatLng(location.getLatitude(), location.getLongitude());
                 }
 
             } catch (IOException e) {
-                e.printStackTrace();
+                Log.e("SearchServiceActivity", "Error getting location from address");
             }
         }
 
         binding.txtLocation.setOnClickListener(v -> {
+            List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.DISPLAY_NAME, Place.Field.LOCATION, Place.Field.FORMATTED_ADDRESS);
             Intent intent = new Autocomplete.IntentBuilder(
-                    AutocompleteActivityMode.FULLSCREEN, Arrays.asList(Place.Field.ID,
-                    Place.Field.NAME, Place.Field.LAT_LNG, Place.Field.ADDRESS))
-                    .build(SearchServiceActivity.this);
+                    AutocompleteActivityMode.FULLSCREEN, fields)
+                    .build(this);
             locationActivityResultLauncher.launch(intent);
         });
 
@@ -129,22 +123,26 @@ public class SearchServiceActivity extends AppCompatActivity {
 
         binding.btnSearch.setOnClickListener(v -> {
             if (checkValidation()) {
-                PrefsUtil.with(SearchServiceActivity.this).write("search_address",
-                        binding.txtLocation.getText().toString());
-                PrefsUtil.with(SearchServiceActivity.this).write("bookingLat",
-                        String.valueOf(selectedLatLng.latitude));
-                PrefsUtil.with(SearchServiceActivity.this).write("bookingLong",
-                        String.valueOf(selectedLatLng.longitude));
+                PrefsUtil.with(this).write("search_address",
+                        Objects.requireNonNull(binding.txtLocation.getText()).toString());
+                if (selectedLatLng != null) {
+                    PrefsUtil.with(this).write("bookingLat",
+                            String.valueOf(selectedLatLng.latitude));
+                    PrefsUtil.with(this).write("bookingLong",
+                            String.valueOf(selectedLatLng.longitude));
+                }
 
-                Intent i = new Intent(SearchServiceActivity.this,
+                Intent i = new Intent(this,
                         ProviderListActivity.class);
                 i.putExtra("categoryId", selectedCatId);
                 i.putExtra("subCategoryId", selectedSubCatId);
                 i.putExtra("serviceId", selectedServiceId);
                 i.putExtra("serviceName", selectedServiceName);
-                i.putExtra("address", binding.txtLocation.getText().toString());
-                i.putExtra("latitude", String.valueOf(selectedLatLng.latitude));
-                i.putExtra("longitude", String.valueOf(selectedLatLng.longitude));
+                i.putExtra("address", Objects.requireNonNull(binding.txtLocation.getText()).toString());
+                if (selectedLatLng != null) {
+                    i.putExtra("latitude", String.valueOf(selectedLatLng.latitude));
+                    i.putExtra("longitude", String.valueOf(selectedLatLng.longitude));
+                }
                 i.putExtra("date", actualDate);
                 startActivity(i);
             }
@@ -160,7 +158,6 @@ public class SearchServiceActivity extends AppCompatActivity {
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 binding.tilLocation.setError("");
                 binding.tilLocation.setErrorEnabled(false);
-//                selectedLatLng = new LatLng(0d, 0d);
             }
 
             @Override
@@ -176,7 +173,6 @@ public class SearchServiceActivity extends AppCompatActivity {
                     Log.e("HomeActivity", "connected");
                     EventBus.getDefault().post(new MessageEvent("connection", "connected"));
                 } else {
-//                    new ConnectionCheck().showDialogWithMessage(context, getString(R.string.sync_data_message)).show();
                     Log.e("HomeActivity", "disconnected");
                     EventBus.getDefault().post(new MessageEvent("connection", "disconnected"));
                 }
@@ -185,16 +181,13 @@ public class SearchServiceActivity extends AppCompatActivity {
     }
 
     private void init() {
-        context = SearchServiceActivity.this;
+        Context context = this;
 
-        /*Init Internet Connection Class For No Internet Banner*/
         connectionManager = new ConnectionManager(context);
         connectionManager.registerInternetCheckReceiver();
         connectionManager.checkConnection(context);
 
-        if (!Places.isInitialized()) {
-            Places.initialize(getApplicationContext(), getResources().getString(R.string.google_api_key));
-        }
+        Places.initialize(getApplicationContext(), getResources().getString(R.string.google_api_key));
 
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
@@ -202,7 +195,7 @@ public class SearchServiceActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
-        setTitle(HtmlCompat.fromHtml("<font color=#FFFFFF>" + getString(R.string.search_service),HtmlCompat.FROM_HTML_MODE_LEGACY));
+        setTitle(HtmlCompat.fromHtml("<font color=#FFFFFF>" + getString(R.string.search_service), HtmlCompat.FROM_HTML_MODE_LEGACY));
 
         ServiceListItem dummyItem = new ServiceListItem();
         dummyItem.setServiceId("0");
@@ -211,11 +204,10 @@ public class SearchServiceActivity extends AppCompatActivity {
         dummylist.add(dummyItem);
         ServiceListPojo dummypojo = new ServiceListPojo();
         dummypojo.setData(dummylist);
-        serviceListPojowithitem = dummypojo;
 
-        serviceadapter = new ArrayAdapter<>
-                (SearchServiceActivity.this,
-                        R.layout.spinner_item_inverse, serviceDataItems);
+        serviceadapter = new ArrayAdapter<>(
+                this,
+                R.layout.spinner_item_inverse, serviceDataItems);
         serviceadapter.setDropDownViewResource(
                 android.R.layout.simple_spinner_dropdown_item);
         serviceDataItems.add(new ServiceDataItem("0", getString(R.string.select_service)));
@@ -225,30 +217,24 @@ public class SearchServiceActivity extends AppCompatActivity {
     }
 
     private void locationActivityForResult() {
-        locationActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
-            @Override
-            public void onActivityResult(ActivityResult result) {
-                try {
-                    if (result.getResultCode() == RESULT_OK) {
-                        Place place = Autocomplete.getPlaceFromIntent(result.getData());
-                        Log.i("AUTO COMPLETE", "Place: " + place.getName() + ", " + place.getId());
-                        Utils.hideSoftKeyboard(SearchServiceActivity.this);
-                        try {
-                            selectedLatLng = place.getLatLng();
-                            binding.txtLocation.setText(place.getName());
-                        } catch (NullPointerException npe) {
-                            npe.printStackTrace();
-                        }
-                    } else if (result.getResultCode() == AutocompleteActivity.RESULT_ERROR) {
-                        // TODO: Handle the error.
-                        Status status = Autocomplete.getStatusFromIntent(result.getData());
-                        Log.i("AUTO COMPLETE", status.getStatusMessage());
-                    } else if (result.getResultCode() == RESULT_CANCELED) {
-                        // The user canceled the operation.
+        locationActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+            try {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    Place place = Autocomplete.getPlaceFromIntent(result.getData());
+                    Log.i("AUTO COMPLETE", "Place: " + place.getDisplayName() + ", " + place.getId());
+                    Utils.hideSoftKeyboard(this);
+                    if (place.getLocation() != null) {
+                        selectedLatLng = place.getLocation();
+                        binding.txtLocation.setText(place.getDisplayName());
+                    } else {
+                        Log.e("SearchServiceActivity", "Place location is null");
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
+                } else if (result.getResultCode() == AutocompleteActivity.RESULT_ERROR) {
+                    Status status = Autocomplete.getStatusFromIntent(result.getData());
+                    Log.i("AUTO COMPLETE", status.getStatusMessage());
                 }
+            } catch (Exception e) {
+                Log.e("SearchServiceActivity", "Error in locationActivityResult");
             }
         });
     }
@@ -277,7 +263,7 @@ public class SearchServiceActivity extends AppCompatActivity {
                     serviceadapter.notifyDataSetChanged();
                     binding.spSelectService.setSelection(0);
                 } else {
-                    Toast.makeText(context, obj.toString(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(SearchServiceActivity.this, obj.toString(), Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -295,30 +281,11 @@ public class SearchServiceActivity extends AppCompatActivity {
 
     private boolean checkValidation() {
 
-        if (selectedServiceId.equals("") || selectedServiceId.equals("0")) {
-            Toast.makeText(SearchServiceActivity.this, R.string.provide_service_id, Toast.LENGTH_LONG).show();
-            return false;
-        } else {
-            return true;
-        }
+        return !selectedServiceId.equals("") && !selectedServiceId.equals("0");
     }
 
     @Override
     public void onBackPressed() {
-//        AlertDialog.Builder builder = new AlertDialog.Builder(SearchServiceActivity.this);
-//        builder.setMessage(R.string.sure_exit_app)
-//                .setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
-//                    @Override
-//                    public void onClick(DialogInterface dialogInterface, int i) {
-//                        finish();
-//                    }
-//                })
-//                .setNegativeButton(getString(R.string.no), new DialogInterface.OnClickListener() {
-//                    @Override
-//                    public void onClick(DialogInterface dialogInterface, int i) {
-//                        dialogInterface.cancel();
-//                    }
-//                }).show();
         super.onBackPressed();
 
     }
@@ -338,7 +305,7 @@ public class SearchServiceActivity extends AppCompatActivity {
         try {
             connectionManager.unregisterReceiver();
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e("SearchServiceActivity", "Error unregistering receiver");
         }
         Utils.cancelAsyncTask(getServiceAsync);
         super.onDestroy();

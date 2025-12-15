@@ -215,7 +215,7 @@ public class EditProfileActivity extends AppCompatActivity {
         binding.etEditAddress.setOnClickListener(v -> {
             Intent intent = new Autocomplete.IntentBuilder(
                     AutocompleteActivityMode.FULLSCREEN, Arrays.asList(Place.Field.ID,
-                    Place.Field.NAME, Place.Field.LAT_LNG, Place.Field.ADDRESS)).build(mContext);
+                    Place.Field.DISPLAY_NAME, Place.Field.LOCATION, Place.Field.FORMATTED_ADDRESS)).build(mContext);
             actResLocation.launch(intent);
         });
 
@@ -1012,12 +1012,12 @@ public class EditProfileActivity extends AppCompatActivity {
             try {
                 if (result.getResultCode() == RESULT_OK) {
                     Place place = Autocomplete.getPlaceFromIntent(result.getData());
-                    Log.i("AUTO COMPLETE", "Place: " + place.getName() + ", " + place.getId());
+                    Log.i("AUTO COMPLETE", "Place: " + place.getDisplayName() + ", " + place.getId());
                     try {
-                        selectedLatLng = place.getLatLng();
-                        binding.etEditAddress.setText(place.getAddress());
-                        lat = String.valueOf(place.getLatLng().latitude);
-                        lng = String.valueOf(place.getLatLng().longitude);
+                        selectedLatLng = place.getLocation();
+                        binding.etEditAddress.setText(place.getFormattedAddress());
+                        lat = String.valueOf(place.getLocation().latitude);
+                        lng = String.valueOf(place.getLocation().longitude);
                     } catch (NullPointerException npe) {
                         npe.printStackTrace();
                     }

@@ -1,24 +1,18 @@
 package com.app.bemyrider.activity.user;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
+import android.content.Intent;
+import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.MenuItem;
+import android.view.WindowManager;
+
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.text.HtmlCompat;
 import androidx.databinding.DataBindingUtil;
-
-import android.content.Context;
-import android.content.Intent;
-import android.os.Bundle;
-import android.text.Editable;
-import android.text.Html;
-import android.text.TextWatcher;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.WindowManager;
-import android.widget.CompoundButton;
 
 import com.app.bemyrider.R;
 import com.app.bemyrider.databinding.ActivityFilterDeliveryBinding;
@@ -31,37 +25,36 @@ import com.google.android.libraries.places.widget.AutocompleteActivity;
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 
 public class FilterDeliveryActivity extends AppCompatActivity {
 
     private ActivityFilterDeliveryBinding binding;
-    private Context context;
-    ActivityResultLauncher<Intent> locationActivityResultLauncher;
-    private String address = "", latitude = "", longitude = "", strAsc = "", strDesc = "", strSearch = "", strRating = "";
+    private ActivityResultLauncher<Intent> locationActivityResultLauncher;
+    private String latitude = "", longitude = "", strAsc = "", strDesc = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = DataBindingUtil.setContentView(FilterDeliveryActivity.this, R.layout.activity_filter_delivery, null);
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_filter_delivery);
         this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 
-        if (!Places.isInitialized()) {
-            Places.initialize(getApplicationContext(), getResources().getString(R.string.google_api_key));
-        }
+        Places.initialize(getApplicationContext(), getResources().getString(R.string.google_api_key));
 
-        setTitle(HtmlCompat.fromHtml("<font color=#FFFFFF>" + getString(R.string.filter_by),HtmlCompat.FROM_HTML_MODE_LEGACY));
+        setTitle(HtmlCompat.fromHtml("<font color=#FFFFFF>" + getString(R.string.filter_by), HtmlCompat.FROM_HTML_MODE_LEGACY));
 
-        address = getIntent().getStringExtra("address");
+        String address = getIntent().getStringExtra("address");
         latitude = getIntent().getStringExtra("latitude");
         longitude = getIntent().getStringExtra("longitude");
         strAsc = getIntent().getStringExtra("strAsc");
         strDesc = getIntent().getStringExtra("strDesc");
-        strSearch = getIntent().getStringExtra("searchKeyWord");
-        strRating = getIntent().getStringExtra("rating");
+        String strSearch = getIntent().getStringExtra("searchKeyWord");
+        String strRating = getIntent().getStringExtra("rating");
 
-        if (strAsc.equalsIgnoreCase("y")) {
+        if ("y".equalsIgnoreCase(strAsc)) {
             binding.switchAsc.setChecked(true);
-        } else if (strDesc.equalsIgnoreCase("y")) {
+        } else if ("y".equalsIgnoreCase(strDesc)) {
             binding.switchDesc.setChecked(true);
         } else {
             binding.switchAsc.setChecked(false);
@@ -70,71 +63,61 @@ public class FilterDeliveryActivity extends AppCompatActivity {
 
         init();
 
-        binding.switchAsc.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (binding.switchDesc.isChecked()) {
-                    binding.switchDesc.setChecked(false);
-                }
-                if (isChecked) {
-                    binding.switchAsc.setChecked(true);
-                    strAsc = "y";
-                } else {
-                    binding.switchAsc.setChecked(false);
-                    strAsc = "n";
-                }
+        binding.switchAsc.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (binding.switchDesc.isChecked()) {
+                binding.switchDesc.setChecked(false);
+            }
+            if (isChecked) {
+                binding.switchAsc.setChecked(true);
+                strAsc = "y";
+            } else {
+                binding.switchAsc.setChecked(false);
+                strAsc = "n";
             }
         });
 
-        binding.switchDesc.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (binding.switchAsc.isChecked()) {
-                    binding.switchAsc.setChecked(false);
-                }
-                if (isChecked) {
-                    binding.switchDesc.setChecked(true);
-                    strDesc = "y";
-                } else {
-                    binding.switchDesc.setChecked(false);
-                    strDesc = "n";
-                }
+        binding.switchDesc.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (binding.switchAsc.isChecked()) {
+                binding.switchAsc.setChecked(false);
+            }
+            if (isChecked) {
+                binding.switchDesc.setChecked(true);
+                strDesc = "y";
+            } else {
+                binding.switchDesc.setChecked(false);
+                strDesc = "n";
             }
         });
 
-        binding.txtLocation.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                binding.txtLocation.setText("");
-                address = "";
-                latitude = "";
-                longitude = "";
-                Intent intent = new Autocomplete.IntentBuilder(
-                        AutocompleteActivityMode.FULLSCREEN, Arrays.asList(Place.Field.ID,
-                        Place.Field.NAME, Place.Field.LAT_LNG, Place.Field.ADDRESS))
-                        .build(FilterDeliveryActivity.this);
-                locationActivityResultLauncher.launch(intent);
-            }
+        binding.txtLocation.setOnClickListener(v -> {
+            binding.txtLocation.setText("");
+            latitude = "";
+            longitude = "";
+            List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.DISPLAY_NAME, Place.Field.LOCATION, Place.Field.FORMATTED_ADDRESS);
+            Intent intent = new Autocomplete.IntentBuilder(
+                    AutocompleteActivityMode.FULLSCREEN, fields)
+                    .build(this);
+            locationActivityResultLauncher.launch(intent);
         });
 
         binding.txtLocation.setText(address);
         binding.EdtSearchKeyword.setText(strSearch);
 
         try {
-            if (!strRating.equals(""))
+            if (strRating != null && !strRating.isEmpty())
                 binding.ratingbarFilter.setRating(Float.parseFloat(strRating));
         } catch (NumberFormatException e) {
-            e.printStackTrace();
+            Log.e("FilterDeliveryActivity", "Error parsing rating");
         }
 
         binding.BtnApplyFilter.setOnClickListener(v -> {
             Intent i = new Intent();
-            i.putExtra("address", binding.txtLocation.getText().toString());
+            i.putExtra("address", Objects.requireNonNull(binding.txtLocation.getText()).toString());
             i.putExtra("latitude", latitude);
             i.putExtra("longitude", longitude);
             i.putExtra("strAsc", strAsc);
             i.putExtra("strDesc", strDesc);
-            i.putExtra("searchKeyWord", binding.EdtSearchKeyword.getText().toString());
+            i.putExtra("searchKeyWord", Objects.requireNonNull(binding.EdtSearchKeyword.getText()).toString());
             i.putExtra("rating", String.valueOf(binding.ratingbarFilter.getRating()));
             setResult(RESULT_OK, i);
             finish();
@@ -143,12 +126,12 @@ public class FilterDeliveryActivity extends AppCompatActivity {
         binding.BtnResetFilter.setOnClickListener(v -> {
             setResetFilters();
             Intent i = new Intent();
-            i.putExtra("address", binding.txtLocation.getText().toString());
+            i.putExtra("address", Objects.requireNonNull(binding.txtLocation.getText()).toString());
             i.putExtra("latitude", latitude);
             i.putExtra("longitude", longitude);
             i.putExtra("strAsc", strAsc);
             i.putExtra("strDesc", strDesc);
-            i.putExtra("searchKeyWord", binding.EdtSearchKeyword.getText().toString());
+            i.putExtra("searchKeyWord", Objects.requireNonNull(binding.EdtSearchKeyword.getText()).toString());
             i.putExtra("rating", String.valueOf(binding.ratingbarFilter.getRating()));
             setResult(RESULT_OK, i);
             finish();
@@ -182,41 +165,34 @@ public class FilterDeliveryActivity extends AppCompatActivity {
         strAsc = "";
         strDesc = "";
         binding.EdtSearchKeyword.setText("");
-        strRating = "0.0";
+        String strRating = "0.0";
         binding.ratingbarFilter.setRating(Float.parseFloat(strRating));
     }
 
     private void init() {
-        context = FilterDeliveryActivity.this;
         setupToolBar();
         locationActivityResult();
     }
 
     private void locationActivityResult() {
-        locationActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
-            @Override
-            public void onActivityResult(ActivityResult result) {
-                try {
-                    if (result.getResultCode() == RESULT_OK) {
-                        Place place = Autocomplete.getPlaceFromIntent(result.getData());
-                        Log.i("AUTO COMPLETE", "Place: " + place.getName() + ", " + place.getId());
-                        try {
-                            latitude = String.valueOf(place.getLatLng().latitude);
-                            longitude = String.valueOf(place.getLatLng().longitude);
-                            binding.txtLocation.setText(place.getName());
-                        } catch (NullPointerException npe) {
-                            npe.printStackTrace();
-                        }
-                    } else if (result.getResultCode() == AutocompleteActivity.RESULT_ERROR) {
-                        // TODO: Handle the error.
-                        Status status = Autocomplete.getStatusFromIntent(result.getData());
-                        Log.i("AUTO COMPLETE", status.getStatusMessage());
-                    } else if (result.getResultCode() == RESULT_CANCELED) {
-                        // The user canceled the operation.
+        locationActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+            try {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    Place place = Autocomplete.getPlaceFromIntent(result.getData());
+                    Log.i("AUTO COMPLETE", "Place: " + place.getDisplayName() + ", " + place.getId());
+                    if (place.getLocation() != null) {
+                        latitude = String.valueOf(place.getLocation().latitude);
+                        longitude = String.valueOf(place.getLocation().longitude);
+                        binding.txtLocation.setText(place.getDisplayName());
+                    } else {
+                        Log.e("FilterDeliveryActivity", "Place location is null");
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
+                } else if (result.getResultCode() == AutocompleteActivity.RESULT_ERROR) {
+                    Status status = Autocomplete.getStatusFromIntent(result.getData());
+                    Log.i("AUTO COMPLETE", status.getStatusMessage());
                 }
+            } catch (Exception e) {
+                Log.e("FilterDeliveryActivity", "Error in locationActivityResult");
             }
         });
     }
@@ -224,7 +200,7 @@ public class FilterDeliveryActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
-            onBackPressed();
+            finish();
         }
         return super.onOptionsItemSelected(item);
     }

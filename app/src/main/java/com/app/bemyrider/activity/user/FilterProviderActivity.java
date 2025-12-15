@@ -131,7 +131,7 @@ public class FilterProviderActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Autocomplete.IntentBuilder(
                         AutocompleteActivityMode.FULLSCREEN, Arrays.asList(Place.Field.ID,
-                        Place.Field.NAME, Place.Field.LAT_LNG, Place.Field.ADDRESS))
+                        Place.Field.DISPLAY_NAME, Place.Field.LOCATION, Place.Field.FORMATTED_ADDRESS))
                         .build(FilterProviderActivity.this);
                 locationActivityResultLauncher.launch(intent);
 
@@ -316,11 +316,11 @@ public class FilterProviderActivity extends AppCompatActivity {
                 try {
                     if (result.getResultCode() == RESULT_OK) {
                         Place place = Autocomplete.getPlaceFromIntent(result.getData());
-                        Log.i("AUTO COMPLETE", "Place: " + place.getName() + ", " + place.getId());
+                        Log.i("AUTO COMPLETE", "Place: " + place.getDisplayName() + ", " + place.getId());
                         try {
-                            latitude = String.valueOf(place.getLatLng().latitude);
-                            longitude = String.valueOf(place.getLatLng().longitude);
-                            binding.txtLocation.setText(place.getName());
+                            latitude = String.valueOf(place.getLocation().latitude);
+                            longitude = String.valueOf(place.getLocation().longitude);
+                            binding.txtLocation.setText(place.getDisplayName());
                         } catch (NullPointerException npe) {
                             npe.printStackTrace();
                         }

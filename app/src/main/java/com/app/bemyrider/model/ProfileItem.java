@@ -6,6 +6,9 @@ import java.io.Serializable;
 
 public class ProfileItem implements Serializable {
 
+    @SerializedName("country_code_id")
+    private String countryCodeId;
+
     @SerializedName("lastName")
     private String lastName;
 
@@ -89,7 +92,7 @@ public class ProfileItem implements Serializable {
 
     @SerializedName("payment_mode")
     private String payment_mode;
-    //	paypal_email
+    
     @SerializedName("is_available")
     private String is_available;
 
@@ -139,15 +142,25 @@ public class ProfileItem implements Serializable {
    @SerializedName("city_of_company")
     private String city_of_company;
 
-    public String getCity_of_company() {
-        return city_of_company;
-    }
-
     @SerializedName("residential_address")
     private String residential_address;
 
     @SerializedName("signature_img_url")
     private String signature_img;
+
+    public String getCountryCodeId() {
+        return countryCodeId;
+    }
+
+    public void setCountryCodeId(String countryCodeId) {
+        this.countryCodeId = countryCodeId;
+    }
+    
+    // ... (tutti i getter e setter che avevo rimosso)
+
+    public String getCity_of_company() {
+        return city_of_company;
+    }
 
     public String getSignature_img() {
         return signature_img;
@@ -487,52 +500,5 @@ public class ProfileItem implements Serializable {
 
     public void setLargeDelivery(String largeDelivery) {
         this.largeDelivery = largeDelivery;
-    }
-
-    @Override
-    public String toString() {
-        return "ProfileItem{" +
-                "lastName='" + lastName + '\'' +
-                ", availableDays='" + availableDays + '\'' +
-                ", contactMask='" + contactMask + '\'' +
-                ", availableTimeEnd='" + availableTimeEnd + '\'' +
-                ", userName='" + userName + '\'' +
-                ", latitude='" + latitude + '\'' +
-                ", description='" + description + '\'' +
-                ", userType='" + userType + '\'' +
-                ", id='" + id + '\'' +
-                ", landmark='" + landmark + '\'' +
-                ", email='" + email + '\'' +
-                ", longitude='" + longitude + '\'' +
-                ", address='" + address + '\'' +
-                ", availableDaysList='" + availableDaysList + '\'' +
-                ", totalReview='" + totalReview + '\'' +
-                ", totalService='" + totalService + '\'' +
-                ", positiveRating='" + positiveRating + '\'' +
-                ", contactNumber='" + contactNumber + '\'' +
-                ", firstName='" + firstName + '\'' +
-                ", profileImg='" + profileImg + '\'' +
-                ", countryCode='" + countryCode + '\'' +
-                ", availableTimeStart='" + availableTimeStart + '\'' +
-                ", fbId='" + fbId + '\'' +
-                ", emailMask='" + emailMask + '\'' +
-                ", userTypeTitle='" + userTypeTitle + '\'' +
-                ", gmailId='" + gmailId + '\'' +
-                ", taskAssigned='" + taskAssigned + '\'' +
-                ", payment_mode='" + payment_mode + '\'' +
-                ", is_available='" + is_available + '\'' +
-                ", linkedin_id='" + linkedin_id + '\'' +
-                ", paypal_email='" + paypal_email + '\'' +
-                ", star_rating='" + star_rating + '\'' +
-                ", is_flag='" + is_flag + '\'' +
-                ", smallDelivery='" + smallDelivery + '\'' +
-                ", mediumDelivery='" + mediumDelivery + '\'' +
-                ", largeDelivery='" + largeDelivery + '\'' +
-                ", companyName='" + companyName + '\'' +
-                ", vat='" + vat + '\'' +
-                ", taxId='" + taxId + '\'' +
-                ", certifiedEmail='" + certifiedEmail + '\'' +
-                ", receiptCode='" + receiptCode + '\'' +
-                '}';
     }
 }

@@ -6,6 +6,9 @@ import java.io.Serializable;
 
 public class NewLoginPojoItem implements Serializable {
 
+    @SerializedName("country_code")
+    private String countryCode;
+
     @SerializedName("email_id")
     private String emailId;
 
@@ -62,6 +65,14 @@ public class NewLoginPojoItem implements Serializable {
 
     @SerializedName("longitude")
     private String longitude;
+
+    public String getCountryCode() {
+        return countryCode;
+    }
+
+    public void setCountryCode(String countryCode) {
+        this.countryCode = countryCode;
+    }
 
     public String getLongitude() {
         return longitude;
@@ -181,21 +192,5 @@ public class NewLoginPojoItem implements Serializable {
 
     public void setProfileImg(String profileImg) {
         this.profileImg = profileImg;
-    }
-
-    @Override
-    public String toString() {
-        return "NewLoginPojoItem{" +
-                "emailId='" + emailId + '\'' +
-                ", userType='" + userType + '\'' +
-                ", userId='" + userId + '\'' +
-                ", currencySign='" + currencySign + '\'' +
-                ", userName='" + userName + '\'' +
-                ", countryCodeId='" + countryCodeId + '\'' +
-                ", lastName='" + lastName + '\'' +
-                ", firstName='" + firstName + '\'' +
-                ", isUserActive='" + isUserActive + '\'' +
-                ", profileImg='" + profileImg + '\'' +
-                '}';
     }
 }

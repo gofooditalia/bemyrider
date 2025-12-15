@@ -1,49 +1,24 @@
-package com.app.bemyrider.model;
+package com.app.bemyrider.model
 
-import com.google.gson.annotations.SerializedName;
+import com.google.gson.annotations.SerializedName
 
-public class ProfilePojo {
+/**
+ * Modernized by Gemini on 2024.
+ */
+data class ProfilePojo(
+    @SerializedName("data")
+    var data: ProfileItem? = null,
 
-	@SerializedName("data")
-	private ProfileItem data;
+    @SerializedName("message")
+    var message: String? = null,
 
-	@SerializedName("type")
-	private String type;
+    @SerializedName("type")
+    val type: String? = null,
 
-	@SerializedName("status")
-	private boolean status;
-
-	public void setData(ProfileItem data){
-		this.data = data;
-	}
-
-	public ProfileItem getData(){
-		return data;
-	}
-
-	public void setType(String type){
-		this.type = type;
-	}
-
-	public String getType(){
-		return type;
-	}
-
-	public void setStatus(boolean status){
-		this.status = status;
-	}
-
-	public boolean isStatus(){
-		return status;
-	}
-
-	@Override
- 	public String toString(){
-		return 
-			"ProfilePojo{" + 
-			"data = '" + data + '\'' + 
-			",type = '" + type + '\'' + 
-			",status = '" + status + '\'' + 
-			"}";
-		}
+    @SerializedName("status")
+    var status: Boolean = false
+) {
+    fun isStatus(): Boolean {
+        return status
+    }
 }

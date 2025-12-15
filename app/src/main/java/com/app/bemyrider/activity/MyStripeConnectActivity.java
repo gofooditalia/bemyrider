@@ -43,7 +43,7 @@ public class MyStripeConnectActivity extends AppCompatActivity {
 
         mWebView = findViewById(R.id.webview_paypal);
 
-        connectUrl = getIntent().getStringExtra("connect_url");
+        connectUrl = getIntent().getStringExtra("StripeUrl");
 
         mSpinner = new ProgressDialog(this);
         mSpinner.requestWindowFeature(Window.FEATURE_NO_TITLE);

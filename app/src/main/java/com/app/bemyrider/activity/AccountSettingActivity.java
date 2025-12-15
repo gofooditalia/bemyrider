@@ -2,18 +2,9 @@ package com.app.bemyrider.activity;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Editable;
-import android.text.Html;
 import android.text.TextWatcher;
-
-import com.app.bemyrider.AsyncTask.WebServiceCall;
-import com.app.bemyrider.WebServices.WebServiceUrl;
-
-import com.app.bemyrider.utils.LocaleManager;
-import com.app.bemyrider.utils.Log;
-
 import android.text.method.PasswordTransformationMethod;
 import android.view.MenuItem;
 import android.view.View;
@@ -26,32 +17,34 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.text.HtmlCompat;
 import androidx.databinding.DataBindingUtil;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.app.bemyrider.R;
 import com.app.bemyrider.databinding.ActivityAccountSettingBinding;
-import com.app.bemyrider.model.CommonPojo;
-import com.app.bemyrider.model.LanguagePojo;
 import com.app.bemyrider.model.LanguagePojoItem;
 import com.app.bemyrider.utils.ConnectionManager;
+import com.app.bemyrider.utils.LocaleManager;
+import com.app.bemyrider.utils.Log;
 import com.app.bemyrider.utils.NotificationTestHelper;
 import com.app.bemyrider.utils.PrefsUtil;
 import com.app.bemyrider.utils.SecurePrefsUtil;
 import com.app.bemyrider.utils.Utils;
+import com.app.bemyrider.viewmodel.AccountSettingViewModel;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 
 /**
  * Modified by Hardik Talaviya on 4/12/19.
+ * Modernized by Gemini on 2024.
  */
 
 public class AccountSettingActivity extends AppCompatActivity {
 
     private ActivityAccountSettingBinding binding;
-    private ArrayAdapter lanadapter;
+    private AccountSettingViewModel viewModel;
+    private ArrayAdapter<LanguagePojoItem> lanadapter;
     private ArrayList<LanguagePojoItem> languagePojoItems = new ArrayList<>();
     private String lanId = "";
-    private AsyncTask getLanguageAsync, setPasswordAsync;
     private Context context;
     private ConnectionManager connectionManager;
 
@@ -59,25 +52,29 @@ public class AccountSettingActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(AccountSettingActivity.this, R.layout.activity_account_setting, null);
+        viewModel = new ViewModelProvider(this).get(AccountSettingViewModel.class);
 
         initViews();
+        setupObservers();
 
-        serviceCallGetLanguage();
+        binding.relLang.setVisibility(View.GONE);
+        binding.progress.setVisibility(View.VISIBLE);
 
         binding.btnSaveChange.setOnClickListener(view -> {
             if (checkValidation()) {
                 Utils.hideSoftKeyboard(AccountSettingActivity.this);
                 binding.btnSaveChange.setClickable(false);
-                serviceCallChangePass();
+                performChangePassword();
             }
-
         });
 
         binding.spSelectLanSetting.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                SecurePrefsUtil.with(AccountSettingActivity.this).write("lanId", languagePojoItems.get(i).getId());
-                lanId = languagePojoItems.get(i).getId();
+                if (i >= 0 && i < languagePojoItems.size()) {
+                    SecurePrefsUtil.with(AccountSettingActivity.this).write("lanId", languagePojoItems.get(i).getId());
+                    lanId = languagePojoItems.get(i).getId();
+                }
             }
 
             @Override
@@ -95,102 +92,37 @@ public class AccountSettingActivity extends AppCompatActivity {
                     Toast.LENGTH_LONG).show();
         });
 
-        binding.btnContinueSetting.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (lanId.equals("2")) {
-                    LocaleManager.setLocale(context, "fr");
-                    Intent intent = new Intent(AccountSettingActivity.this, SplashScreenActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(intent);
-                    finish();
-                } else if (lanId.equals("3")) {
-                    LocaleManager.setLocale(context, "pt");
-                    Intent intent = new Intent(AccountSettingActivity.this, SplashScreenActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(intent);
-                } else if (lanId.equals("4")) {
-                    LocaleManager.setLocale(context, "it");
-                    Intent intent = new Intent(AccountSettingActivity.this, SplashScreenActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(intent);
-                    finish();
-                } else {
-                    LocaleManager.setLocale(context, "en");
-                    Intent intent = new Intent(AccountSettingActivity.this, SplashScreenActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(intent);
-                    finish();
-                }
+        binding.btnContinueSetting.setOnClickListener(view -> {
+            if (lanId.equals("2")) {
+                LocaleManager.setLocale(context, "fr");
+            } else if (lanId.equals("3")) {
+                LocaleManager.setLocale(context, "pt");
+            } else if (lanId.equals("4")) {
+                LocaleManager.setLocale(context, "it");
+            } else {
+                LocaleManager.setLocale(context, "en");
             }
+            
+            Intent intent = new Intent(AccountSettingActivity.this, SplashScreenActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+            finish();
         });
 
-        binding.etCurrentPass.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+        setupTextWatchers();
 
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                binding.tilCurrentPass.setError(null);
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-
-            }
-        });
-
-        binding.etNewPass.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                binding.tilNewPass.setError(null);
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-
-            }
-        });
-
-        binding.etCnewPass.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                binding.tilCnewPass.setError(null);
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-
-            }
-        });
-
-        binding.btnDeactivateAccount.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                AlertDialog alertDialog = new AlertDialog.Builder(AccountSettingActivity.this).create();
-                alertDialog.setMessage(getString(R.string.confirm_account_deactivate));
-                alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.deactivate),
-                        (dialog, which) -> {
-                            dialog.dismiss();
-                            binding.btnDeactivateAccount.setClickable(false);
-                            serviceCallDeactivateAccount();
-                        });
-                alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, getString(R.string.cancel),
-                        (dialog, which) -> dialog.dismiss());
-                alertDialog.show();
-            }
+        binding.btnDeactivateAccount.setOnClickListener(view -> {
+            AlertDialog alertDialog = new AlertDialog.Builder(AccountSettingActivity.this).create();
+            alertDialog.setMessage(getString(R.string.confirm_account_deactivate));
+            alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.deactivate),
+                    (dialog, which) -> {
+                        dialog.dismiss();
+                        binding.btnDeactivateAccount.setClickable(false);
+                        performDeactivateAccount();
+                    });
+            alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, getString(R.string.cancel),
+                    (dialog, which) -> dialog.dismiss());
+            alertDialog.show();
         });
     }
 
@@ -218,150 +150,134 @@ public class AccountSettingActivity extends AppCompatActivity {
         /* Init Select Language Spinner */
         lanadapter = new ArrayAdapter<>(AccountSettingActivity.this, android.R.layout.simple_spinner_item,
                 languagePojoItems);
-        lanadapter.setDropDownViewResource(
-                android.R.layout.simple_spinner_dropdown_item);
+        lanadapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         binding.spSelectLanSetting.setAdapter(lanadapter);
-
     }
 
-    /*-------------- Get Language Api Call ------------------*/
-    private void serviceCallGetLanguage() {
-        binding.relLang.setVisibility(View.GONE);
-        binding.progress.setVisibility(View.VISIBLE);
-
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-
-        new WebServiceCall(AccountSettingActivity.this, WebServiceUrl.URL_GET_LANGUAGE,
-                textParams, LanguagePojo.class, false, new WebServiceCall.OnResultListener() {
-                    @Override
-                    public void onResult(boolean status, Object obj) {
-                        binding.progress.setVisibility(View.GONE);
-                        binding.relLang.setVisibility(View.VISIBLE);
-                        if (status) {
-                            LanguagePojo languagePojo = (LanguagePojo) obj;
-                            for (int i = 0; i < languagePojo.getData().size(); i++) {
-                                Log.e("Splash", "onResult: " + languagePojo.getData().get(i).getLanguageName());
-                                if (languagePojo.getData().get(i).getLanguageName().trim().equalsIgnoreCase("french") ||
-                                        languagePojo
-                                                .getData().get(i).getLanguageName().trim().equalsIgnoreCase("english")
-                                        ||
-                                        languagePojo.getData().get(i).getLanguageName().trim()
-                                                .equalsIgnoreCase("Portuguese")
-                                        ||
-                                        languagePojo.getData().get(i).getLanguageName().trim()
-                                                .equalsIgnoreCase("Italian")) {
-                                    languagePojoItems.add(languagePojo.getData().get(i));
-                                    lanadapter.notifyDataSetChanged();
-                                }
-                            }
-
-                            for (int i = 0; i < languagePojoItems.size(); i++) {
-                                if (languagePojoItems.get(i).getId().equals(SecurePrefsUtil
-                                        .with(AccountSettingActivity.this).readString("lanId"))) {
-                                    binding.spSelectLanSetting.setSelection(i);
-                                    break;
-                                }
-                            }
-                        } else {
-                            Toast.makeText(AccountSettingActivity.this, (String) obj, Toast.LENGTH_SHORT).show();
-                        }
+    private void setupObservers() {
+        viewModel.getLanguages().observe(this, languagePojo -> {
+            binding.progress.setVisibility(View.GONE);
+            binding.relLang.setVisibility(View.VISIBLE);
+            if (languagePojo != null && languagePojo.isStatus()) {
+                languagePojoItems.clear();
+                for (int i = 0; i < languagePojo.getData().size(); i++) {
+                    String langName = languagePojo.getData().get(i).getLanguageName().trim();
+                    Log.e("Splash", "onResult: " + langName);
+                    if (langName.equalsIgnoreCase("french") ||
+                            langName.equalsIgnoreCase("english") ||
+                            langName.equalsIgnoreCase("Portuguese") ||
+                            langName.equalsIgnoreCase("Italian")) {
+                        languagePojoItems.add(languagePojo.getData().get(i));
                     }
+                }
+                lanadapter.notifyDataSetChanged();
 
-                    @Override
-                    public void onAsync(AsyncTask asyncTask) {
-                        getLanguageAsync = asyncTask;
+                for (int i = 0; i < languagePojoItems.size(); i++) {
+                    if (languagePojoItems.get(i).getId().equals(SecurePrefsUtil.with(AccountSettingActivity.this).readString("lanId"))) {
+                        binding.spSelectLanSetting.setSelection(i);
+                        break;
                     }
-
-                    @Override
-                    public void onCancelled() {
-                        getLanguageAsync = null;
-                    }
-                });
+                }
+            } else {
+                Toast.makeText(AccountSettingActivity.this, "Error fetching languages", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
-    /*------------ DeActive Account Api Call ---------------*/
-    private void serviceCallDeactivateAccount() {
-        binding.pgDeActiveAccount.setVisibility(View.VISIBLE);
-
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-
-        textParams.put("user_id", SecurePrefsUtil.with(AccountSettingActivity.this).readString("UserId"));
-        textParams.put("user_type", SecurePrefsUtil.with(AccountSettingActivity.this).readString("UserType"));
-
-        new WebServiceCall(AccountSettingActivity.this, WebServiceUrl.URL_DEACTIVATE_USER,
-                textParams, CommonPojo.class, false, new WebServiceCall.OnResultListener() {
-                    @Override
-                    public void onResult(boolean status, Object obj) {
-                        binding.pgDeActiveAccount.setVisibility(View.GONE);
-                        binding.btnDeactivateAccount.setClickable(true);
-                        if (status) {
-                            CommonPojo resultPojo = (CommonPojo) obj;
-                            if (resultPojo.isStatus()) {
-                                SecurePrefsUtil.with(AccountSettingActivity.this).clearPrefs();
-                                PrefsUtil.with(AccountSettingActivity.this).clearPrefs();
-                                finish();
-                                Intent i = new Intent(AccountSettingActivity.this,
-                                        SignupActivity.class);
-                                i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                                startActivity(i);
-                            }
-                        } else {
-                            Toast.makeText(AccountSettingActivity.this, (String) obj, Toast.LENGTH_SHORT).show();
-                        }
-                    }
-
-                    @Override
-                    public void onAsync(AsyncTask asyncTask) {
-                        getLanguageAsync = asyncTask;
-                    }
-
-                    @Override
-                    public void onCancelled() {
-                        getLanguageAsync = null;
-                    }
-                });
-    }
-
-    /*--------------- Change Password Api Call --------------------*/
-    private void serviceCallChangePass() {
+    private void performChangePassword() {
         binding.pgSaveChange.setVisibility(View.VISIBLE);
 
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
+        String currentPwd = binding.etCurrentPass.getText().toString().trim();
+        String newPwd = binding.etNewPass.getText().toString().trim();
+        String reNewPwd = binding.etCnewPass.getText().toString().trim();
+        String userId = SecurePrefsUtil.with(AccountSettingActivity.this).readString("UserId");
 
-        textParams.put("currentpwd", binding.etCurrentPass.getText().toString().trim());
-        textParams.put("newpwd", binding.etNewPass.getText().toString().trim());
-        textParams.put("renewpwd", binding.etCnewPass.getText().toString().trim());
-        textParams.put("user_id", SecurePrefsUtil.with(AccountSettingActivity.this).readString("UserId"));
+        viewModel.changePassword(currentPwd, newPwd, reNewPwd, userId).observe(this, commonPojo -> {
+            binding.pgSaveChange.setVisibility(View.GONE);
+            binding.btnSaveChange.setClickable(true);
 
-        new WebServiceCall(AccountSettingActivity.this, WebServiceUrl.URL_CHANGE_PASS,
-                textParams, CommonPojo.class, false, new WebServiceCall.OnResultListener() {
-                    @Override
-                    public void onResult(boolean status, Object obj) {
-                        binding.pgSaveChange.setVisibility(View.GONE);
-                        binding.btnSaveChange.setClickable(true);
-                        if (status) {
-                            Toast.makeText(AccountSettingActivity.this, ((CommonPojo) obj).getMessage(),
-                                    Toast.LENGTH_SHORT).show();
-                            SecurePrefsUtil.with(AccountSettingActivity.this).write("Pass",
-                                    binding.etNewPass.getText().toString().trim());
-                            PrefsUtil.with(AccountSettingActivity.this).write("Pass",
-                                    binding.etNewPass.getText().toString().trim());
-                            finish();
-                        } else {
-                            Toast.makeText(AccountSettingActivity.this, (String) obj, Toast.LENGTH_SHORT).show();
-                        }
-                    }
+            if (commonPojo != null) {
+                if (commonPojo.isStatus()) {
+                    Toast.makeText(AccountSettingActivity.this, commonPojo.getMessage(), Toast.LENGTH_SHORT).show();
+                    
+                    SecurePrefsUtil.with(AccountSettingActivity.this).write("Pass", newPwd);
+                    PrefsUtil.with(AccountSettingActivity.this).write("Pass", newPwd);
+                    finish();
+                } else {
+                    Toast.makeText(AccountSettingActivity.this, commonPojo.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                Toast.makeText(AccountSettingActivity.this, getString(R.string.server_error), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
 
-                    @Override
-                    public void onAsync(AsyncTask asyncTask) {
-                        setPasswordAsync = asyncTask;
-                    }
+    private void performDeactivateAccount() {
+        binding.pgDeActiveAccount.setVisibility(View.VISIBLE);
 
-                    @Override
-                    public void onCancelled() {
-                        setPasswordAsync = null;
-                    }
-                });
+        String userId = SecurePrefsUtil.with(AccountSettingActivity.this).readString("UserId");
+        String userType = SecurePrefsUtil.with(AccountSettingActivity.this).readString("UserType");
+
+        viewModel.deactivateAccount(userId, userType).observe(this, commonPojo -> {
+            binding.pgDeActiveAccount.setVisibility(View.GONE);
+            binding.btnDeactivateAccount.setClickable(true);
+
+            if (commonPojo != null) {
+                if (commonPojo.isStatus()) {
+                    SecurePrefsUtil.with(AccountSettingActivity.this).clearPrefs();
+                    PrefsUtil.with(AccountSettingActivity.this).clearPrefs();
+                    finish();
+                    Intent i = new Intent(AccountSettingActivity.this, SignupActivity.class);
+                    i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(i);
+                } else {
+                    Toast.makeText(AccountSettingActivity.this, commonPojo.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                Toast.makeText(AccountSettingActivity.this, getString(R.string.server_error), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void setupTextWatchers() {
+        binding.etCurrentPass.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                binding.tilCurrentPass.setError(null);
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {}
+        });
+
+        binding.etNewPass.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                binding.tilNewPass.setError(null);
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {}
+        });
+
+        binding.etCnewPass.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                binding.tilCnewPass.setError(null);
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+
+            @Override
+            public void afterTextChanged(Editable editable) {}
+        });
     }
 
     private boolean checkValidation() {
@@ -401,7 +317,6 @@ public class AccountSettingActivity extends AppCompatActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == 1001) { // POST_NOTIFICATIONS permission
             if (grantResults.length > 0 && grantResults[0] == android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                // Permesso concesso, mostra la notifica
                 NotificationTestHelper.testNotification(AccountSettingActivity.this);
                 Toast.makeText(AccountSettingActivity.this, "Permesso concesso! Notifica di test inviata.",
                         Toast.LENGTH_LONG).show();
@@ -419,8 +334,6 @@ public class AccountSettingActivity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        Utils.cancelAsyncTask(getLanguageAsync);
-        Utils.cancelAsyncTask(setPasswordAsync);
         super.onDestroy();
     }
 

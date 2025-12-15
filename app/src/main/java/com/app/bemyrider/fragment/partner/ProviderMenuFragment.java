@@ -1,10 +1,9 @@
 package com.app.bemyrider.fragment.partner;
 
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,62 +11,56 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.app.bemyrider.Adapter.MenuItemAdapter;
-import com.app.bemyrider.AsyncTask.WebServiceCall;
 import com.app.bemyrider.R;
-import com.app.bemyrider.WebServices.WebServiceUrl;
 import com.app.bemyrider.activity.AccountSettingActivity;
 import com.app.bemyrider.activity.ContactUsActivity;
 import com.app.bemyrider.activity.FeedbackActivity;
 import com.app.bemyrider.activity.InfoPageActivity;
-
+import com.app.bemyrider.activity.LoginActivity;
 import com.app.bemyrider.activity.MyStripeConnectActivity;
 import com.app.bemyrider.activity.NotificationListingActivity;
-import com.app.bemyrider.activity.LoginActivity;
-import com.app.bemyrider.activity.SignupActivity;
 import com.app.bemyrider.activity.partner.EditProfileActivity;
 import com.app.bemyrider.activity.partner.PartnerPaymentHistoryActivity;
 import com.app.bemyrider.activity.partner.Partner_FinancialInfo_Activity;
 import com.app.bemyrider.activity.partner.Partner_MyServices_Activity;
 import com.app.bemyrider.activity.partner.ResolutionActivity;
 import com.app.bemyrider.databinding.FragmentProviderMenuBinding;
-import com.app.bemyrider.model.CheckStripeConnectedPojo;
-import com.app.bemyrider.model.CommonPojo;
 import com.app.bemyrider.model.ModelForDrawer;
 import com.app.bemyrider.model.ProfileItem;
-import com.app.bemyrider.model.ProfilePojo;
 import com.app.bemyrider.myinterfaces.MenuItemClickListener;
 import com.app.bemyrider.utils.ConnectionManager;
+import com.app.bemyrider.utils.Log;
 import com.app.bemyrider.utils.PrefsUtil;
 import com.app.bemyrider.utils.SecurePrefsUtil;
-import com.app.bemyrider.utils.Utils;
+import com.app.bemyrider.viewmodel.ProviderMenuViewModel;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
-import java.util.LinkedHashMap;
 
 public class ProviderMenuFragment extends Fragment implements MenuItemClickListener {
 
-    FragmentProviderMenuBinding binding;
+    private FragmentProviderMenuBinding binding;
     private Context context;
     private AppCompatActivity activity;
-    private AsyncTask profileDataAsync, userLogoutAsync,getStripeConnectAsync;
     private ConnectionManager connectionManager;
-    private ModelForDrawer[] drawerItem;
-    private String strepoc_avl_start_time, strepoc_avl_end_time,
-            countrycodeid, userAddress, smallDelivery, mediumDelivery, largeDelivery;
+    private ProviderMenuViewModel viewModel;
+    private static final String TAG = "ProviderMenuFragment";
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_provider_menu, container, false);
+        viewModel = new ViewModelProvider(this).get(ProviderMenuViewModel.class);
         initView();
         return binding.getRoot();
     }
@@ -76,130 +69,124 @@ public class ProviderMenuFragment extends Fragment implements MenuItemClickListe
         activity = (AppCompatActivity) getActivity();
         context = getContext();
 
-        activity.setSupportActionBar(binding.toolbar);
+        if (activity != null) {
+            activity.setSupportActionBar(binding.toolbar);
+        }
 
         connectionManager = new ConnectionManager(context);
         connectionManager.registerInternetCheckReceiver();
         connectionManager.checkConnection(context);
 
-        if (PrefsUtil.with(activity).readString("UserImg") != null && !"".equals(PrefsUtil.with(activity).readString("UserImg"))) {
-            binding.imgProfile.setColorFilter(ContextCompat.getColor(context,
-                    R.color.transparent));
-            Picasso.get().load(PrefsUtil.with(activity).readString("UserImg")).placeholder(R.drawable.loading).into(binding.imgProfile);
-        } else {
-            binding.imgProfile.setColorFilter(ContextCompat.getColor(context,
-                    R.color.white));
-            Picasso.get().load(R.drawable.ic_user_menu).placeholder(R.drawable.loading).into(binding.imgProfile);
-        }
-
-        if (PrefsUtil.with(activity).readString("UserName") != null && !"".equals(PrefsUtil.with(activity).readString("UserName"))) {
-            binding.txtUserName.setText(PrefsUtil.with(activity).readString("UserName"));
-        } else {
-            binding.txtUserName.setText("N/A");
-        }
-
-        if (PrefsUtil.with(activity).readString("login_cust_address") != null && !"".equals(PrefsUtil.with(activity).readString("login_cust_address"))) {
-            binding.txtAddress.setText(PrefsUtil.with(activity).readString("login_cust_address"));
-        } else {
-            binding.txtAddress.setText("N/A");
-        }
-
-        binding.llEdit.setOnClickListener(v -> getProfileData());
+        updateUI();
+        binding.llEdit.setOnClickListener(v -> performGetProfileData());
         setUpMenuItems();
     }
 
+    private void updateUI() {
+        String userImg = PrefsUtil.with(activity).readString("UserImg");
+        if (userImg != null && !userImg.isEmpty()) {
+            binding.imgProfile.setColorFilter(ContextCompat.getColor(context, R.color.transparent));
+            Picasso.get().load(userImg).placeholder(R.drawable.loading).into(binding.imgProfile);
+        } else {
+            binding.imgProfile.setColorFilter(ContextCompat.getColor(context, R.color.white));
+            Picasso.get().load(R.drawable.ic_user_menu).placeholder(R.drawable.loading).into(binding.imgProfile);
+        }
+
+        String userName = PrefsUtil.with(activity).readString("UserName");
+        binding.txtUserName.setText(userName != null && !userName.isEmpty() ? userName : "N/A");
+        
+        String address = PrefsUtil.with(activity).readString("login_cust_address");
+        binding.txtAddress.setText(address != null && !address.isEmpty() ? address : "N/A");
+    }
+
     void setUpMenuItems() {
-        drawerItem = new ModelForDrawer[11];
-        drawerItem[0] = new ModelForDrawer(R.drawable.ic_stripe_menu, getString(R.string.stripe_conncent));
-        drawerItem[1] = new ModelForDrawer(R.drawable.ic_my_service_menu, getString(R.string.my_services));
-        drawerItem[2] = new ModelForDrawer(R.drawable.ic_finance_info_menu, getString(R.string.financial_info));
-        drawerItem[3] = new ModelForDrawer(R.drawable.ic_notification_menu, getString(R.string.notifications_title));
-        drawerItem[4] = new ModelForDrawer(R.drawable.ic_resolution_menu, getString(R.string.resolution_center));
-        drawerItem[5] = new ModelForDrawer(R.drawable.ic_payment_history_menu, getString(R.string.payment_history));
-        drawerItem[6] = new ModelForDrawer(R.drawable.ic_account_settings_menu, getString(R.string.account_settings));
-        drawerItem[7] = new ModelForDrawer(R.drawable.ic_info_menu, getString(R.string.info));
-        drawerItem[8] = new ModelForDrawer(R.drawable.ic_feedback_menu, getString(R.string.feedback));
-        drawerItem[9] = new ModelForDrawer(R.drawable.ic_contact_us_menu, getString(R.string.comtact_us));
-        drawerItem[10] = new ModelForDrawer(R.drawable.ic_logout_menu, getString(R.string.logout));
+        ModelForDrawer[] drawerItem = {
+                new ModelForDrawer(R.drawable.ic_stripe_menu, getString(R.string.stripe_conncent)),
+                new ModelForDrawer(R.drawable.ic_my_service_menu, getString(R.string.my_services)),
+                new ModelForDrawer(R.drawable.ic_finance_info_menu, getString(R.string.financial_info)),
+                new ModelForDrawer(R.drawable.ic_notification_menu, getString(R.string.notifications_title)),
+                new ModelForDrawer(R.drawable.ic_resolution_menu, getString(R.string.resolution_center)),
+                new ModelForDrawer(R.drawable.ic_payment_history_menu, getString(R.string.payment_history)),
+                new ModelForDrawer(R.drawable.ic_account_settings_menu, getString(R.string.account_settings)),
+                new ModelForDrawer(R.drawable.ic_info_menu, getString(R.string.info)),
+                new ModelForDrawer(R.drawable.ic_feedback_menu, getString(R.string.feedback)),
+                new ModelForDrawer(R.drawable.ic_contact_us_menu, getString(R.string.comtact_us)),
+                new ModelForDrawer(R.drawable.ic_logout_menu, getString(R.string.logout))
+        };
 
         binding.recProMenu.setLayoutManager(new LinearLayoutManager(context));
         binding.recProMenu.setItemAnimator(new DefaultItemAnimator());
-
         MenuItemAdapter adapter = new MenuItemAdapter(context, activity, this, drawerItem);
         binding.recProMenu.setAdapter(adapter);
     }
 
-    /*---------------- Profile Detail Api Call ---------------------*/
-    protected void getProfileData() {
+    protected void performGetProfileData() {
         binding.pgEdit.setVisibility(View.VISIBLE);
+        String profileId = PrefsUtil.with(activity).readString("UserId");
 
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
+        viewModel.getProfile(profileId).observe(getViewLifecycleOwner(), profilePojo -> {
+            binding.pgEdit.setVisibility(View.GONE);
+            if (profilePojo != null && profilePojo.isStatus()) {
+                ProfileItem item = profilePojo.getData();
+                
+                PrefsUtil.with(context).write("userContactno", item.getContactNumber());
+                PrefsUtil.with(context).write("userEmail", item.getEmail());
 
-        textParams.put("profile_id", PrefsUtil.with(activity).readString("UserId"));
+                Intent i = new Intent(context, EditProfileActivity.class);
+                i.putExtra("isFromEdit", true);
+                i.putExtra("profilePojoData", item);
+                i.putExtra("Edit", "true");
+                startActivity(i);
+            } else {
+                Toast.makeText(context, "Errore nel caricamento del profilo", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
 
-        new WebServiceCall(context, WebServiceUrl.URL_PROFILE, textParams, ProfilePojo.class,
-                false, new WebServiceCall.OnResultListener() {
-            @Override
-            public void onResult(boolean status, Object obj) {
-                binding.pgEdit.setVisibility(View.GONE);
-                if (status) {
-                    ProfilePojo response_profile = (ProfilePojo) obj;
-                    ProfileItem item = response_profile.getData();
+    private void performLocalLogout() {
+        try {
+            File offlineFile = new File(activity.getFilesDir().getPath(), "/offline.json");
+            if (offlineFile.exists()) {
+                offlineFile.delete();
+            }
 
-                    smallDelivery = response_profile.getData().getSmallDelivery();
-                    mediumDelivery = response_profile.getData().getMediumDelivery();
-                    largeDelivery = response_profile.getData().getLargeDelivery();
-                    strepoc_avl_start_time = response_profile.getData().getAvailableTimeStart();
-                    strepoc_avl_end_time = response_profile.getData().getAvailableTimeEnd();
-                    countrycodeid = response_profile.getData().getCountryCode();
-                    userAddress = response_profile.getData().getAddress();
+            SecurePrefsUtil.with(activity).clearPrefs();
+            PrefsUtil.with(activity).clearPrefs();
 
+            Intent intent = new Intent(activity, LoginActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK
+                    | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            activity.finish(); // Chiudi l'Activity contenitore
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Fallback estremo se qualcosa va storto nel logout
+            activity.finish();
+        }
+    }
 
-                    PrefsUtil.with(context).write("userContactno", response_profile.getData().getContactNumber());
-                    PrefsUtil.with(context).write("userEmail", response_profile.getData().getEmail());
-                    PrefsUtil.with(context).write("total_review", response_profile.getData().getTotalReview());
-                    PrefsUtil.with(context).write("total_rating", response_profile.getData().getPositiveRating());
-                    PrefsUtil.with(context).write("userAddress", response_profile.getData().getAddress());
-                    PrefsUtil.with(context).write("userAbout", response_profile.getData().getDescription());
-                    PrefsUtil.with(context).write("userfname", response_profile.getData().getFirstName());
-                    PrefsUtil.with(context).write("userlname", response_profile.getData().getLastName());
-                    PrefsUtil.with(context).write("start_time", response_profile.getData().getAvailableTimeStart());
-                    PrefsUtil.with(context).write("end_time", response_profile.getData().getAvailableTimeEnd());
-                    PrefsUtil.with(context).write("userlatitude", response_profile.getData().getLatitude());
-                    PrefsUtil.with(context).write("userlongitude", response_profile.getData().getLongitude());
-                    PrefsUtil.with(context).write("userAvalDay", response_profile.getData().getAvailableDays());
-                    //PrefsUtil.with(context).write("paypalEmailId", response_profile.getData().getPaypalEmail());
-                    PrefsUtil.with(context).write("lat", response_profile.getData().getLatitude());
-                    PrefsUtil.with(context).write("long", response_profile.getData().getLongitude());
-                    PrefsUtil.with(context).write("UserImg", response_profile.getData().getProfileImg());
-
-                    Intent i = new Intent(context, EditProfileActivity.class);
-                    i.putExtra("isFromEdit", true);
-                    i.putExtra("profilePojoData", item);
-
-                    i.putExtra("smallDelivery", smallDelivery);
-                    i.putExtra("mediumDelivery", mediumDelivery);
-                    i.putExtra("largeDelivery", largeDelivery);
-                    i.putExtra("strepoc_avl_start_time", strepoc_avl_start_time);
-                    i.putExtra("strepoc_avl_end_time", strepoc_avl_end_time);
-                    i.putExtra("userAddress", userAddress);
-                    i.putExtra("countrycodeId", countrycodeid);
-                    i.putExtra("Edit", "true");
-                    startActivity(i);
-                } else {
-                    Toast.makeText(context, (String) obj,
-                            Toast.LENGTH_SHORT).show();
+    private void performCheckStripeStatus() {
+        String userId = PrefsUtil.with(activity).readString("UserId");
+        viewModel.checkStripeStatus(userId).observe(getViewLifecycleOwner(), stripePojo -> {
+            if (stripePojo != null && stripePojo.getStatus()) {
+                String connectUrl = null;
+                if (stripePojo.getData() != null) {
+                    connectUrl = stripePojo.getData().getConnectUrl();
                 }
-            }
 
-            @Override
-            public void onAsync(AsyncTask asyncTask) {
-                profileDataAsync = asyncTask;
-            }
-
-            @Override
-            public void onCancelled() {
-                profileDataAsync = null;
+                if (!TextUtils.isEmpty(connectUrl)) {
+                    Log.i(TAG, "Stripe Connect URL received: " + connectUrl);
+                    Intent intent = new Intent(activity, MyStripeConnectActivity.class);
+                    intent.putExtra("StripeUrl", connectUrl);
+                    startActivity(intent);
+                } else {
+                    Log.e(TAG, "Stripe Connect URL is null or empty. Message: " + stripePojo.getMessage());
+                    Toast.makeText(context, "Impossibile connettersi a Stripe. URL non disponibile.", Toast.LENGTH_LONG).show();
+                }
+            } else {
+                String message = (stripePojo != null) ? stripePojo.getMessage() : "Errore di connessione a Stripe. Riprova.";
+                Log.e(TAG, "Stripe API call failed. Message: " + message);
+                Toast.makeText(context, message, Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -207,13 +194,12 @@ public class ProviderMenuFragment extends Fragment implements MenuItemClickListe
     @Override
     public void onDestroy() {
         try {
-            connectionManager.unregisterReceiver();
+            if (connectionManager != null) {
+                connectionManager.unregisterReceiver();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        Utils.cancelAsyncTask(profileDataAsync);
-        Utils.cancelAsyncTask(userLogoutAsync);
-        Utils.cancelAsyncTask(getStripeConnectAsync);
         super.onDestroy();
     }
 
@@ -221,7 +207,8 @@ public class ProviderMenuFragment extends Fragment implements MenuItemClickListe
     public void onMenuItemClick(ModelForDrawer modelForDrawer, int position) {
         switch (position) {
             case 0:
-                callAPICheckConnectedStripeAccount();
+                // Quando si clicca su Stripe Connect, chiamiamo la funzione che controlla lo stato e avvia l'activity
+                performCheckStripeStatus();
                 break;
             case 1:
                 startActivity(new Intent(activity, Partner_MyServices_Activity.class));
@@ -251,113 +238,15 @@ public class ProviderMenuFragment extends Fragment implements MenuItemClickListe
                 startActivity(new Intent(activity, ContactUsActivity.class));
                 break;
             case 10:
-                AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-                builder.setMessage(R.string.sure_logout)
-                        .setPositiveButton(R.string.yes, (dialogInterface, i) -> serviceCallLogout())
-                        .setNegativeButton(R.string.no, (dialogInterface, i) -> dialogInterface.cancel()).show();
+                // Logica di logout puramente locale e immediata
+                new AlertDialog.Builder(activity)
+                        .setMessage(R.string.sure_logout)
+                        .setPositiveButton(R.string.yes, (dialog, i) -> performLocalLogout())
+                        .setNegativeButton(R.string.no, null)
+                        .show();
                 break;
             default:
                 break;
         }
     }
-
-    private void callAPICheckConnectedStripeAccount() {
-        LinkedHashMap<String, String> params = new LinkedHashMap<>();
-        params.put("user_id", PrefsUtil.with(context).readString("UserId"));
-
-        new WebServiceCall(context,  WebServiceUrl.URL_STRIPE_CONNECT, params, CheckStripeConnectedPojo.class, true,
-                new WebServiceCall.OnResultListener() {
-                    @Override
-                    public void onResult(boolean status, Object obj) {
-                        try {
-                            if (status) {
-                                CheckStripeConnectedPojo checkStripeConnectedResponse = (CheckStripeConnectedPojo) obj;
-                                if(checkStripeConnectedResponse.getData().getConnectUrl() != null) {
-                                    Intent intent = new Intent(context, MyStripeConnectActivity.class);
-                                    intent.putExtra("connect_url",checkStripeConnectedResponse.getData().getConnectUrl());
-                                    startActivity(intent);
-                                }
-                            } else {
-                                Toast.makeText(context, (String) obj, Toast.LENGTH_SHORT).show();
-                            }
-
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-
-                    @Override
-                    public void onAsync(AsyncTask asyncTask) {
-                        getStripeConnectAsync = asyncTask;
-                    }
-
-                    @Override
-                    public void onCancelled() {
-                        getStripeConnectAsync = null;
-                    }
-                });
-    }
-
-
-    /*--------------------- Log Out Api Call ----------------------*/
-    private void serviceCallLogout() {
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-
-        SecurePrefsUtil securePrefs = SecurePrefsUtil.with(activity);
-        PrefsUtil prefsUtil = PrefsUtil.with(activity);
-        
-        // Fallback a PrefsUtil se SecurePrefsUtil non ha UserId
-        String userId = securePrefs.readString("UserId");
-        if (userId == null || userId.isEmpty()) {
-            userId = prefsUtil.readString("UserId");
-        }
-        
-        String deviceToken = securePrefs.readString("device_token");
-        if (deviceToken == null || deviceToken.isEmpty()) {
-            deviceToken = prefsUtil.readString("device_token");
-        }
-        
-        textParams.put("user_id", userId != null ? userId : "");
-        textParams.put("device_token", deviceToken != null ? deviceToken : "");
-
-
-        new WebServiceCall(context, WebServiceUrl.URL_LOGOUT, textParams,
-                CommonPojo.class, true, new WebServiceCall.OnResultListener() {
-            @Override
-            public void onResult(boolean status, Object obj) {
-                // Anche se l'API fallisce, procediamo con il logout locale
-                File offlineFile = new File(activity.getFilesDir().getPath(), "/offline.json");
-                if (offlineFile.exists()) {
-                    offlineFile.delete();
-                }
-                
-                // Pulisci sia SecurePrefsUtil che PrefsUtil per sicurezza
-                SecurePrefsUtil.with(activity).clearPrefs();
-                PrefsUtil.with(activity).clearPrefs();
-                
-                // Vai a LoginActivity con flag per pulire lo stack
-                Intent intent = new Intent(activity, LoginActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                startActivity(intent);
-                activity.finish();
-                
-                if (!status) {
-                    // Mostra messaggio solo se necessario, ma procedi comunque
-                    Toast.makeText(context, getString(R.string.logout), Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onAsync(AsyncTask asyncTask) {
-                userLogoutAsync = asyncTask;
-            }
-
-            @Override
-            public void onCancelled() {
-                userLogoutAsync = null;
-            }
-        });
-    }
-
-
 }
