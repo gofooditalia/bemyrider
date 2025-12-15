@@ -1,12 +1,10 @@
 package com.app.bemyrider.activity.partner;
 
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
@@ -44,27 +42,21 @@ import java.io.File;
 
 public class DrawerActivity extends AppCompatActivity {
 
-    private static final String TAG = "DrawerActivity";
     private PartnerActivityProfileBinding binding;
-    private DrawerItemCustomAdapter adapter;
     private ActionBarDrawerToggle mDrawerToggle;
 
-    private Context context;
     private BroadcastReceiver mMessageReceiver;
     private ConnectionManager connectionManager;
-    private Toolbar toolbar;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_ACTION_BAR_OVERLAY);
-        binding = DataBindingUtil.setContentView(DrawerActivity.this, R.layout.partner_activity_profile);
+        binding = DataBindingUtil.setContentView(this, R.layout.partner_activity_profile);
 
         initView();
 
-        if(getSupportActionBar() != null){
-            getSupportActionBar().setHomeButtonEnabled(true);
+        if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
@@ -98,7 +90,6 @@ public class DrawerActivity extends AppCompatActivity {
     }
 
     private void initView() {
-        context = DrawerActivity.this;
         setUpToolBar();
 
         binding.appBarLayout.addOnOffsetChangedListener((appBarLayout, verticalOffset) -> {
@@ -108,44 +99,40 @@ public class DrawerActivity extends AppCompatActivity {
                 else
                     binding.txtHeaderName.setText(getResources().getString(R.string.provider_profile));
 
-                binding.toolbar.setBackgroundColor(ContextCompat.getColor(context, R.color.white));
-                binding.txtHeaderName.setTextColor(ContextCompat.getColor(context, R.color.text));
+                binding.toolbar.setBackgroundColor(ContextCompat.getColor(this, R.color.white));
+                binding.txtHeaderName.setTextColor(ContextCompat.getColor(this, R.color.text));
                 if (mDrawerToggle != null) {
-                    mDrawerToggle.getDrawerArrowDrawable().setColor(ContextCompat.getColor(context, R.color.text));
+                    mDrawerToggle.getDrawerArrowDrawable().setColor(ContextCompat.getColor(this, R.color.text));
                 }
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    Window window = getWindow();
-                    window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-                    window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-                    window.setStatusBarColor(Color.WHITE);
-                }
+                Window window = getWindow();
+                window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+                window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+                window.setStatusBarColor(Color.WHITE);
             } else {
                 binding.txtHeaderName.setText("");
-                binding.txtHeaderName.setTextColor(ContextCompat.getColor(context, R.color.white));
+                binding.txtHeaderName.setTextColor(ContextCompat.getColor(this, R.color.white));
                 if (mDrawerToggle != null) {
-                    mDrawerToggle.getDrawerArrowDrawable().setColor(ContextCompat.getColor(context, R.color.white));
+                    mDrawerToggle.getDrawerArrowDrawable().setColor(ContextCompat.getColor(this, R.color.white));
                 }
 
-                binding.toolbar.setBackgroundColor(ContextCompat.getColor(context, R.color.transparent));
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    Window window = getWindow();
-                    window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-                    window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-                    window.setStatusBarColor(Color.TRANSPARENT);
-                }
+                binding.toolbar.setBackgroundColor(ContextCompat.getColor(this, R.color.transparent));
+                Window window = getWindow();
+                window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+                window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+                window.setStatusBarColor(Color.TRANSPARENT);
             }
         });
 
-        connectionManager = new ConnectionManager(context);
+        connectionManager = new ConnectionManager(this);
         connectionManager.registerInternetCheckReceiver();
-        connectionManager.checkConnection(context);
+        connectionManager.checkConnection(this);
 
         setUpDrawer();
     }
 
     private void setUpToolBar() {
-        toolbar = findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
     }
 
@@ -166,10 +153,11 @@ public class DrawerActivity extends AppCompatActivity {
         drawerItem[12] = new ModelForDrawer(R.mipmap.ic_info_drawer, getString(R.string.info));
         drawerItem[13] = new ModelForDrawer(R.mipmap.ic_logout, getString(R.string.logout));
 
-        adapter = new DrawerItemCustomAdapter(this, R.layout.drawerlist_rowitem, drawerItem, 0);
+        DrawerItemCustomAdapter adapter = new DrawerItemCustomAdapter(this, R.layout.drawerlist_rowitem, drawerItem, 0);
         binding.leftDrawer.setAdapter(adapter);
         binding.leftDrawer.setOnItemClickListener(new DrawerItemClickListener());
 
+        Toolbar toolbar = findViewById(R.id.toolbar);
         mDrawerToggle = new ActionBarDrawerToggle(this, binding.drawerLayout, toolbar, R.string.app_name,
                 R.string.app_name) {
             public void onDrawerClosed(View view) {
@@ -246,15 +234,16 @@ public class DrawerActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(mMessageReceiver);
+    }
+
+    @Override
     public void onDestroy() {
         super.onDestroy();
-        try {
-            if (connectionManager != null) {
-                connectionManager.unregisterReceiver();
-            }
-            unregisterReceiver(mMessageReceiver);
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (connectionManager != null) {
+            connectionManager.unregisterReceiver();
         }
     }
 
