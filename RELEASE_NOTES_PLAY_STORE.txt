@@ -1,0 +1,13 @@
+v1.1.4 - Correzioni Importanti
+
+🔧 Risolto problema critico di upload immagini profilo
+🔧 Migliorata gestione errori durante l'upload
+📦 Ottimizzazioni tecniche per upload multipart
+
+Inclusi tutti i miglioramenti della versione 1.1.3:
+🎯 Conformità Play Store 2025
+✨ Miglioramenti UI/UX su splash screen, onboarding e registrazione
+🔧 Correzioni layout su tutte le pagine
+🔔 Miglioramenti notifiche push con supporto Android 13+
+🐛 Risolti bug di logout, lingua e permessi
+🔒 Miglioramenti sicurezza e aggiornamento dipendenze

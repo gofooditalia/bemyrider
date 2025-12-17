@@ -7,7 +7,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CompoundButton;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -26,7 +25,6 @@ import com.app.bemyrider.databinding.FragmentProviderProfileBinding;
 import com.app.bemyrider.model.ProfileItem;
 import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.PrefsUtil;
-import com.app.bemyrider.utils.Utils;
 import com.app.bemyrider.viewmodel.ProviderProfileViewModel;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -39,7 +37,7 @@ import com.squareup.picasso.Picasso;
 
 public class ProviderProfileFragment extends Fragment {
 
-    private static final String TAG = "ProviderProfileFragment"; // AGGIUNTO
+    private static final String TAG = "ProviderProfileFragment";
     private FragmentProviderProfileBinding binding;
     private GoogleSignInClient mGoogleSignInClient;
     private ActivityResultLauncher<Intent> googleSignInLauncher;
@@ -132,7 +130,12 @@ public class ProviderProfileFragment extends Fragment {
                     binding.switchAvailableNow.setVisibility(View.VISIBLE);
                     if (commonPojo == null || !commonPojo.isStatus()) {
                         Toast.makeText(context, "Failed to update status", Toast.LENGTH_SHORT).show();
+                        // Revert check status without triggering listener
+                        binding.switchAvailableNow.setOnCheckedChangeListener(null);
                         binding.switchAvailableNow.setChecked(!binding.switchAvailableNow.isChecked());
+                        binding.switchAvailableNow.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                            performUpdateAvailability(isChecked ? "y" : "n");
+                        });
                     }
                 });
     }
@@ -163,7 +166,64 @@ public class ProviderProfileFragment extends Fragment {
     }
 
     private void updateUI(ProfileItem data) {
-        // ... (metodo updateUI omesso per brevità, rimane quasi invariato)
+        if (data == null) return;
+
+        // Immagine Profilo
+        if (data.getProfileImg() != null && !data.getProfileImg().isEmpty()) {
+            Picasso.get()
+                   .load(data.getProfileImg())
+                   .placeholder(R.mipmap.ic_launcher_round)
+                   .error(R.mipmap.ic_launcher_round)
+                   .into(binding.imgProfile);
+        }
+
+        // Dati Generali
+        binding.txtUsername.setText(String.format("%s %s", data.getFirstName(), data.getLastName()));
+        binding.txtUseremail.setText(data.getEmail());
+        binding.txtUsercontactno.setText(data.getContactNumber());
+
+        // Switch Disponibilità
+        binding.switchAvailableNow.setOnCheckedChangeListener(null); // Disattiva listener
+        boolean isAvail = "y".equalsIgnoreCase(data.getIsAvailable()) || "1".equals(data.getIsAvailable());
+        binding.switchAvailableNow.setChecked(isAvail);
+        binding.switchAvailableNow.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            performUpdateAvailability(isChecked ? "y" : "n");
+        });
+
+        // Dettagli
+        binding.txtAvailableDays.setText(data.getAvailableDaysList());
+        binding.txtAddressPro.setText(data.getAddress());
+        binding.txtWorkedOn.setText(data.getTotalService()); // Assumo TotalService sia il numero di task
+        binding.txtCompany.setText(data.getCompanyName());
+        binding.txtVat.setText(data.getVat());
+        binding.txtInvoiceRecipient.setText(data.getReceiptCode());
+        binding.txtCertifiedEmail.setText(data.getCertifiedEmail());
+        
+        binding.txtCityOfBirth.setText(data.getCity_of_birth());
+        binding.txtDateOfBirth.setText(data.getDate_of_birth());
+        binding.txtCityOfResidence.setText(data.getCity_of_residence());
+        binding.txtResidentialAddress.setText(data.getResidential_address());
+        
+        // Rating
+        binding.txtRating.setText(data.getStartRating());
+        binding.txtTotaReview.setText("(" + data.getTotalReview() + " Reviews)");
+
+        // Orari
+        if (data.getAvailableTimeStart() != null && data.getAvailableTimeEnd() != null) {
+            binding.txtServicetime.setText(data.getAvailableTimeStart() + " to " + data.getAvailableTimeEnd());
+        }
+
+        // Delivery Types
+        StringBuilder deliveryType = new StringBuilder();
+        if ("y".equalsIgnoreCase(data.getSmallDelivery())) deliveryType.append("Small, ");
+        if ("y".equalsIgnoreCase(data.getMediumDelivery())) deliveryType.append("Medium, ");
+        if ("y".equalsIgnoreCase(data.getLargeDelivery())) deliveryType.append("Large, ");
+        
+        if (deliveryType.length() > 2) {
+            binding.txtDeliveryType.setText(deliveryType.substring(0, deliveryType.length() - 2));
+        } else {
+            binding.txtDeliveryType.setText("None");
+        }
     }
 
     @Override

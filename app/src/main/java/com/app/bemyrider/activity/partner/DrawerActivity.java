@@ -14,6 +14,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import androidx.activity.OnBackPressedCallback;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -24,21 +25,16 @@ import androidx.databinding.DataBindingUtil;
 import com.app.bemyrider.Adapter.Partner.DrawerItemCustomAdapter;
 import com.app.bemyrider.AsyncTask.ConnectionCheck;
 import com.app.bemyrider.R;
-import com.app.bemyrider.activity.LoginActivity;
 import com.app.bemyrider.databinding.PartnerActivityProfileBinding;
 import com.app.bemyrider.model.MessageEvent;
 import com.app.bemyrider.model.ModelForDrawer;
 import com.app.bemyrider.utils.ConnectionManager;
-import com.app.bemyrider.utils.LocaleManager;
+import com.app.bemyrider.utils.LocaleManager; // ✅ Import Aggiunto
 import com.app.bemyrider.utils.Log;
-import com.app.bemyrider.utils.PrefsUtil;
-import com.app.bemyrider.utils.SecurePrefsUtil;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-
-import java.io.File;
 
 public class DrawerActivity extends AppCompatActivity {
 
@@ -192,29 +188,8 @@ public class DrawerActivity extends AppCompatActivity {
         }
     }
 
-    private void performLocalLogout() {
-        try {
-            File offlineFile = new File(getFilesDir().getPath(), "/offline.json");
-            if (offlineFile.exists()) {
-                offlineFile.delete();
-            }
-
-            SecurePrefsUtil.with(DrawerActivity.this).clearPrefs();
-            PrefsUtil.with(DrawerActivity.this).clearPrefs();
-
-            Intent intent = new Intent(DrawerActivity.this, LoginActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK
-                    | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            startActivity(intent);
-            finish();
-        } catch (Exception e) {
-            e.printStackTrace();
-            finish();
-        }
-    }
-
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (mDrawerToggle.onOptionsItemSelected(item)) {
             return true;
         }
@@ -261,16 +236,7 @@ public class DrawerActivity extends AppCompatActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMessageEvent(MessageEvent event) {
-        try {
-            if (event.getType().equalsIgnoreCase("connection")) {
-                if (event.getMessage().equalsIgnoreCase("disconnected")) {
-                    // Handle disconnected state
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
+        // Handle message event if needed
     }
 
     @Override
