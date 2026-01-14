@@ -31,6 +31,12 @@ jobs:
       run: |
         echo $KEYSTORE_BASE64 | base64 --decode > app/bemyrider.jks
 
+    # Decodifica google-services.json dai Secrets
+    - name: Decode Google Services JSON
+      env:
+        GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+      run: echo $GOOGLE_SERVICES_JSON | base64 --decode > app/google-services.json
+
     # Compila e Firma l'APK (Debug e Release)
     - name: Build with Gradle
       env:
