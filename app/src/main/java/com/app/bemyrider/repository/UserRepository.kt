@@ -113,6 +113,18 @@ class AppRepository {
 
     suspend fun getProfile(profileId: String): Response<ProfilePojo> = apiService.getProfile(profileId)
 
+    suspend fun getOfflineData(userId: String): Response<String> = apiService.getOfflineData(userId)
+
+    suspend fun forgotPassword(email: String): NewLoginPojo {
+        val response = apiService.forgotPassword(email)
+        return parseGenericResponse(response, NewLoginPojo::class.java)
+    }
+
+    suspend fun resendActivationMail(email: String): NewLoginPojo {
+        val response = apiService.resendActivationMail(email)
+        return parseGenericResponse(response, NewLoginPojo::class.java)
+    }
+
     // --- Helpers per il parsing (Porting dal Java) ---
 
     private fun <T : Any> parseGenericResponse(response: Response<ResponseBody>, type: Class<T>): T {

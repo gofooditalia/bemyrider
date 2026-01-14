@@ -20,5 +20,7 @@ app/google-services.json
 # Backend PHP - Ignora completamente (mantieni solo localmente per contesto AI)
 backend/
 
-
+    
+    *.txt
+    
 BACKEND_FIX_PUSH_NOTIFICATION.php

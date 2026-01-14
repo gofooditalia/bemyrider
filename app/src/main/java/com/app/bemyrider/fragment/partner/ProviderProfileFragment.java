@@ -97,6 +97,21 @@ public class ProviderProfileFragment extends Fragment {
 
         binding.txtViewall.setOnClickListener(v -> startActivity(new Intent(context, PartnerReviewsActivity.class)));
         binding.imgVerifyGmail.setOnClickListener(view -> signInWithGoogle());
+        
+        binding.imgShare.setOnClickListener(v -> shareProfile());
+    }
+
+    private void shareProfile() {
+        if (profilePojoData != null && profilePojoData.getId() != null) {
+            String shareBody = "Ciao! Prenota il mio servizio su Bemyrider: https://bemyrider.it/rider?id=" + profilePojoData.getId();
+            Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
+            sharingIntent.setType("text/plain");
+            sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "Il mio profilo Bemyrider");
+            sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, shareBody);
+            startActivity(Intent.createChooser(sharingIntent, "Condividi via"));
+        } else {
+            Toast.makeText(context, "Profilo non caricato, impossibile condividere.", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void setupObservers() {
@@ -130,7 +145,6 @@ public class ProviderProfileFragment extends Fragment {
                     binding.switchAvailableNow.setVisibility(View.VISIBLE);
                     if (commonPojo == null || !commonPojo.isStatus()) {
                         Toast.makeText(context, "Failed to update status", Toast.LENGTH_SHORT).show();
-                        // Revert check status without triggering listener
                         binding.switchAvailableNow.setOnCheckedChangeListener(null);
                         binding.switchAvailableNow.setChecked(!binding.switchAvailableNow.isChecked());
                         binding.switchAvailableNow.setOnCheckedChangeListener((buttonView, isChecked) -> {
@@ -154,7 +168,7 @@ public class ProviderProfileFragment extends Fragment {
                         .observe(getViewLifecycleOwner(), newLoginPojo -> {
                            if(newLoginPojo != null && newLoginPojo.isStatus()){
                                Toast.makeText(context, "Google account connected!", Toast.LENGTH_SHORT).show();
-                               performFetchProfile(); // Refresh profile
+                               performFetchProfile();
                            } else {
                                Toast.makeText(context, "Failed to connect Google account", Toast.LENGTH_SHORT).show();
                            }
@@ -168,7 +182,6 @@ public class ProviderProfileFragment extends Fragment {
     private void updateUI(ProfileItem data) {
         if (data == null) return;
 
-        // Immagine Profilo
         if (data.getProfileImg() != null && !data.getProfileImg().isEmpty()) {
             Picasso.get()
                    .load(data.getProfileImg())
@@ -177,23 +190,20 @@ public class ProviderProfileFragment extends Fragment {
                    .into(binding.imgProfile);
         }
 
-        // Dati Generali
         binding.txtUsername.setText(String.format("%s %s", data.getFirstName(), data.getLastName()));
         binding.txtUseremail.setText(data.getEmail());
         binding.txtUsercontactno.setText(data.getContactNumber());
 
-        // Switch Disponibilità
-        binding.switchAvailableNow.setOnCheckedChangeListener(null); // Disattiva listener
+        binding.switchAvailableNow.setOnCheckedChangeListener(null);
         boolean isAvail = "y".equalsIgnoreCase(data.getIsAvailable()) || "1".equals(data.getIsAvailable());
         binding.switchAvailableNow.setChecked(isAvail);
         binding.switchAvailableNow.setOnCheckedChangeListener((buttonView, isChecked) -> {
             performUpdateAvailability(isChecked ? "y" : "n");
         });
 
-        // Dettagli
         binding.txtAvailableDays.setText(data.getAvailableDaysList());
         binding.txtAddressPro.setText(data.getAddress());
-        binding.txtWorkedOn.setText(data.getTotalService()); // Assumo TotalService sia il numero di task
+        binding.txtWorkedOn.setText(data.getTotalService());
         binding.txtCompany.setText(data.getCompanyName());
         binding.txtVat.setText(data.getVat());
         binding.txtInvoiceRecipient.setText(data.getReceiptCode());
@@ -204,25 +214,22 @@ public class ProviderProfileFragment extends Fragment {
         binding.txtCityOfResidence.setText(data.getCity_of_residence());
         binding.txtResidentialAddress.setText(data.getResidential_address());
         
-        // Rating
         binding.txtRating.setText(data.getStartRating());
         binding.txtTotaReview.setText("(" + data.getTotalReview() + " Reviews)");
 
-        // Orari
         if (data.getAvailableTimeStart() != null && data.getAvailableTimeEnd() != null) {
             binding.txtServicetime.setText(data.getAvailableTimeStart() + " to " + data.getAvailableTimeEnd());
         }
 
-        // Delivery Types
         StringBuilder deliveryType = new StringBuilder();
-        if ("y".equalsIgnoreCase(data.getSmallDelivery())) deliveryType.append("Small, ");
-        if ("y".equalsIgnoreCase(data.getMediumDelivery())) deliveryType.append("Medium, ");
-        if ("y".equalsIgnoreCase(data.getLargeDelivery())) deliveryType.append("Large, ");
+        if ("y".equalsIgnoreCase(data.getSmallDelivery())) deliveryType.append(getString(R.string.small)).append(", ");
+        if ("y".equalsIgnoreCase(data.getMediumDelivery())) deliveryType.append(getString(R.string.medium)).append(", ");
+        if ("y".equalsIgnoreCase(data.getLargeDelivery())) deliveryType.append(getString(R.string.large)).append(", ");
         
         if (deliveryType.length() > 2) {
             binding.txtDeliveryType.setText(deliveryType.substring(0, deliveryType.length() - 2));
         } else {
-            binding.txtDeliveryType.setText("None");
+            binding.txtDeliveryType.setText(getString(R.string.none));
         }
     }
 

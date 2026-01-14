@@ -1,27 +1,23 @@
 package com.app.bemyrider.activity;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.method.PasswordTransformationMethod;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
-import androidx.core.text.HtmlCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -29,23 +25,20 @@ import com.app.bemyrider.R;
 import com.app.bemyrider.WebServices.WebServiceUrl;
 import com.app.bemyrider.activity.partner.ProviderHomeActivity;
 import com.app.bemyrider.activity.user.CustomerHomeActivity;
-// IMPORT CORRETTI
 import com.app.bemyrider.activity.ContactUsActivity;
 import com.app.bemyrider.activity.WebViewActivity;
 
 import com.app.bemyrider.databinding.ActivitySignupBinding;
 import com.app.bemyrider.model.NewLoginPojo;
 import com.app.bemyrider.model.NewLoginPojoItem;
-import com.app.bemyrider.model.RegistrationPojo;
 import com.app.bemyrider.model.partner.CountryCodePojoItem;
 import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.LocaleManager;
 import com.app.bemyrider.utils.PrefsUtil;
 import com.app.bemyrider.utils.Utils;
-import com.app.bemyrider.viewmodel.SignupViewModel;
+import com.app.bemyrider.viewmodel.AppSignupViewModel;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 
 /**
  * Modified by Hardik Talaviya on 3/12/19.
@@ -62,7 +55,7 @@ public class SignupActivity extends AppCompatActivity {
     private ConnectionManager connectionManager;
     private ArrayList<CountryCodePojoItem> countryArrayList = new ArrayList<>();
     private ArrayAdapter<CountryCodePojoItem> countrycodeAdapter;
-    private SignupViewModel viewModel;
+    private AppSignupViewModel viewModel;
     private boolean doubleBackToExitPressedOnce = false;
     private final Context mContext = SignupActivity.this; 
 
@@ -75,7 +68,7 @@ public class SignupActivity extends AppCompatActivity {
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 
-        viewModel = new ViewModelProvider(this).get(SignupViewModel.class);
+        viewModel = new ViewModelProvider(this).get(AppSignupViewModel.class);
         
         initView();
 
@@ -190,16 +183,16 @@ public class SignupActivity extends AppCompatActivity {
         String rePassword = binding.etSignupConfirmpassword.getText().toString().trim();
         String deviceToken = PrefsUtil.with(SignupActivity.this).readString("device_token");
 
-        // INVIO I PARAMETRI CORRETTI AL VIEWMODEL (incluso userType e rePassword)
+        // Use NewLoginPojo instead of RegistrationPojo as AppRepository unifies response types
         viewModel.signup(firstName, lastName, email, strUserType, contactNumber, password, rePassword, selectedCountryCodePosition, deviceToken)
-            .observe(this, registrationPojo -> {
+            .observe(this, newLoginPojo -> {
                 binding.progressSignUp.setVisibility(View.GONE);
                 binding.btnSubmit.setClickable(true);
                 
-                if (registrationPojo != null && registrationPojo.isStatus()) {
+                if (newLoginPojo != null && newLoginPojo.isStatus()) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
                     builder.setCancelable(false);
-                    builder.setMessage(registrationPojo.getMessage());
+                    builder.setMessage(newLoginPojo.getMessage());
                     builder.setPositiveButton(R.string.ok, (dialog, which) -> {
                         dialog.dismiss();
                         Intent intent = new Intent(SignupActivity.this, LoginActivity.class);
@@ -208,7 +201,7 @@ public class SignupActivity extends AppCompatActivity {
                     });
                     builder.create().show();
                 } else {
-                    String msg = registrationPojo != null ? registrationPojo.getMessage() : getString(R.string.server_error);
+                    String msg = newLoginPojo != null ? newLoginPojo.getMessage() : getString(R.string.server_error);
                     Toast.makeText(mContext, msg, Toast.LENGTH_SHORT).show();
                 }
             });
@@ -256,7 +249,6 @@ public class SignupActivity extends AppCompatActivity {
                         } else {
                             startActivity(new Intent(SignupActivity.this, ProviderHomeActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
                         }
-                        // viewModel.saveOfflineData(loginData.getUserId()); // Da implementare
                     }
                 } else {
                     String msg = newLoginPojo != null ? newLoginPojo.getMessage() : getString(R.string.server_error);

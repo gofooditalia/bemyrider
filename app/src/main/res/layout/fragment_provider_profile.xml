@@ -93,19 +93,6 @@
                             android:textColorLink="@color/white"
                             android:textSize="@dimen/_11sdp" />
 
-                        <!--<androidx.appcompat.widget.AppCompatTextView
-                            android:id="@+id/txt_Puseremail"
-                            style="@style/font_regular"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="8dp"
-                            android:layout_marginTop="2dp"
-                            android:gravity="center"
-                            android:maxLines="1"
-                            android:textColor="@color/white"
-                            android:textColorLink="@color/white"
-                            android:textSize="@dimen/_12ssp" />-->
-
                         <RelativeLayout
                             android:id="@+id/fab_edit"
                             android:layout_width="wrap_content"
@@ -151,20 +138,34 @@
                     app:layout_collapseMode="pin"
                     app:layout_scrollFlags="scroll|enterAlways">
 
-                    <TextView
-                        android:id="@+id/txtHeaderName"
-                        style="@style/font_medium"
+                    <RelativeLayout
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:layout_centerInParent="true"
-                        android:layout_toLeftOf="@+id/view"
-                        android:layout_toRightOf="@+id/imgBack"
-                        android:gravity="center"
-                        android:includeFontPadding="false"
-                        android:maxLines="1"
-                        android:singleLine="true"
-                        android:textColor="@color/white"
-                        android:textSize="18sp" />
+                        android:layout_height="match_parent">
+
+                        <TextView
+                            android:id="@+id/txtHeaderName"
+                            style="@style/font_medium"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_centerInParent="true"
+                            android:gravity="center"
+                            android:includeFontPadding="false"
+                            android:maxLines="1"
+                            android:singleLine="true"
+                            android:textColor="@color/white"
+                            android:textSize="18sp" />
+
+                        <ImageView
+                            android:id="@+id/imgShare"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentEnd="true"
+                            android:layout_centerVertical="true"
+                            android:padding="12dp"
+                            android:src="@drawable/ic_share_white"
+                            app:tint="@color/white" />
+
+                    </RelativeLayout>
 
                 </androidx.appcompat.widget.Toolbar>
 

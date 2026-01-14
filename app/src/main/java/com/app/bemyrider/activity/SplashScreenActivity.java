@@ -53,8 +53,6 @@ import java.util.LinkedHashMap;
 public class SplashScreenActivity extends AppCompatActivity {
 
     private static final String TAG = "SplashScreenActivity";
-    // UI Components (Legacy references kept for safety, new layout has them
-    // hidden/removed)
     private Spinner sp_select_lan;
     private Button btn_continue;
     private ArrayAdapter lanadapter;
@@ -64,7 +62,6 @@ public class SplashScreenActivity extends AppCompatActivity {
     private Context context;
     private ConnectionManager connectionManager;
 
-    // Secure Preference
     private SecurePrefsUtil securePrefs;
 
     @Override
@@ -73,27 +70,31 @@ public class SplashScreenActivity extends AppCompatActivity {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        // getSupportActionBar().hide(); // Already hidden by theme or null in some
-        // cases
         setContentView(R.layout.activity_splash_screen);
 
         context = SplashScreenActivity.this;
-
-        // Init Secure Prefs
         securePrefs = SecurePrefsUtil.with(context);
 
-        // --- SECURE MIGRATION START ---
+        // --- DEEP LINK HANDLING ---
+        Intent deepLinkIntent = getIntent();
+        if (deepLinkIntent != null && deepLinkIntent.getData() != null) {
+            Uri data = deepLinkIntent.getData();
+            String providerId = data.getQueryParameter("id");
+            if (providerId != null && !providerId.isEmpty()) {
+                securePrefs.write("pending_deeplink_id", providerId);
+                Log.i(TAG, "Deep link intercepted for provider: " + providerId);
+            }
+        }
+        // --------------------------
+
         PrefsUtil legacyPrefs = PrefsUtil.with(context);
-        // Check if legacy data exists (e.g., UserId is present in old prefs)
         if (legacyPrefs.readString("UserId") != null && !legacyPrefs.readString("UserId").isEmpty()) {
             Log.i(TAG, "Migrating legacy preferences to encrypted storage...");
             securePrefs.migrateFromLegacy(legacyPrefs);
         }
-        // --- SECURE MIGRATION END ---
 
         printHashKey(this);
 
-        /* Init Internet Connection Class For No Internet Banner */
         connectionManager = new ConnectionManager(context);
         connectionManager.registerInternetCheckReceiver();
         connectionManager.checkConnection(context);
@@ -109,7 +110,6 @@ public class SplashScreenActivity extends AppCompatActivity {
         sp_select_lan = findViewById(R.id.sp_select_lan);
         btn_continue = findViewById(R.id.btn_continue);
 
-        // Initialize adapter even if hidden to prevent crashes in existing logic
         lanadapter = new ArrayAdapter<>(SplashScreenActivity.this,
                 R.layout.spinner_item_inverse,
                 languagePojoItems);
@@ -134,19 +134,14 @@ public class SplashScreenActivity extends AppCompatActivity {
             });
         }
 
-        // BUGFIX: Initialize lanId with default value if empty
-        // This prevents null pointer issues and "please provide valid data" errors
         lanId = securePrefs.readString("lanId");
         if (lanId == null || lanId.isEmpty()) {
-            lanId = "4"; // Default to Italian (4)
+            lanId = "4"; 
             securePrefs.write("lanId", lanId);
             Log.w(TAG, "lanId was empty, initialized to default: " + lanId);
         }
         Log.e("SPLASH SCREEN ID", lanId + "ADv");
 
-        // BUGFIX: Reintroduce Splash Screen Delay (3 seconds)
-        // This ensures async tasks (like Firebase token retrieval) have time to complete
-        // before we attempt login, preventing "please provide valid data" errors due to missing device_token.
         new android.os.Handler().postDelayed(new Runnable() {
 
     @Override
@@ -205,7 +200,6 @@ public class SplashScreenActivity extends AppCompatActivity {
                             securePrefs.write("UserImg", login_response.getData().getProfileImg());
                             securePrefs.write("login_cust_address", login_response.getData().getAddress());
 
-                            // BUGFIX: Chiama saveOfflineData() DOPO che UserId è stato salvato
                             saveOfflineData();
 
                             String langCode = "en";
@@ -356,8 +350,6 @@ public class SplashScreenActivity extends AppCompatActivity {
     }
 
     private void saveOfflineData() {
-        // BUGFIX: Validate UserId before making API call
-        // This prevents "please provide valid data" error when app resumes
         String userId = securePrefs.readString("UserId");
         if (userId == null || userId.isEmpty() || userId.equals("0")) {
             Log.w(TAG, "saveOfflineData: UserId is empty, skipping offline data sync");
@@ -489,14 +481,11 @@ public class SplashScreenActivity extends AppCompatActivity {
     }
 
     private void proceedWithLoginFlow() {
-        // Controlla se le slide di introduzione sono state già mostrate
         boolean hasSeenIntro = securePrefs.readBoolean("hasSeenIntro");
 
         if (!hasSeenIntro) {
-            // Prima volta: mostra le slide di introduzione
-            String langCode = "it"; // Default italiano
+            String langCode = "it"; 
             if (!securePrefs.readString("lanId").equals("")) {
-                // Se c'è già una lingua salvata, usala
                 if ("2".equals(securePrefs.readString("lanId")))
                     langCode = "fr";
                 else if ("3".equals(securePrefs.readString("lanId")))
@@ -511,7 +500,6 @@ public class SplashScreenActivity extends AppCompatActivity {
             startActivity(intent);
             finish();
         } else if (securePrefs.readString("lanId").equals("")) {
-            // Se non c'è lingua, mostra i controlli per sceglierla
             if (sp_select_lan != null)
                 sp_select_lan.setVisibility(View.VISIBLE);
             if (btn_continue != null)
@@ -525,22 +513,12 @@ public class SplashScreenActivity extends AppCompatActivity {
     }
 
     private void doLogin() {
-        // BUGFIX: Removed "User already logged in" check.
-        // Original app always performed login to refresh session and data.
-        // Skipping this caused "please provide valid data" because session/offline data wasn't refreshed.
-        
-        // String userId = securePrefs.readString("UserId");
-        // if (userId != null && !userId.isEmpty() && !userId.equals("0")) { ... }
-
-        // Se non è loggato, verifica che ci siano credenziali valide prima di fare
-        // login
         String email = securePrefs.readString("eMail");
         String password = securePrefs.readString("Pass");
 
         if (email == null || email.isEmpty() || password == null || password.isEmpty()) {
-            // Nessuna credenziale salvata: vai al login
             Log.d(TAG, "No saved credentials, going to login screen");
-            String langCode = "it"; // Default italiano
+            String langCode = "it"; 
             if (!securePrefs.readString("lanId").equals("")) {
                 if ("2".equals(securePrefs.readString("lanId")))
                     langCode = "fr";
@@ -558,7 +536,6 @@ public class SplashScreenActivity extends AppCompatActivity {
             return;
         }
 
-        // Ci sono credenziali: prova il login
         if (securePrefs.readString("loginType") != null
                 && securePrefs.readString("loginType").length() > 0
                 && securePrefs.readString("socialId") != null
@@ -572,10 +549,6 @@ public class SplashScreenActivity extends AppCompatActivity {
         } else {
             serviceCallLogin();
         }
-        // BUGFIX: saveOfflineData() rimosso da qui perché viene chiamato prima che il
-        // login asincrono finisca
-        // Ora viene chiamato dentro onResult() di serviceCallLogin() dopo che UserId è
-        // stato salvato
     }
 
     private void serviceCallGetLanguage() {
@@ -644,15 +617,9 @@ public class SplashScreenActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
-    /**
-     * Helper method to safely convert lanId to language code
-     * 
-     * @param lanId Language ID from preferences (1=en, 2=fr, 3=pt, 4=it)
-     * @return Language code (en, fr, pt, it), defaults to "it" if lanId is invalid
-     */
     private String getLangCodeFromLanId(String lanId) {
         if (lanId == null || lanId.isEmpty()) {
-            return "it"; // Default to Italian
+            return "it"; 
         }
         switch (lanId) {
             case "1":

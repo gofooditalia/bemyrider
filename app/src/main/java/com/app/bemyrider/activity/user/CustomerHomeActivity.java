@@ -8,19 +8,15 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.Window;
-import android.view.WindowManager;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
@@ -40,9 +36,8 @@ import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.LocaleManager;
 import com.app.bemyrider.utils.Log;
 import com.app.bemyrider.utils.PrefsUtil;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
-import androidx.core.graphics.Insets;
+import com.app.bemyrider.utils.SecurePrefsUtil;
+import com.app.bemyrider.utils.Utils;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import org.greenrobot.eventbus.EventBus;
@@ -57,12 +52,12 @@ public class CustomerHomeActivity extends AppCompatActivity implements BottomNav
 
     private ActivityCustomerHomeBinding binding;
     private Menu menu;
-    private MenuItem navProfile;
 
     private boolean isFirst = true;
     boolean doubleBackToExitPressedOnce = false;
     private BroadcastReceiver mMessageReceiver;
     private ConnectionManager connectionManager;
+    private SecurePrefsUtil securePrefs;
 
     CustomerHomeFilterPassData homeFilterPassData;
 
@@ -77,6 +72,7 @@ public class CustomerHomeActivity extends AppCompatActivity implements BottomNav
         binding = DataBindingUtil.setContentView(CustomerHomeActivity.this, R.layout.activity_customer_home, null);
         mContext = CustomerHomeActivity.this;
         mActivity = CustomerHomeActivity.this;
+        securePrefs = SecurePrefsUtil.with(mContext);
 
         permissionUtils = new PermissionUtils(mActivity, mContext, new PermissionUtils.OnPermissionGrantedListener() {
             @Override
@@ -91,6 +87,8 @@ public class CustomerHomeActivity extends AppCompatActivity implements BottomNav
         });
 
         initView();
+        
+        checkPendingDeepLink();
 
         mMessageReceiver = new BroadcastReceiver() {
             @Override
@@ -99,7 +97,6 @@ public class CustomerHomeActivity extends AppCompatActivity implements BottomNav
                     Log.e("HomeActivity", "connected");
                     EventBus.getDefault().post(new MessageEvent("connection", "connected"));
                 } else {
-//                    new ConnectionCheck().showDialogWithMessage(context, getString(R.string.sync_data_message)).show();
                     Log.e("HomeActivity", "disconnected");
                     EventBus.getDefault().post(new MessageEvent("connection", "disconnected"));
                 }
@@ -109,8 +106,22 @@ public class CustomerHomeActivity extends AppCompatActivity implements BottomNav
         permissionUtils.checkNotificationPermission(REQ_CODE_NOTIFICATION);
     }
 
+    private void checkPendingDeepLink() {
+        String providerId = securePrefs.readString("pending_deeplink_id");
+        if (providerId != null && !providerId.isEmpty()) {
+            Log.i(TAG, "Found pending deep link for provider: " + providerId);
+            
+            // Clear the preference immediately
+            securePrefs.write("pending_deeplink_id", "");
+            
+            Intent intent = new Intent(mContext, UserServicesActivity.class);
+            intent.putExtra(Utils.PROVIDER_ID, providerId);
+            intent.putExtra("providerImage", ""); // Image URL not available here, but activity handles it
+            startActivity(intent);
+        }
+    }
+
     private void initView() {
-        /*Init Internet Connection Class For No Internet Banner*/
         connectionManager = new ConnectionManager(mContext);
         connectionManager.registerInternetCheckReceiver();
         connectionManager.checkConnection(mContext);
@@ -134,27 +145,7 @@ public class CustomerHomeActivity extends AppCompatActivity implements BottomNav
     }
 
     void increaseCenterSize() {
-        /*BottomNavigationMenuView menuView = (BottomNavigationMenuView) binding.bottomNavigationView.getChildAt(0);
-        for (int i = 0; i < menuView.getChildCount(); i++) {
-            Log.e(TAG,menuView.getChildCount()+"");
-            Log.e(TAG,menuView.getChildAt(i)+"");
-            final View iconView = menuView.getChildAt(i).findViewById(R.id.icon);
-            final ViewGroup.LayoutParams layoutParams = iconView.getLayoutParams();
-            final DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
-            if (i == 2){
-                // set your height here
-                layoutParams.height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 60, displayMetrics);
-                // set your width here
-                layoutParams.width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 60, displayMetrics);
-            }
-            else {
-                // set your height here
-                layoutParams.height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32, displayMetrics);
-                // set your width here
-                layoutParams.width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32, displayMetrics);
-            }
-            iconView.setLayoutParams(layoutParams);
-        }*/
+        // ... (Commented out code kept as is)
     }
 
     private void permissionMessageDialog() {
@@ -203,9 +194,7 @@ public class CustomerHomeActivity extends AppCompatActivity implements BottomNav
     }
 
     private void displaySelectedScreen(int itemId) {
-        //creating fragment object
         Fragment fragment = null;
-        //initializing the fragment object which is selected
         if (itemId == R.id.nav_home_c) {
             isFirst = true;
             fragment = new CustomerHomeFragment();
@@ -223,7 +212,6 @@ public class CustomerHomeActivity extends AppCompatActivity implements BottomNav
             fragment = new CustomerMenuFragment();
         }
 
-        //replacing the fragment
         if (fragment != null) {
             FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
             ft.replace(R.id.content_frame, fragment);

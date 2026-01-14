@@ -34,7 +34,7 @@ import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.LocaleManager;
 import com.app.bemyrider.utils.PrefsUtil;
 import com.app.bemyrider.utils.Utils;
-import com.app.bemyrider.viewmodel.LoginViewModel;
+import com.app.bemyrider.viewmodel.AppLoginViewModel;
 import com.google.android.material.textfield.TextInputLayout;
 
 public class LoginActivity extends AppCompatActivity {
@@ -44,7 +44,7 @@ public class LoginActivity extends AppCompatActivity {
     private Context context = LoginActivity.this;
     private Activity activity = LoginActivity.this;
     private ConnectionManager connectionManager;
-    private LoginViewModel viewModel;
+    private AppLoginViewModel viewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,7 +54,7 @@ public class LoginActivity extends AppCompatActivity {
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 
-        viewModel = new ViewModelProvider(this).get(LoginViewModel.class);
+        viewModel = new ViewModelProvider(this).get(AppLoginViewModel.class);
 
         if (PrefsUtil.with(activity).readString("UserId") != null && PrefsUtil.with(activity).readString("UserId").length() > 0) {
             boolean isProfileCompleted = PrefsUtil.with(context).readBoolean("isProfileCompleted");

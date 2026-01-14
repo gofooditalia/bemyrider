@@ -160,6 +160,19 @@ public class UserServicesActivity extends AppCompatActivity {
                     arrayList.addAll(response_myservice.getData().getServiceList());
                     adapter.notifyDataSetChanged();
 
+                    // --- LOGICA AUTO-REDIRECT PER DEEP LINK ---
+                    if (arrayList.size() == 1) {
+                        MyServiceListItem item = arrayList.get(0);
+                        Intent i = new Intent(mContext, ServiceDetailActivity.class);
+                        i.putExtra(Utils.PROVIDER_SERVICE_ID, item.getProviderServiceId());
+                        i.putExtra(Utils.PROVIDER_ID, item.getUserId());
+                        i.putExtra("providerImage", getIntent().getStringExtra("providerImage"));
+                        startActivity(i);
+                        finish();
+                        return; // Esce dalla funzione per non fare altro UI update
+                    }
+                    // ------------------------------------------
+
                     if (!(arrayList.size() > 0)) {
                         binding.layoutNoservice.setVisibility(View.VISIBLE);
                         binding.rvMyservice.setVisibility(View.GONE);

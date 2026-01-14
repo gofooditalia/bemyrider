@@ -34,6 +34,7 @@ public class Utils {
 
     public static final String CATEGORY_ID = "categoryId";
     public static final String PROVIDER_ID = "providerId";
+    public static final String PROVIDER_SERVICE_ID = "providerServiceId"; // Added for Deep Link Redirection
 
     public static boolean clearAppCache(Context context) {
         try {
