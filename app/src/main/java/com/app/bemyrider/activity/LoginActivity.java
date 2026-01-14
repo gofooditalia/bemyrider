@@ -17,7 +17,6 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResultLauncher;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.DataBindingUtil;
@@ -25,7 +24,6 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.app.bemyrider.R;
 import com.app.bemyrider.activity.partner.ProviderHomeActivity;
-import com.app.bemyrider.activity.ContactUsActivity;
 import com.app.bemyrider.activity.user.CustomerHomeActivity;
 import com.app.bemyrider.activity.user.EditProfileActivity;
 import com.app.bemyrider.databinding.ActivityLoginBinding;

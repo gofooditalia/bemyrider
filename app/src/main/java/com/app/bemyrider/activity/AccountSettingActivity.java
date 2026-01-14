@@ -29,7 +29,7 @@ import com.app.bemyrider.utils.NotificationTestHelper;
 import com.app.bemyrider.utils.PrefsUtil;
 import com.app.bemyrider.utils.SecurePrefsUtil;
 import com.app.bemyrider.utils.Utils;
-import com.app.bemyrider.viewmodel.AccountSettingViewModel;
+import com.app.bemyrider.viewmodel.AppAccountSettingViewModel;
 
 import java.util.ArrayList;
 
@@ -41,7 +41,7 @@ import java.util.ArrayList;
 public class AccountSettingActivity extends AppCompatActivity {
 
     private ActivityAccountSettingBinding binding;
-    private AccountSettingViewModel viewModel;
+    private AppAccountSettingViewModel viewModel;
     private ArrayAdapter<LanguagePojoItem> lanadapter;
     private ArrayList<LanguagePojoItem> languagePojoItems = new ArrayList<>();
     private String lanId = "";
@@ -52,7 +52,7 @@ public class AccountSettingActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(AccountSettingActivity.this, R.layout.activity_account_setting, null);
-        viewModel = new ViewModelProvider(this).get(AccountSettingViewModel.class);
+        viewModel = new ViewModelProvider(this).get(AppAccountSettingViewModel.class);
 
         initViews();
         setupObservers();
@@ -179,7 +179,8 @@ public class AccountSettingActivity extends AppCompatActivity {
                     }
                 }
             } else {
-                Toast.makeText(AccountSettingActivity.this, "Error fetching languages", Toast.LENGTH_SHORT).show();
+                // Toast.makeText(AccountSettingActivity.this, "Error fetching languages", Toast.LENGTH_SHORT).show();
+                // Gestione silenziosa o retry
             }
         });
     }
