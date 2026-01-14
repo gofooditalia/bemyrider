@@ -51,3 +51,13 @@ jobs:
       with:
         name: bemyrider-release-aab
         path: app/build/outputs/bundle/release/app-release.aab
+
+    # Carica l'AAB su Google Play Store
+    - name: Deploy to Google Play Store
+      uses: r0adkll/upload-google-play@v1
+      with:
+        serviceAccountJson: ${{ secrets.ANDROID_PUBLISHER_CREDENTIALS }}
+        packageName: com.app.bemyrider
+        releaseFiles: app/build/outputs/bundle/release/app-release.aab
+        track: production
+        status: completed
