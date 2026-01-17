@@ -17,7 +17,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.app.bemyrider.R;
 import com.app.bemyrider.model.DisputeDetailPojoItem;
 import com.app.bemyrider.utils.Utils;
-import com.squareup.picasso.Picasso;
+// Coil Imports
+import coil.Coil;
+import coil.request.ImageRequest;
+// import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -55,12 +58,28 @@ public class DisputeDetailItemAdapter extends RecyclerView.Adapter<DisputeDetail
             holder.l_sender.setVisibility(View.VISIBLE);
             holder.txt_sender_name.setText(customerName);
             holder.txt_sender_msg.setText(Utils.decodeEmoji(detailPojoItems.get(position).getDisputeMessage()));
-            Picasso.get().load(customerImg).placeholder(R.drawable.loading).into(holder.img_sender);
+            
+            // Coil Migration: Sender Image
+            ImageRequest requestSender = new ImageRequest.Builder(context)
+                .data(customerImg)
+                .placeholder(R.drawable.loading)
+                .target(holder.img_sender)
+                .build();
+            Coil.imageLoader(context).enqueue(requestSender);
+
             holder.txt_datetime_sender.setText(detailPojoItems.get(position).getCreatedDate());
             holder.txt_receiver_name.setText("");
             holder.txt_receiver_msg.setText("");
             holder.txt_datetime_receiver.setText("");
-            Picasso.get().load((String) null).placeholder(R.drawable.loading).into(holder.img_receiver);
+
+            // Coil Migration: Null Receiver Image
+            ImageRequest requestNullReceiver = new ImageRequest.Builder(context)
+                .data(null)
+                .placeholder(R.drawable.loading)
+                .target(holder.img_receiver)
+                .build();
+            Coil.imageLoader(context).enqueue(requestNullReceiver);
+            
             holder.l_receiver.setVisibility(View.GONE);
 
             Log.e("Adapter", " onBindViewHolder: isNullOrEmpty receiver "
@@ -98,12 +117,28 @@ public class DisputeDetailItemAdapter extends RecyclerView.Adapter<DisputeDetail
             holder.l_receiver.setVisibility(View.VISIBLE);
             holder.txt_receiver_name.setText(providerName);
             holder.txt_receiver_msg.setText(Utils.decodeEmoji(detailPojoItems.get(position).getDisputeMessage()));
-            Picasso.get().load(providerImg).placeholder(R.drawable.loading).into(holder.img_receiver);
+            
+            // Coil Migration: Receiver Image
+            ImageRequest requestReceiver = new ImageRequest.Builder(context)
+                .data(providerImg)
+                .placeholder(R.drawable.loading)
+                .target(holder.img_receiver)
+                .build();
+            Coil.imageLoader(context).enqueue(requestReceiver);
+
             holder.txt_datetime_receiver.setText(detailPojoItems.get(position).getCreatedDate());
             holder.txt_sender_name.setText("");
             holder.txt_sender_msg.setText("");
             holder.txt_datetime_sender.setText("");
-            Picasso.get().load((String) null).placeholder(R.drawable.loading).into(holder.img_sender);
+            
+            // Coil Migration: Null Sender Image
+            ImageRequest requestNullSender = new ImageRequest.Builder(context)
+                .data(null)
+                .placeholder(R.drawable.loading)
+                .target(holder.img_sender)
+                .build();
+            Coil.imageLoader(context).enqueue(requestNullSender);
+
             holder.l_sender.setVisibility(View.GONE);
 
             Log.e("Adapter", "onBindViewHolder: isNullOrEmpty sender "

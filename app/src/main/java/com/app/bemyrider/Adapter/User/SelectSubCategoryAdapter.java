@@ -19,7 +19,10 @@ import com.app.bemyrider.model.partner.SubCategoryItem;
 import com.app.bemyrider.R;
 import com.app.bemyrider.utils.PrefsUtil;
 import com.app.bemyrider.utils.Utils;
-import com.squareup.picasso.Picasso;
+// Coil Imports
+import coil.Coil;
+import coil.request.ImageRequest;
+// import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
@@ -46,7 +49,14 @@ public class SelectSubCategoryAdapter extends RecyclerView.Adapter<SelectSubCate
     @Override
     public void onBindViewHolder(@NonNull ServiceHolder holder, int position) {
         final SubCategoryItem item = list.get(position);
-        Picasso.get().load(item.getBannerUrl()).into(holder.ivCategoryImage);
+        
+        // Coil Migration from Picasso
+        ImageRequest request = new ImageRequest.Builder(mContext)
+            .data(item.getBannerUrl())
+            .target(holder.ivCategoryImage)
+            .build();
+        Coil.imageLoader(mContext).enqueue(request);
+
         holder.txtCategoryName.setText(item.getCategoryName());
 
         holder.rlCategory.setOnClickListener(new View.OnClickListener() {

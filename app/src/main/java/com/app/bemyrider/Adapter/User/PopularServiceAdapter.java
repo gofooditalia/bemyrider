@@ -16,7 +16,10 @@ import com.app.bemyrider.activity.user.ServiceDetailActivity;
 import com.app.bemyrider.model.ServiceDataItem;
 import com.app.bemyrider.R;
 import com.app.bemyrider.utils.PrefsUtil;
-import com.squareup.picasso.Picasso;
+// Coil Imports
+import coil.Coil;
+import coil.request.ImageRequest;
+// import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
@@ -47,7 +50,14 @@ public class PopularServiceAdapter extends RecyclerView.Adapter<PopularServiceAd
     @Override
     public void onBindViewHolder(@NonNull ServiceHolder holder, int position) {
         final ServiceDataItem item = list.get(position);
-        Picasso.get().load(item.getServiceImgUrl()).into(holder.ivPopularCategoryImage);
+
+        // Coil Migration from Picasso
+        ImageRequest request = new ImageRequest.Builder(mContext)
+            .data(item.getServiceImgUrl())
+            .target(holder.ivPopularCategoryImage)
+            .build();
+        Coil.imageLoader(mContext).enqueue(request);
+
         holder.txtPopularCategoryName.setText(item.getServiceName());
 
         if(colorCounter == (androidColors.length - 1)) {

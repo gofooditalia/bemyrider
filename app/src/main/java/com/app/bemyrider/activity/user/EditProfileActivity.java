@@ -56,7 +56,10 @@ import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.widget.Autocomplete;
 import com.google.android.libraries.places.widget.AutocompleteActivity;
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
-import com.squareup.picasso.Picasso;
+// Coil Imports
+import coil.Coil;
+import coil.request.ImageRequest;
+// import com.squareup.picasso.Picasso;
 import com.yalantis.ucrop.UCrop;
 
 import java.io.File;
@@ -246,11 +249,18 @@ public class EditProfileActivity extends AppCompatActivity {
                 binding.rbCash.setChecked(true);
             }
 
+            // Coil Migration from Picasso
+            ImageRequest.Builder profileBuilder = new ImageRequest.Builder(mContext)
+                .placeholder(R.drawable.loading)
+                .target(binding.ivProfile);
+
             if (profileData.getProfileImg() != null && !profileData.getProfileImg().isEmpty()) {
-                Picasso.get().load(profileData.getProfileImg()).placeholder(R.drawable.loading).into(binding.ivProfile);
+                profileBuilder.data(profileData.getProfileImg());
             } else {
-                Picasso.get().load(R.mipmap.user).placeholder(R.drawable.loading).into(binding.ivProfile);
+                profileBuilder.data(R.mipmap.user);
             }
+            Coil.imageLoader(mContext).enqueue(profileBuilder.build());
+
         } else if (!isFromEdit && loginPojoData != null) {
             binding.edtFname.setText(loginPojoData.getFirstName());
             binding.edtLname.setText(loginPojoData.getLastName());
@@ -264,11 +274,17 @@ public class EditProfileActivity extends AppCompatActivity {
             lat = loginPojoData.getLatitude();
             lng = loginPojoData.getLongitude();
 
+            // Coil Migration from Picasso
+            ImageRequest.Builder loginBuilder = new ImageRequest.Builder(mContext)
+                .placeholder(R.drawable.loading)
+                .target(binding.ivProfile);
+
             if (loginPojoData.getProfileImg() != null && !loginPojoData.getProfileImg().isEmpty()) {
-                Picasso.get().load(loginPojoData.getProfileImg()).placeholder(R.drawable.loading).into(binding.ivProfile);
+                loginBuilder.data(loginPojoData.getProfileImg());
             } else {
-                Picasso.get().load(R.mipmap.user).placeholder(R.drawable.loading).into(binding.ivProfile);
+                loginBuilder.data(R.mipmap.user);
             }
+            Coil.imageLoader(mContext).enqueue(loginBuilder.build());
         }
     }
 
@@ -386,7 +402,6 @@ public class EditProfileActivity extends AppCompatActivity {
         UCrop.Options options = new UCrop.Options();
         options.setActiveControlsWidgetColor(ContextCompat.getColor(mContext, R.color.button));
         options.setToolbarTitle("Modifica Foto");
-        options.setStatusBarColor(ContextCompat.getColor(mContext, R.color.white));
         options.setToolbarColor(ContextCompat.getColor(mContext, R.color.white));
         options.setToolbarWidgetColor(ContextCompat.getColor(mContext, R.color.button));
         Intent myIntent = UCrop.of(sourceUri, destinationUri)

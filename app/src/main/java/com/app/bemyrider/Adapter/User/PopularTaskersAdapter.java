@@ -16,7 +16,10 @@ import com.app.bemyrider.activity.user.PartnerProfileActivity;
 import com.app.bemyrider.model.user.PopularTaskerItem;
 import com.app.bemyrider.R;
 import com.app.bemyrider.utils.Utils;
-import com.squareup.picasso.Picasso;
+// Coil Imports
+import coil.Coil;
+import coil.request.ImageRequest;
+// import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
@@ -47,11 +50,19 @@ public class PopularTaskersAdapter extends RecyclerView.Adapter<PopularTaskersAd
         final PopularTaskerItem item = providerList.get(position);
         holder.txt_description.setText(item.getService());
         holder.txt_serviceName.setText(item.getUsername());
-        if (item.getUserimg() != null && item.getUserimg().length() > 0) {
-            Picasso.get().load(item.getUserimg()).placeholder(R.drawable.loading).into(holder.img_profile);
+        
+        // Coil Migration from Picasso
+        String imageUrl = item.getUserimg();
+        ImageRequest.Builder profileBuilder = new ImageRequest.Builder(act)
+                .placeholder(R.drawable.loading)
+                .target(holder.img_profile);
+
+        if (imageUrl != null && imageUrl.length() > 0) {
+            profileBuilder.data(imageUrl);
         } else {
-            Picasso.get().load(R.mipmap.user).placeholder(R.drawable.loading).into(holder.img_profile);
+            profileBuilder.data(R.mipmap.user);
         }
+        Coil.imageLoader(act).enqueue(profileBuilder.build());
 
         holder.item_main.setOnClickListener(view -> {
             Intent i = new Intent(act, PartnerProfileActivity.class);

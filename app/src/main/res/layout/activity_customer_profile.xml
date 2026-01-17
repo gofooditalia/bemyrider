@@ -258,7 +258,7 @@
                                 android:layout_width="@dimen/_40sdp"
                                 android:layout_height="@dimen/_40sdp"
                                 android:layout_marginEnd="@dimen/_6sdp"
-                                android:background="@drawable/rounded_light_pink_bg"
+                                android:background="@drawable/wallet_icon"
                                 android:padding="@dimen/_8sdp"
                                 android:src="@drawable/wallet_icon"
                                 app:tint="@color/icon_color" />

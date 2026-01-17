@@ -15,7 +15,10 @@ import com.app.bemyrider.activity.user.UserProfileActivity;
 import com.app.bemyrider.model.ServiceReviewItem;
 import com.app.bemyrider.utils.CircleImageView;
 import com.app.bemyrider.utils.Utils;
-import com.squareup.picasso.Picasso;
+// Coil Imports
+import coil.Coil;
+import coil.request.ImageRequest;
+// import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
@@ -47,12 +50,19 @@ public class RvMyServiceDetailsReviewAdapter extends RecyclerView.Adapter<RvMySe
             holder.txt_reviewdate.setText(arrayLis.get(position).getReviewDate());
             holder.txt_reviewrate.setText(arrayLis.get(position).getReviewRating());
 
-            if (arrayLis.get(position).getUserImage().equals("")) {
+            // Coil Migration from Picasso
+            String imageUrl = arrayLis.get(position).getUserImage();
+
+            if (imageUrl.equals("")) {
                 holder.Img_profile.setImageResource(R.mipmap.user);
             } else {
                 try {
-                    Picasso.get().load(arrayLis.get(position).getUserImage()).placeholder(R.drawable.loading)
-                            .into(holder.Img_profile);
+                    ImageRequest request = new ImageRequest.Builder(mContext)
+                        .data(imageUrl)
+                        .placeholder(R.drawable.loading)
+                        .target(holder.Img_profile)
+                        .build();
+                    Coil.imageLoader(mContext).enqueue(request);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

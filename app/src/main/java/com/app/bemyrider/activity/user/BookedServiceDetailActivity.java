@@ -60,7 +60,10 @@ import com.app.bemyrider.utils.Log;
 import com.app.bemyrider.utils.PrefsUtil;
 import com.app.bemyrider.utils.Utils;
 import com.google.android.material.tabs.TabLayout;
-import com.squareup.picasso.Picasso;
+// Coil Imports
+import coil.Coil;
+import coil.request.ImageRequest;
+// import com.squareup.picasso.Picasso;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -191,11 +194,23 @@ public class BookedServiceDetailActivity extends AppCompatActivity implements Ta
                         if (status) {
                             EditProfilePojo editProfilePojo = (EditProfilePojo) obj;
                             Toast.makeText(context, ((EditProfilePojo) obj).getMessage(), Toast.LENGTH_SHORT).show();
+
+                            // Coil Migration from Picasso
                             if (binding.imgFav.getTag().equals("1")) {
-                                Picasso.get().load(R.mipmap.ic_heart_fill).placeholder(R.drawable.loading).into(binding.imgFav);
+                                ImageRequest request = new ImageRequest.Builder(context)
+                                    .data(R.mipmap.ic_heart_fill)
+                                    .placeholder(R.drawable.loading)
+                                    .target(binding.imgFav)
+                                    .build();
+                                Coil.imageLoader(context).enqueue(request);
                                 binding.imgFav.setTag("0");
                             } else if (binding.imgFav.getTag().equals("0")) {
-                                Picasso.get().load(R.mipmap.ic_heart_empty).placeholder(R.drawable.loading).into(binding.imgFav);
+                                ImageRequest request = new ImageRequest.Builder(context)
+                                    .data(R.mipmap.ic_heart_empty)
+                                    .placeholder(R.drawable.loading)
+                                    .target(binding.imgFav)
+                                    .build();
+                                Coil.imageLoader(context).enqueue(request);
                                 binding.imgFav.setTag("1");
                             }
                         } else {
@@ -628,9 +643,14 @@ public class BookedServiceDetailActivity extends AppCompatActivity implements Ta
     private void setData() {
         String statusDisplayName = serviceDetailData.getServiceStatusDisplayName();
 
+        // Coil Migration from Picasso
         if (!Utils.isNullOrEmpty(serviceDetailData.getProviderImage())) {
-            Picasso.get().load(serviceDetailData.getProviderImage())
-                    .placeholder(R.drawable.loading).into(binding.imgProfile);
+            ImageRequest request = new ImageRequest.Builder(context)
+                .data(serviceDetailData.getProviderImage())
+                .placeholder(R.drawable.loading)
+                .target(binding.imgProfile)
+                .build();
+            Coil.imageLoader(context).enqueue(request);
         }
 
         setTitle(HtmlCompat.fromHtml("<font color=#FFFFFF>" + serviceDetailData.getServiceName(),HtmlCompat.FROM_HTML_MODE_LEGACY));

@@ -13,7 +13,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.app.bemyrider.activity.ImagesSliderActivity;
 import com.app.bemyrider.model.ProviderServiceMediaDataItem;
 import com.app.bemyrider.R;
-import com.squareup.picasso.Picasso;
+// Coil Imports
+import coil.Coil;
+import coil.request.ImageRequest;
+// import com.squareup.picasso.Picasso;
 
 import java.io.Serializable;
 import java.util.List;
@@ -41,8 +44,15 @@ public class SolventRecyclerViewAdapter extends RecyclerView.Adapter<SolventRecy
     @Override
     public void onBindViewHolder(SolventViewHolders holder, int position) {
         // holder.countryPhoto.setImageResource(gaggeredList.get(position).getPhoto());
-        Picasso.get().load(gaggeredList.get(position).getMediaUrl()).placeholder(R.drawable.loading)
-                .into(holder.countryPhoto);
+        
+        // Coil Migration from Picasso
+        ImageRequest request = new ImageRequest.Builder(context)
+            .data(gaggeredList.get(position).getMediaUrl())
+            .placeholder(R.drawable.loading)
+            .target(holder.countryPhoto)
+            .build();
+        Coil.imageLoader(context).enqueue(request);
+
         holder.countryPhoto.setScaleType(ImageView.ScaleType.CENTER_CROP);
         holder.countryPhoto.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 400));
         holder.countryPhoto.setOnClickListener(new View.OnClickListener() {

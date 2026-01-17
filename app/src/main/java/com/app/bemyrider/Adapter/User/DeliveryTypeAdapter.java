@@ -21,7 +21,10 @@ import com.app.bemyrider.R;
 import com.app.bemyrider.activity.user.ServiceDetailActivity;
 import com.app.bemyrider.model.user.ProviderItem;
 import com.app.bemyrider.utils.PrefsUtil;
-import com.squareup.picasso.Picasso;
+// Coil Imports
+import coil.Coil;
+import coil.request.ImageRequest;
+// import com.squareup.picasso.Picasso;
 
 public class DeliveryTypeAdapter extends ListAdapter<ProviderItem, DeliveryTypeAdapter.MyViewHolder> {
 
@@ -48,8 +51,13 @@ public class DeliveryTypeAdapter extends ListAdapter<ProviderItem, DeliveryTypeA
             holder.txtRateCount.setText(item.getAvgRating());
             holder.txtRate.setText(item.getHourRate().toString());
 
-            Picasso.get().load(item.getProviderImage())
-                    .placeholder(R.drawable.loading).into(holder.imgProvider);
+            // Coil Migration from Picasso
+            ImageRequest request = new ImageRequest.Builder(act)
+                .data(item.getProviderImage())
+                .placeholder(R.drawable.loading)
+                .target(holder.imgProvider)
+                .build();
+            Coil.imageLoader(act).enqueue(request);
 
             holder.relDetail.setOnClickListener(v -> {
                 if (isUserLogin()) {

@@ -235,7 +235,7 @@
     <string name="please_enter_message">Si prega di inserire il messaggio*</string>
     <string name="please_select_hours_first">Si prega di selezionare prima l\'orario</string>
     <string name="proposal_data">Dati della proposta</string>
-    <string name="none">nessuno</string>
+    <string name="none">Nessuno</string>
     <string name="wallet">Portafoglio</string>
     <string name="cod">MERLUZZO</string>
     <string name="status_hired">Assunto</string>
@@ -436,9 +436,9 @@
     <string name="small_deliveries">Consegne di E-Bike</string>
     <string name="medium_deliveries">Consegne Moto</string>
     <string name="large_deliveries">Consegne automatiche</string>
-    <string name="small">E-BIKE</string>
-    <string name="medium">MOTO</string>
-    <string name="large">AUTO</string>
+    <string name="small">E-Bike</string>
+    <string name="medium">Moto</string>
+    <string name="large">Auto</string>
     <string name="sort">Scegli</string>
     <string name="ascending">Ascendente</string>
     <string name="descending">Discendente</string>

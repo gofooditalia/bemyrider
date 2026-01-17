@@ -42,7 +42,10 @@ import com.app.bemyrider.utils.LocaleManager;
 import com.app.bemyrider.utils.Log;
 import com.app.bemyrider.utils.PrefsUtil;
 import com.app.bemyrider.utils.Utils;
-import com.squareup.picasso.Picasso;
+// Coil Imports
+import coil.Coil;
+import coil.request.ImageRequest;
+// import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -924,11 +927,17 @@ public class PartnerServiceRequestDetailsActivity extends AppCompatActivity {
 
             binding.txtUserName.setText(String.format("%s %s", customerFirstName, customerLastName));
 
+            // Coil Migration from Picasso
+            ImageRequest.Builder profileBuilder = new ImageRequest.Builder(mContext)
+                .placeholder(R.drawable.loading)
+                .target(binding.imgUserProfile);
+
             if (customerImage.equalsIgnoreCase("")) {
                 binding.imgUserProfile.setImageResource(R.mipmap.user);
             } else if (!customerImage.equalsIgnoreCase("")) {
                 try {
-                    Picasso.get().load(customerImage).placeholder(R.drawable.loading).into(binding.imgUserProfile);
+                    profileBuilder.data(customerImage);
+                    Coil.imageLoader(mContext).enqueue(profileBuilder.build());
                 } catch (IllegalArgumentException e) {
                     e.printStackTrace();
                 }
@@ -990,11 +999,17 @@ public class PartnerServiceRequestDetailsActivity extends AppCompatActivity {
 
             binding.txtUserName.setText(String.format("%s %s", customerFirstName, customerLastName));
 
+            // Coil Migration from Picasso
+            ImageRequest.Builder profileBuilder = new ImageRequest.Builder(mContext)
+                .placeholder(R.drawable.loading)
+                .target(binding.imgUserProfile);
+
             if (customerImage.equalsIgnoreCase("")) {
                 binding.imgUserProfile.setImageResource(R.mipmap.user);
             } else if (!customerImage.equalsIgnoreCase("")) {
                 try {
-                    Picasso.get().load(customerImage).placeholder(R.drawable.loading).into(binding.imgUserProfile);
+                    profileBuilder.data(customerImage);
+                    Coil.imageLoader(mContext).enqueue(profileBuilder.build());
                 } catch (IllegalArgumentException e) {
                     e.printStackTrace();
                 }
@@ -1002,8 +1017,7 @@ public class PartnerServiceRequestDetailsActivity extends AppCompatActivity {
 
             binding.includeRequestDetail.TxtServiceName.setText(categoryName);
             if (serviceType.equalsIgnoreCase("hourly")) {
-                binding.includeRequestDetail.TxtServicePrice.setText(String.format("%s%s (%s%s/hour)",
-                        PrefsUtil.with(PartnerServiceRequestDetailsActivity.this).readString("CurrencySign"), bookingAmount,
+                binding.includeRequestDetail.TxtServicePrice.setText(String.format("%s%s (%s%s/hour)", PrefsUtil.with(PartnerServiceRequestDetailsActivity.this).readString("CurrencySign"), bookingAmount,
                         PrefsUtil.with(PartnerServiceRequestDetailsActivity.this).readString("CurrencySign"), servicePrice));
             } else {
                 binding.includeRequestDetail.TxtServicePrice.setText(String.format("%s%s",
@@ -1058,11 +1072,17 @@ public class PartnerServiceRequestDetailsActivity extends AppCompatActivity {
 
             binding.txtUserName.setText(String.format("%s %s", customerFirstName, customerLastName));
 
+            // Coil Migration from Picasso
+            ImageRequest.Builder profileBuilder = new ImageRequest.Builder(mContext)
+                .placeholder(R.drawable.loading)
+                .target(binding.imgUserProfile);
+
             if (customerImage.equalsIgnoreCase("")) {
                 binding.imgUserProfile.setImageResource(R.mipmap.user);
             } else if (!customerImage.equalsIgnoreCase("")) {
                 try {
-                    Picasso.get().load(customerImage).placeholder(R.drawable.loading).into(binding.imgUserProfile);
+                    profileBuilder.data(customerImage);
+                    Coil.imageLoader(mContext).enqueue(profileBuilder.build());
                 } catch (IllegalArgumentException e) {
                     e.printStackTrace();
                 }
@@ -1118,11 +1138,17 @@ public class PartnerServiceRequestDetailsActivity extends AppCompatActivity {
             binding.txtUserName.setText(String.format("%s %s", customerFirstName, customerLastName));
             binding.includeRequestDetail.TxtServiceDesc.setText(description);
 
+            // Coil Migration from Picasso
+            ImageRequest.Builder profileBuilder = new ImageRequest.Builder(mContext)
+                .placeholder(R.drawable.loading)
+                .target(binding.imgUserProfile);
+
             if (customerImage.equalsIgnoreCase("")) {
                 binding.imgUserProfile.setImageResource(R.mipmap.user);
             } else if (!customerImage.equalsIgnoreCase("")) {
                 try {
-                    Picasso.get().load(customerImage).placeholder(R.drawable.loading).into(binding.imgUserProfile);
+                    profileBuilder.data(customerImage);
+                    Coil.imageLoader(mContext).enqueue(profileBuilder.build());
                 } catch (IllegalArgumentException e) {
                     e.printStackTrace();
                 }
@@ -1186,11 +1212,17 @@ public class PartnerServiceRequestDetailsActivity extends AppCompatActivity {
             binding.txtUserName.setText(String.format("%s %s", customerFirstName, customerLastName));
 
             binding.includeRequestDetail.TxtServiceDesc.setText(description);
+            // Coil Migration from Picasso
+            ImageRequest.Builder profileBuilder = new ImageRequest.Builder(mContext)
+                .placeholder(R.drawable.loading)
+                .target(binding.imgUserProfile);
+
             if (customerImage.equalsIgnoreCase("")) {
                 binding.imgUserProfile.setImageResource(R.mipmap.user);
             } else if (!customerImage.equalsIgnoreCase("")) {
                 try {
-                    Picasso.get().load(customerImage).placeholder(R.drawable.loading).into(binding.imgUserProfile);
+                    profileBuilder.data(customerImage);
+                    Coil.imageLoader(mContext).enqueue(profileBuilder.build());
                 } catch (IllegalArgumentException e) {
                     e.printStackTrace();
                 }
@@ -1246,11 +1278,17 @@ public class PartnerServiceRequestDetailsActivity extends AppCompatActivity {
             binding.txtUserName.setText(String.format("%s %s", customerFirstName, customerLastName));
             binding.includeRequestDetail.TxtServiceDesc.setText(description);
 
+            // Coil Migration from Picasso
+            ImageRequest.Builder profileBuilder = new ImageRequest.Builder(mContext)
+                .placeholder(R.drawable.loading)
+                .target(binding.imgUserProfile);
+
             if (customerImage.equalsIgnoreCase("")) {
                 binding.imgUserProfile.setImageResource(R.mipmap.user);
             } else if (!customerImage.equalsIgnoreCase("")) {
                 try {
-                    Picasso.get().load(customerImage).placeholder(R.drawable.loading).into(binding.imgUserProfile);
+                    profileBuilder.data(customerImage);
+                    Coil.imageLoader(mContext).enqueue(profileBuilder.build());
                 } catch (IllegalArgumentException e) {
                     e.printStackTrace();
                 }
@@ -1306,11 +1344,17 @@ public class PartnerServiceRequestDetailsActivity extends AppCompatActivity {
             binding.txtUserName.setText(String.format("%s %s", customerFirstName, customerLastName));
             binding.includeRequestDetail.TxtServiceDesc.setText(description);
 
+            // Coil Migration from Picasso
+            ImageRequest.Builder profileBuilder = new ImageRequest.Builder(mContext)
+                .placeholder(R.drawable.loading)
+                .target(binding.imgUserProfile);
+
             if (customerImage.equalsIgnoreCase("")) {
                 binding.imgUserProfile.setImageResource(R.mipmap.user);
             } else if (!customerImage.equalsIgnoreCase("")) {
                 try {
-                    Picasso.get().load(customerImage).placeholder(R.drawable.loading).into(binding.imgUserProfile);
+                    profileBuilder.data(customerImage);
+                    Coil.imageLoader(mContext).enqueue(profileBuilder.build());
                 } catch (IllegalArgumentException e) {
                     e.printStackTrace();
                 }
@@ -1370,11 +1414,17 @@ public class PartnerServiceRequestDetailsActivity extends AppCompatActivity {
             binding.txtUserName.setText(String.format("%s %s", customerFirstName, customerLastName));
             binding.includeRequestDetail.TxtServiceDesc.setText(description);
 
+            // Coil Migration from Picasso
+            ImageRequest.Builder profileBuilder = new ImageRequest.Builder(mContext)
+                .placeholder(R.drawable.loading)
+                .target(binding.imgUserProfile);
+
             if (customerImage.equalsIgnoreCase("")) {
                 binding.imgUserProfile.setImageResource(R.mipmap.user);
             } else if (!customerImage.equalsIgnoreCase("")) {
                 try {
-                    Picasso.get().load(customerImage).placeholder(R.drawable.loading).into(binding.imgUserProfile);
+                    profileBuilder.data(customerImage);
+                    Coil.imageLoader(mContext).enqueue(profileBuilder.build());
                 } catch (IllegalArgumentException e) {
                     e.printStackTrace();
                 }
@@ -1428,11 +1478,17 @@ public class PartnerServiceRequestDetailsActivity extends AppCompatActivity {
             binding.txtUserName.setText(String.format("%s %s", customerFirstName, customerLastName));
             binding.includeRequestDetail.TxtServiceDesc.setText(description);
 
+            // Coil Migration from Picasso
+            ImageRequest.Builder profileBuilder = new ImageRequest.Builder(mContext)
+                .placeholder(R.drawable.loading)
+                .target(binding.imgUserProfile);
+
             if (customerImage.equalsIgnoreCase("")) {
                 binding.imgUserProfile.setImageResource(R.mipmap.user);
             } else if (!customerImage.equalsIgnoreCase("")) {
                 try {
-                    Picasso.get().load(customerImage).placeholder(R.drawable.loading).into(binding.imgUserProfile);
+                    profileBuilder.data(customerImage);
+                    Coil.imageLoader(mContext).enqueue(profileBuilder.build());
                 } catch (IllegalArgumentException e) {
                     e.printStackTrace();
                 }

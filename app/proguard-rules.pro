@@ -32,3 +32,7 @@
 }
 -keep enum org.greenrobot.eventbus.ThreadMode { *; }
 -keep class com.app.bemyrider.model.** { *; }
+
+# Google Places SDK
+-keep class com.google.android.libraries.places.** { *; }
+-keep class com.google.android.gms.common.api.Status { *; }

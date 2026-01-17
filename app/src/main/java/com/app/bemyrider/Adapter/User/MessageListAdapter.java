@@ -15,7 +15,10 @@ import com.app.bemyrider.activity.user.MessageDetailActivity;
 import com.app.bemyrider.model.MessageListPojoItem;
 import com.app.bemyrider.R;
 import com.app.bemyrider.utils.Utils;
-import com.squareup.picasso.Picasso;
+// Coil Imports
+import coil.Coil;
+import coil.request.ImageRequest;
+// import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
@@ -44,7 +47,15 @@ public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.
         holder.txt_provider_name.setText(messageListPojoItems.get(position).getToUserName());
         holder.txt_service_name.setText(messageListPojoItems.get(position).getServiceName());
         holder.txt_message.setText(Utils.decodeEmoji(messageListPojoItems.get(position).getMessageText()));
-        Picasso.get().load(messageListPojoItems.get(position).getToProfileImg()).placeholder(R.drawable.loading).into(holder.img_provider_image);
+
+        // Coil Migration from Picasso
+        ImageRequest request = new ImageRequest.Builder(context)
+            .data(messageListPojoItems.get(position).getToProfileImg())
+            .placeholder(R.drawable.loading)
+            .target(holder.img_provider_image)
+            .build();
+        Coil.imageLoader(context).enqueue(request);
+
         holder.txt_time.setText(messageListPojoItems.get(position).getCreatedDate());
 
         holder.layout_message_main.setOnClickListener(v -> {

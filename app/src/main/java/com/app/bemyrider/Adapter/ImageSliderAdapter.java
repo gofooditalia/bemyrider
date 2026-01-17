@@ -11,7 +11,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.bemyrider.R;
 import com.app.bemyrider.model.ProviderServiceMediaDataItem;
-import com.squareup.picasso.Picasso;
+// Coil Imports
+import coil.Coil;
+import coil.request.ImageRequest;
+// import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,11 +41,18 @@ public class ImageSliderAdapter extends RecyclerView.Adapter<ImageSliderAdapter.
         if (mSliderItems.size() > 0) {
             ProviderServiceMediaDataItem sliderItem = mSliderItems.get(position);
             if (sliderItem != null) {
-                if (sliderItem.getMediaUrl() != null && !"".equals(sliderItem.getMediaUrl())) {
-                    Picasso.get().load(sliderItem.getMediaUrl()).placeholder(R.drawable.not_found).into(viewHolder.imgSliderItemDetail);
+                
+                String imageUrl = sliderItem.getMediaUrl();
+                ImageRequest.Builder requestBuilder = new ImageRequest.Builder(context)
+                    .placeholder(R.drawable.not_found)
+                    .target(viewHolder.imgSliderItemDetail);
+
+                if (imageUrl != null && !"".equals(imageUrl)) {
+                    requestBuilder.data(imageUrl);
                 } else {
-                    Picasso.get().load(R.drawable.not_found).placeholder(R.drawable.not_found).into(viewHolder.imgSliderItemDetail);
+                    requestBuilder.data(R.drawable.not_found);
                 }
+                Coil.imageLoader(context).enqueue(requestBuilder.build());
             }
         }
     }

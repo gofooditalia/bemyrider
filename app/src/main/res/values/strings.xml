@@ -249,7 +249,7 @@
     <string name="please_enter_message">Please Enter Message*</string>
     <string name="please_select_hours_first">Please select hours first</string>
     <string name="proposal_data">Proposal Data</string>
-    <string name="none">none</string>
+    <string name="none">None</string>
     <string name="wallet">Wallet</string>
     <string name="cod">COD</string>
     <string name="status_hired">Hired</string>
@@ -452,9 +452,9 @@
     <string name="small_deliveries">E-Bike Deliveries</string>
     <string name="medium_deliveries">Moto Deliveries</string>
     <string name="large_deliveries">Auto Deliveries</string>
-    <string name="small">E-BIKE</string>
-    <string name="medium">MOTO</string>
-    <string name="large">AUTO</string>
+    <string name="small">Small</string>
+    <string name="medium">Medium</string>
+    <string name="large">Large</string>
     <string name="sort">You choose</string>
     <string name="ascending">Ascending</string>
     <string name="descending">Descending</string>
@@ -537,7 +537,7 @@
 
     <!-- Added by Keval-->
     <string name="user_type_provider">Rider</string>
-    <string name="user_type_customer">Agency / Private</string>
+    <string name="user_type_customer">Azienda</string>
     <string name="signup_as">Sign Up As</string>
     <string name="owner_profile_data">Owner Profile Data</string>
     <string name="tax_data">Tax Data</string>
@@ -606,4 +606,14 @@
     <string name="err_no_camera_in_device">There is not camera option on your device</string>
     <string name="back_button_description">Back</string>
     <string name="server_error">Server Error. Please try again later.</string>
+    <string name="share_profile_body">Ciao! Prenota il mio servizio su Bemyrider: https://bemyrider.it/rider?id=</string>
+    <string name="share_profile_subject">Il mio profilo Bemyrider</string>
+    <string name="profile_not_loaded_share_error">Profilo non caricato, impossibile condividere.</string>
+    <string name="profile_loading_error">Errore caricamento profilo</string>
+    <string name="failed_to_update_status">Failed to update status</string>
+    <string name="google_account_connected">Google account connected!</string>
+    <string name="failed_to_connect_google_account">Failed to connect Google account</string>
+    <string name="time_separator"> to </string>
+    <string name="reviews_suffix"> Reviews)</string>
+    <string name="comma_separator">, </string>
 </resources>

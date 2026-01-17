@@ -17,7 +17,10 @@ import com.app.bemyrider.activity.user.ServiceDetailActivity;
 import com.app.bemyrider.model.user.FavoriteServiceListPojoItem;
 import com.app.bemyrider.R;
 import com.app.bemyrider.utils.PrefsUtil;
-import com.squareup.picasso.Picasso;
+// Coil Imports
+import coil.Coil;
+import coil.request.ImageRequest;
+// import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
@@ -53,8 +56,14 @@ public class FavoriteServiceAdapter extends RecyclerView.Adapter<FavoriteService
         FavoriteServiceListPojoItem item = favoriteServiceListPojoItems.get(position);
         holder.txt_provider_name.setText(item.getProviderName());
         holder.txt_service_name.setText(item.getServiceName());
-        Picasso.get().load(item.getProfileImg())
-                .placeholder(R.drawable.loading).into(holder.img_provider_image);
+        
+        // Coil Migration from Picasso
+        ImageRequest request = new ImageRequest.Builder(context)
+            .data(item.getProfileImg())
+            .placeholder(R.drawable.loading)
+            .target(holder.img_provider_image)
+            .build();
+        Coil.imageLoader(context).enqueue(request);
 
         holder.img_remove.setOnClickListener(v -> listener.onAction(position,
                 item.getProviderServiceId(),holder.img_remove,holder.progress));

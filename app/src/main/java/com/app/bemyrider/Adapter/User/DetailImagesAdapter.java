@@ -13,7 +13,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.app.bemyrider.activity.ImagesSliderActivity;
 import com.app.bemyrider.model.ProviderServiceMediaDataItem;
 import com.app.bemyrider.R;
-import com.squareup.picasso.Picasso;
+// Coil Imports
+import coil.Coil;
+import coil.request.ImageRequest;
+// import com.squareup.picasso.Picasso;
 
 import java.io.Serializable;
 import java.util.List;
@@ -42,8 +45,15 @@ public class DetailImagesAdapter extends RecyclerView.Adapter<DetailImagesAdapte
     public void onBindViewHolder(SolventViewHolders holder, int position) {
         /* holder.countryPhoto.setImageResource(imageList.get(position)); */
         if (imageList.size() > 0) {
-            /* .transform(new RoundedCornersTransformation(50, 20)) */
-            Picasso.get().load(imageList.get(position).getMediaUrl()).placeholder(R.drawable.loading).into(holder.img);
+            
+            // Coil Migration from Picasso
+            ImageRequest request = new ImageRequest.Builder(context)
+                .data(imageList.get(position).getMediaUrl())
+                .placeholder(R.drawable.loading)
+                .target(holder.img)
+                .build();
+            Coil.imageLoader(context).enqueue(request);
+
             holder.img.setScaleType(ImageView.ScaleType.CENTER_CROP);
             holder.img.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 400));
 

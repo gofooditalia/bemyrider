@@ -1,179 +1,170 @@
 package com.app.bemyrider.activity;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
-import androidx.databinding.DataBindingUtil;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-import androidx.recyclerview.widget.DefaultItemAnimator;
-import androidx.recyclerview.widget.LinearLayoutManager;
-
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.Window;
-import android.view.WindowManager;
+import android.os.Looper;
+import android.util.Log;
 import android.widget.Toast;
+
+import androidx.activity.OnBackPressedCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.databinding.DataBindingUtil;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.app.bemyrider.Adapter.MenuItemAdapter;
 import com.app.bemyrider.AsyncTask.ConnectionCheck;
 import com.app.bemyrider.R;
-
 import com.app.bemyrider.activity.partner.ProviderHomeActivity;
 import com.app.bemyrider.activity.user.CustomerHomeActivity;
 import com.app.bemyrider.databinding.ActivityGuestHomeBinding;
-import com.app.bemyrider.fragment.GuestHomeFragment;
-import com.app.bemyrider.fragment.GuestMenuFragment;
 import com.app.bemyrider.model.MessageEvent;
 import com.app.bemyrider.model.ModelForDrawer;
 import com.app.bemyrider.myinterfaces.MenuItemClickListener;
 import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.LocaleManager;
-import com.app.bemyrider.utils.Log;
 import com.app.bemyrider.utils.PrefsUtil;
 
 import org.greenrobot.eventbus.EventBus;
 
-public class GuestHomeActivity extends AppCompatActivity implements MenuItemClickListener/*implements BottomNavigationView.OnItemSelectedListener, GuestHomeFragment.GuestHomeFragmentListener*/ {
+import java.util.Objects;
+
+public class GuestHomeActivity extends AppCompatActivity implements MenuItemClickListener {
 
     private static final String TAG = "GuestHomeActivity";
-    ActivityGuestHomeBinding binding;
-    private Context context;
-    private Activity activity;
+    private ActivityGuestHomeBinding binding;
     private ConnectionManager connectionManager;
-    private boolean isFirst = true;
-    boolean doubleBackToExitPressedOnce = false;
+    private boolean doubleBackToExitPressedOnce = false;
     private BroadcastReceiver mMessageReceiver;
-    private Menu menu;
-    private MenuItem navProfile;
 
-    GuestHomeFilterPassData homeFilterPassData;
-    GuestHomePositionData homePositionData;
-
-    private String address = "", latitude = "", longitude = "", strAsc = "", strDesc = "", strSearch = "", strRating = "";
+    private GuestHomeFilterPassData homeFilterPassData;
     ActivityResultLauncher<Intent> myIntentActivityResultLauncher;
-    private ModelForDrawer[] drawerItem;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = DataBindingUtil.setContentView(GuestHomeActivity.this, R.layout.activity_guest_home, null);
-        context = GuestHomeActivity.this;
-        activity = GuestHomeActivity.this;
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_guest_home);
+        Context context = this;
+        Activity activity = this;
 
         if (getIntent().hasExtra("from")) {
-            if (getIntent().getStringExtra("from") != null && getIntent().getStringExtra("from").equals("intro")) {
+            if ("intro".equals(getIntent().getStringExtra("from"))) {
                 startActivity(new Intent(activity, SignupActivity.class));
             }
         }
 
-        if (PrefsUtil.with(activity).readString("UserId") != null
-                && PrefsUtil.with(activity).readString("UserId").length() > 0) {
-            boolean isProfileCompleted = PrefsUtil.with(activity).readBoolean("isProfileCompleted");
-            if (PrefsUtil.with(activity)
-                    .readString("UserType").equalsIgnoreCase("c")) {
-                Intent i = new Intent(activity, CustomerHomeActivity.class);
-                i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(i);
+        // Redirect logged-in users
+        String userId = PrefsUtil.with(activity).readString("UserId");
+        if (userId != null && !userId.isEmpty()) {
+            if ("c".equalsIgnoreCase(PrefsUtil.with(activity).readString("UserType"))) {
+                startActivity(new Intent(activity, CustomerHomeActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
             } else {
-                Intent i = new Intent(activity, ProviderHomeActivity.class);
-                i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(i);
+                startActivity(new Intent(activity, ProviderHomeActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
             }
             finish();
+            return;
         }
 
-        init();
+        init(context);
 
         mMessageReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 if (new ConnectionCheck().isNetworkConnected(context)) {
-                    Log.e("HomeActivity", "connected");
+                    Log.d(TAG, "Network connected");
                     EventBus.getDefault().post(new MessageEvent("connection", "connected"));
                 } else {
-//                    new ConnectionCheck().showDialogWithMessage(context, getString(R.string.sync_data_message)).show();
-                    Log.e("HomeActivity", "disconnected");
+                    Log.d(TAG, "Network disconnected");
                     EventBus.getDefault().post(new MessageEvent("connection", "disconnected"));
                 }
             }
         };
 
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (doubleBackToExitPressedOnce) {
+                    finish();
+                    return;
+                }
+                doubleBackToExitPressedOnce = true;
+                Toast.makeText(GuestHomeActivity.this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
+                new Handler(Looper.getMainLooper()).postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
+            }
+        });
     }
 
-    private void init() {
-
-        /*Init Internet Connection Class For No Internet Banner*/
+    private void init(Context context) {
         connectionManager = new ConnectionManager(context);
         connectionManager.registerInternetCheckReceiver();
         connectionManager.checkConnection(context);
 
         setSupportActionBar(binding.toolbar);
-
-        setUpMenuItems();
-
-       /* binding.bottomNavigationView.setOnItemSelectedListener(this);
-        menu = binding.bottomNavigationView.getMenu();
-
-        displaySelectedScreen(R.id.nav_home_c);*/
-
-        myActivityResult();
-
+        setUpMenuItems(context);
+        setupActivityResultLauncher();
     }
 
-    void setUpMenuItems() {
-        drawerItem = new ModelForDrawer[3];
-        drawerItem[0] = new ModelForDrawer(R.drawable.ic_contact_us_menu, getString(R.string.comtact_us));
-        drawerItem[1] = new ModelForDrawer(R.drawable.ic_info_menu, getString(R.string.info));
-        drawerItem[2] = new ModelForDrawer(R.drawable.ic_logout_menu, getString(R.string.login_menu));
+    void setUpMenuItems(Context context) {
+        ModelForDrawer[] drawerItem = {
+                new ModelForDrawer(R.drawable.ic_contact_us_menu, getString(R.string.comtact_us)),
+                new ModelForDrawer(R.drawable.ic_info_menu, getString(R.string.info)),
+                new ModelForDrawer(R.drawable.ic_logout_menu, getString(R.string.login_menu))
+        };
 
         binding.recGuestMenu.setLayoutManager(new LinearLayoutManager(context));
         binding.recGuestMenu.setItemAnimator(new DefaultItemAnimator());
 
-        MenuItemAdapter adapter = new MenuItemAdapter(context,activity, this,drawerItem);
+        MenuItemAdapter adapter = new MenuItemAdapter(context, this, this, drawerItem);
         binding.recGuestMenu.setAdapter(adapter);
     }
 
     @Override
     public void onMenuItemClick(ModelForDrawer modelForDrawer, int position) {
-        if (position == 0) {
-            startActivity(new Intent(activity, ContactUsActivity.class));
-        } else if (position == 1) {
-            startActivity(new Intent(activity, InfoPageActivity.class));
-        } else if (position == 2) {
-            startActivity(new Intent(activity, LoginActivity.class));
+        switch (position) {
+            case 0:
+                startActivity(new Intent(this, ContactUsActivity.class));
+                break;
+            case 1:
+                startActivity(new Intent(this, InfoPageActivity.class));
+                break;
+            case 2:
+                startActivity(new Intent(this, LoginActivity.class));
+                break;
         }
     }
-    //keval.sakariya@ncrypted.com
-    //mayur.maheriya@ncrypted.com
 
     @Override
     protected void onResume() {
+        super.onResume();
         try {
             registerReceiver(mMessageReceiver, new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE"));
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(TAG, "Error registering receiver", e);
         }
-        super.onResume();
     }
 
     @Override
     public void onDestroy() {
-        try {
-            connectionManager.unregisterReceiver();
-            LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (connectionManager != null) {
+            try {
+                connectionManager.unregisterReceiver();
+            } catch (Exception e) {
+                Log.e(TAG, "Error unregistering connection manager receiver", e);
+            }
+        }
+        if (mMessageReceiver != null) {
+            try {
+                unregisterReceiver(mMessageReceiver);
+            } catch (Exception e) {
+                Log.e(TAG, "Error unregistering message receiver", e);
+            }
         }
         super.onDestroy();
     }
@@ -183,47 +174,20 @@ public class GuestHomeActivity extends AppCompatActivity implements MenuItemClic
         super.attachBaseContext(LocaleManager.onAttach(newBase));
     }
 
-    /*@Override
-    public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-        displaySelectedScreen(menuItem.getItemId());
-        return true;
-    }*/
-
-    private void displaySelectedScreen(int itemId) {
-        //creating fragment object
-        Fragment fragment = null;
-        //initializing the fragment object which is selected
-        if (itemId == R.id.nav_home_c) {
-            isFirst = true;
-            fragment = new GuestHomeFragment();
-        } else if (itemId == R.id.nav_menu_c) {
-            isFirst = false;
-            fragment = new GuestMenuFragment();
-        }
-
-        //replacing the fragment
-        if (fragment != null) {
-            FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-            ft.replace(R.id.content_frame, fragment);
-            ft.commit();
-        }
-
-    }
-
-    private void myActivityResult() {
+    private void setupActivityResultLauncher() {
         myIntentActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-            if (result.getResultCode() == RESULT_OK) {
-                try {
-                    address = result.getData().getStringExtra("address");
-                    latitude = result.getData().getStringExtra("latitude");
-                    longitude = result.getData().getStringExtra("longitude");
-                    strAsc = result.getData().getStringExtra("strAsc");
-                    strDesc = result.getData().getStringExtra("strDesc");
-                    strSearch = result.getData().getStringExtra("searchKeyWord");
-                    strRating = result.getData().getStringExtra("rating");
+            if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                Intent data = result.getData();
+                String address = data.getStringExtra("address");
+                String latitude = data.getStringExtra("latitude");
+                String longitude = data.getStringExtra("longitude");
+                String strAsc = data.getStringExtra("strAsc");
+                String strDesc = data.getStringExtra("strDesc");
+                String strSearch = data.getStringExtra("searchKeyWord");
+                String strRating = data.getStringExtra("rating");
+
+                if (homeFilterPassData != null) {
                     homeFilterPassData.onFilterChanged(address, latitude, longitude, strAsc, strDesc, strSearch, strRating);
-                } catch (Exception e) {
-                    e.printStackTrace();
                 }
             }
         });
@@ -233,64 +197,7 @@ public class GuestHomeActivity extends AppCompatActivity implements MenuItemClic
         this.homeFilterPassData = homeFilterPassData;
     }
 
-    public void setOnHomePositionData(GuestHomePositionData homePositionData) {
-        this.homePositionData = homePositionData;
-    }
-
-    /*@Override
-    public void onFilterClick() {
-        Intent i = new Intent(context, FilterDeliveryActivity.class);
-        i.putExtra("address", address);
-        i.putExtra("latitude", latitude);
-        i.putExtra("longitude", longitude);
-        i.putExtra("strAsc", strAsc);
-        i.putExtra("strDesc", strDesc);
-        i.putExtra("searchKeyWord", strSearch);
-        i.putExtra("rating", strRating);
-        myIntentActivityResultLauncher.launch(i);
-    }*/
-
-    /*@Override
-    public void setCurrentPosition(int position) {
-        if (homePositionData != null)
-            homePositionData.onPageChanged(position);
-    }*/
-
-    @Override
-    public void onBackPressed() {
-        if (doubleBackToExitPressedOnce) {
-            super.onBackPressed();
-            return;
-        }
-        this.doubleBackToExitPressedOnce = true;
-        Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
-
-        new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
-        /*if (isFirst) {
-            if (doubleBackToExitPressedOnce) {
-                super.onBackPressed();
-                return;
-            }
-            this.doubleBackToExitPressedOnce = true;
-            Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
-
-            new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
-        } else {
-            isFirst = true;
-            Fragment fragment = new GuestHomeFragment();
-            FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-            ft.replace(R.id.content_frame, fragment);
-            binding.bottomNavigationView.getMenu().findItem(R.id.nav_home_c).setChecked(true);
-            ft.commit();
-        }*/
-    }
-
     public interface GuestHomeFilterPassData {
         void onFilterChanged(String address, String latitude, String longitude, String strAsc, String strDesc, String strSearch, String strRating);
     }
-
-    public interface GuestHomePositionData {
-        void onPageChanged(int position);
-    }
-
 }

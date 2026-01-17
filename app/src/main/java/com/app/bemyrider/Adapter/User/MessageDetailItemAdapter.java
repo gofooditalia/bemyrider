@@ -18,7 +18,10 @@ import com.app.bemyrider.model.MessageListDetailPojoItem;
 import com.app.bemyrider.utils.Log;
 import com.app.bemyrider.utils.PrefsUtil;
 import com.app.bemyrider.utils.Utils;
-import com.squareup.picasso.Picasso;
+// Coil Imports
+import coil.Coil;
+import coil.request.ImageRequest;
+// import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -56,16 +59,32 @@ public class MessageDetailItemAdapter extends RecyclerView.Adapter<MessageDetail
             holder.l_sender.setVisibility(View.VISIBLE);
             holder.txt_sender_name.setText(myUserName);
             holder.txt_sender_msg.setText(Utils.decodeEmoji(detailPojoItems.get(position).getMessageText()));
+            
+            // Coil Migration: Real Sender Image
             try {
-                Picasso.get().load(myUserImg).placeholder(R.drawable.loading).into(holder.img_sender);
+                ImageRequest requestSender = new ImageRequest.Builder(context)
+                    .data(myUserImg)
+                    .placeholder(R.drawable.loading)
+                    .target(holder.img_sender)
+                    .build();
+                Coil.imageLoader(context).enqueue(requestSender);
             } catch (Exception e) {
                 e.printStackTrace();
             }
+
             holder.txt_datetime_sender.setText(detailPojoItems.get(position).getCreatedDate());
             holder.txt_receiver_name.setText("");
             holder.txt_receiver_msg.setText("");
             holder.txt_datetime_receiver.setText("");
-            Picasso.get().load((String) null).placeholder(R.drawable.loading).into(holder.img_receiver);
+            
+            // Coil Migration: Null Receiver Image (to clear/show placeholder)
+            ImageRequest requestNullReceiver = new ImageRequest.Builder(context)
+                .data(null) 
+                .placeholder(R.drawable.loading)
+                .target(holder.img_receiver)
+                .build();
+            Coil.imageLoader(context).enqueue(requestNullReceiver);
+
             holder.l_receiver.setVisibility(View.GONE);
 
             Log.e("Adapter", " onBindViewHolder: isNullOrEmpty receiver "
@@ -104,16 +123,32 @@ public class MessageDetailItemAdapter extends RecyclerView.Adapter<MessageDetail
             holder.l_receiver.setVisibility(View.VISIBLE);
             holder.txt_receiver_name.setText(toUserName);
             holder.txt_receiver_msg.setText(Utils.decodeEmoji(detailPojoItems.get(position).getMessageText()));
+
+            // Coil Migration: Real Receiver Image
             try {
-                Picasso.get().load(toUserImg).placeholder(R.drawable.loading).into(holder.img_receiver);
+                ImageRequest requestReceiver = new ImageRequest.Builder(context)
+                    .data(toUserImg)
+                    .placeholder(R.drawable.loading)
+                    .target(holder.img_receiver)
+                    .build();
+                Coil.imageLoader(context).enqueue(requestReceiver);
             } catch (Exception e) {
                 e.printStackTrace();
             }
+
             holder.txt_datetime_receiver.setText(detailPojoItems.get(position).getCreatedDate());
             holder.txt_sender_name.setText("");
             holder.txt_sender_msg.setText("");
             holder.txt_datetime_sender.setText("");
-            Picasso.get().load((String) null).placeholder(R.drawable.loading).into(holder.img_sender);
+
+            // Coil Migration: Null Sender Image (to clear/show placeholder)
+            ImageRequest requestNullSender = new ImageRequest.Builder(context)
+                .data(null) 
+                .placeholder(R.drawable.loading)
+                .target(holder.img_sender)
+                .build();
+            Coil.imageLoader(context).enqueue(requestNullSender);
+
             holder.l_sender.setVisibility(View.GONE);
 
             Log.e("Adapter", "onBindViewHolder: isNullOrEmpty sender "

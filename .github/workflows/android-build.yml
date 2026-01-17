@@ -64,5 +64,5 @@ jobs:
         serviceAccountJson: play-service-account.json # Ora punta al file temporaneo
         packageName: com.app.bemyrider
         releaseFiles: app/build/outputs/bundle/release/app-release.aab
-        track: production
+        track: internal
         status: completed

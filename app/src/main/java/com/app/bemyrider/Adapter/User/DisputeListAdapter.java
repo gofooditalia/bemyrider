@@ -16,7 +16,10 @@ import com.app.bemyrider.R;
 import com.app.bemyrider.model.DisputeListPojoItem;
 import com.app.bemyrider.utils.PrefsUtil;
 import com.app.bemyrider.utils.Utils;
-import com.squareup.picasso.Picasso;
+// Coil Imports
+import coil.Coil;
+import coil.request.ImageRequest;
+// import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,17 +57,19 @@ public class DisputeListAdapter extends RecyclerView.Adapter<DisputeListAdapter.
                     firstName = item.getProviderFirstname();
                     lastName = item.getProviderLastname();
                 }
-                if (profileImg != null
-                        && profileImg.length() > 0) {
-                    Picasso.get()
-                            .load(profileImg).placeholder(R.drawable.loading)
-                            .into(holder.iv_profile);
+
+                // Coil Migration from Picasso
+                String profileImgToLoad = profileImg;
+                ImageRequest.Builder profileBuilder = new ImageRequest.Builder(act)
+                        .placeholder(R.drawable.loading)
+                        .target(holder.iv_profile);
+
+                if (profileImgToLoad != null && profileImgToLoad.length() > 0) {
+                    profileBuilder.data(profileImgToLoad);
                 } else {
-                    Picasso.get()
-                            .load(R.mipmap.user)
-                            .placeholder(R.drawable.loading)
-                            .into(holder.iv_profile);
+                    profileBuilder.data(R.mipmap.user);
                 }
+                Coil.imageLoader(act).enqueue(profileBuilder.build());
 
                 if (firstName != null
                         && firstName.length() > 0

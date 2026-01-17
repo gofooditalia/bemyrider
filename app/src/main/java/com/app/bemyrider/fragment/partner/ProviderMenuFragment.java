@@ -43,7 +43,10 @@ import com.app.bemyrider.utils.Log;
 import com.app.bemyrider.utils.PrefsUtil;
 import com.app.bemyrider.utils.SecurePrefsUtil;
 import com.app.bemyrider.viewmodel.ProviderMenuViewModel;
-import com.squareup.picasso.Picasso;
+// Coil Imports
+import coil.Coil;
+import coil.request.ImageRequest;
+// import com.squareup.picasso.Picasso;
 
 import java.io.File;
 
@@ -84,13 +87,20 @@ public class ProviderMenuFragment extends Fragment implements MenuItemClickListe
 
     private void updateUI() {
         String userImg = PrefsUtil.with(activity).readString("UserImg");
+        
+        // Coil Migration from Picasso
+        ImageRequest.Builder builder = new ImageRequest.Builder(context)
+            .placeholder(R.drawable.loading)
+            .target(binding.imgProfile);
+
         if (userImg != null && !userImg.isEmpty()) {
             binding.imgProfile.setColorFilter(ContextCompat.getColor(context, R.color.transparent));
-            Picasso.get().load(userImg).placeholder(R.drawable.loading).into(binding.imgProfile);
+            builder.data(userImg);
         } else {
             binding.imgProfile.setColorFilter(ContextCompat.getColor(context, R.color.white));
-            Picasso.get().load(R.drawable.ic_user_menu).placeholder(R.drawable.loading).into(binding.imgProfile);
+            builder.data(R.drawable.ic_user_menu); // Carica la risorsa locale
         }
+        Coil.imageLoader(context).enqueue(builder.build());
 
         String userName = PrefsUtil.with(activity).readString("UserName");
         binding.txtUserName.setText(userName != null && !userName.isEmpty() ? userName : "N/A");

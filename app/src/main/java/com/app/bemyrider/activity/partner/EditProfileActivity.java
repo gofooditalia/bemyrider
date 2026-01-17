@@ -15,7 +15,6 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Editable;
-import android.text.Html;
 import android.text.InputFilter;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -66,9 +65,11 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.widget.Autocomplete;
-import com.google.android.libraries.places.widget.AutocompleteActivity;
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
-import com.squareup.picasso.Picasso;
+// Coil Imports
+import coil.Coil;
+import coil.request.ImageRequest;
+// import com.squareup.picasso.Picasso;
 import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
 import com.yalantis.ucrop.UCrop;
 
@@ -213,9 +214,10 @@ public class EditProfileActivity extends AppCompatActivity {
         });
 
         binding.etEditAddress.setOnClickListener(v -> {
+            List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.DISPLAY_NAME, Place.Field.FORMATTED_ADDRESS, Place.Field.LOCATION);
             Intent intent = new Autocomplete.IntentBuilder(
-                    AutocompleteActivityMode.FULLSCREEN, Arrays.asList(Place.Field.ID,
-                    Place.Field.DISPLAY_NAME, Place.Field.LOCATION, Place.Field.FORMATTED_ADDRESS)).build(mContext);
+                    AutocompleteActivityMode.FULLSCREEN, fields)
+                    .build(mContext);
             actResLocation.launch(intent);
         });
 
@@ -807,7 +809,6 @@ public class EditProfileActivity extends AppCompatActivity {
             binding.tillEditEndtime.setErrorEnabled(true);
             binding.tillEditEndtime.setError(getString(R.string.error_required));
             binding.etEditEndTime.requestFocus();
-            return false;
         } /* else if (Math.abs(timeDiffSecs) < 28800) {
             Toast.makeText(context, getResources().getString(R.string.time_validation), Toast.LENGTH_SHORT).show();
             return false;
@@ -833,13 +834,17 @@ public class EditProfileActivity extends AppCompatActivity {
 
             Log.e("KKK", "profilePojoData.getSignature_img()" + profilePojoData.getSignature_img());
 
-            if (profilePojoData.getSignature_img() != null && profilePojoData.getSignature_img() != "") {
+            if (profilePojoData.getSignature_img() != null && !profilePojoData.getSignature_img().isEmpty()) {
                 binding.imgAddSignature.setVisibility(View.GONE);
                 binding.imgSignaturePreview.setVisibility(View.VISIBLE);
-                Picasso.get()
-                        .load(profilePojoData.getSignature_img())
-                        .placeholder(R.drawable.loading)
-                        .into(binding.imgSignaturePreview);
+                
+                // Coil Migration: Signature Image
+                ImageRequest requestSignature = new ImageRequest.Builder(mContext)
+                    .data(profilePojoData.getSignature_img())
+                    .placeholder(R.drawable.loading)
+                    .target(binding.imgSignaturePreview)
+                    .build();
+                Coil.imageLoader(mContext).enqueue(requestSignature);
             } else {
                 binding.imgAddSignature.setVisibility(View.VISIBLE);
                 binding.imgSignaturePreview.setVisibility(View.GONE);
@@ -854,48 +859,22 @@ public class EditProfileActivity extends AppCompatActivity {
             lat = profilePojoData.getLatitude();
             lng = profilePojoData.getLongitude();
 
-            if (profilePojoData.getProfileImg().equals("")) {
-                try {
-                    Picasso.get().load(R.mipmap.user).into(binding.imgUserprofile);
-                } catch (IllegalArgumentException e) {
-                    e.printStackTrace();
-                }
+            // Coil Migration: Profile Image (isFromEdit)
+            ImageRequest.Builder profileBuilder = new ImageRequest.Builder(mContext)
+                .placeholder(R.drawable.loading)
+                .error(R.mipmap.user)
+                .target(binding.imgUserprofile);
+
+            String profileImg = profilePojoData.getProfileImg();
+            if (profileImg.equals("")) {
+                profileBuilder.data(R.mipmap.user);
             } else {
-                try {
-                    Picasso.get().load(profilePojoData.getProfileImg())
-                            .placeholder(R.drawable.loading).error(R.mipmap.user).into(binding.imgUserprofile);
-                } catch (IllegalArgumentException e) {
-                    e.printStackTrace();
-                }
+                profileBuilder.data(profileImg);
             }
+            Coil.imageLoader(mContext).enqueue(profileBuilder.build());
 
-            /*binding.etEditFname.setText(PrefsUtil.with(context).readString("userfname"));
-            binding.etEditLname.setText(PrefsUtil.with(context).readString("userlname"));
-            binding.etEditContactno.setText(PrefsUtil.with(context).readString("userContactno"));
-            binding.etEditAboutme.setText(Utils.decodeEmoji(PrefsUtil.with(context).readString("userAbout")));
-            binding.etEditAddress.setText(PrefsUtil.with(context).readString("userAddress"));
-            binding.etEditEmail.setText(PrefsUtil.with(context).readString("userEmail"));
-            binding.etEditPaypalEmail.setText(PrefsUtil.with(context).readString("paypalEmailId"));
-            binding.etEditStartTime.setText(PrefsUtil.with(context).readString("start_time"));
-            binding.etEditEndTime.setText(PrefsUtil.with(context).readString("end_time"));
-            lat = PrefsUtil.with(context).readString("lat");
-            lng = PrefsUtil.with(context).readString("long");*/
-
-           /* if (PrefsUtil.with(context).readString("UserImg").equals("")) {
-                try {
-                    Picasso.get().load(R.mipmap.user).into(binding.imgUserprofile);
-                } catch (IllegalArgumentException e) {
-                    e.printStackTrace();
-                }
-            } else {
-                try {
-                    Picasso.get().load(PrefsUtil.with(context).readString("UserImg"))
-                            .placeholder(R.drawable.loading).error(R.mipmap.user).into(binding.imgUserprofile);
-                } catch (IllegalArgumentException e) {
-                    e.printStackTrace();
-                }
-            }*/
         } else {
+            // New user case
             binding.etEditFname.setText(loginPojoData.getFirstName());
             binding.etEditLname.setText(loginPojoData.getLastName());
             binding.etEditContactno.setText(loginPojoData.getContactNumber());
@@ -915,25 +894,19 @@ public class EditProfileActivity extends AppCompatActivity {
             lat = loginPojoData.getLatitude();
             lng = loginPojoData.getLongitude();
 
-            if (loginPojoData.getProfileImg().equals("")) {
-                try {
-                    Picasso.get()
-                            .load(R.mipmap.user)
-                            .into(binding.imgUserprofile);
-                } catch (IllegalArgumentException e) {
-                    e.printStackTrace();
-                }
+            // Coil Migration: Profile Image (New user)
+            ImageRequest.Builder loginProfileBuilder = new ImageRequest.Builder(mContext)
+                .placeholder(R.drawable.loading)
+                .error(R.mipmap.user)
+                .target(binding.imgUserprofile);
+            
+            String loginProfileImg = loginPojoData.getProfileImg();
+            if (loginProfileImg.equals("")) {
+                loginProfileBuilder.data(R.mipmap.user);
             } else {
-                try {
-                    Picasso.get()
-                            .load(loginPojoData.getProfileImg())
-                            .placeholder(R.drawable.loading)
-                            .error(R.mipmap.user)
-                            .into(binding.imgUserprofile);
-                } catch (IllegalArgumentException e) {
-                    e.printStackTrace();
-                }
+                loginProfileBuilder.data(loginProfileImg);
             }
+            Coil.imageLoader(mContext).enqueue(loginProfileBuilder.build());
         }
     }
 
@@ -1009,27 +982,26 @@ public class EditProfileActivity extends AppCompatActivity {
         });
 
         actResLocation = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-            try {
-                if (result.getResultCode() == RESULT_OK) {
-                    Place place = Autocomplete.getPlaceFromIntent(result.getData());
-                    Log.i("AUTO COMPLETE", "Place: " + place.getDisplayName() + ", " + place.getId());
-                    try {
-                        selectedLatLng = place.getLocation();
-                        binding.etEditAddress.setText(place.getFormattedAddress());
-                        lat = String.valueOf(place.getLocation().latitude);
-                        lng = String.valueOf(place.getLocation().longitude);
-                    } catch (NullPointerException npe) {
-                        npe.printStackTrace();
-                    }
-                } else if (result.getResultCode() == AutocompleteActivity.RESULT_ERROR) {
-                    // TODO: Handle the error.
-                    Status status = Autocomplete.getStatusFromIntent(result.getData());
-                    Log.i("AUTO COMPLETE", status.getStatusMessage());
-                } else if (result.getResultCode() == RESULT_CANCELED) {
-                    // The user canceled the operation.
+            if (result.getResultCode() == Activity.RESULT_OK) {
+                Intent data = result.getData();
+                Place place = Autocomplete.getPlaceFromIntent(data);
+                Log.i("AUTO COMPLETE", "Place: " + place.getDisplayName() + ", " + place.getId());
+                try {
+                    selectedLatLng = place.getLocation();
+                    binding.etEditAddress.setText(place.getFormattedAddress());
+                    lat = String.valueOf(place.getLocation().latitude);
+                    lng = String.valueOf(place.getLocation().longitude);
+                } catch (NullPointerException npe) {
+                    npe.printStackTrace();
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
+            } else if (result.getResultCode() == Activity.RESULT_CANCELED) {
+                // The user canceled the operation.
+            } else {
+                Intent data = result.getData();
+                if (data != null) {
+                    Status status = Autocomplete.getStatusFromIntent(data);
+                    Log.i("AUTO COMPLETE", status.getStatusMessage());
+                }
             }
         });
     }
@@ -1078,7 +1050,6 @@ public class EditProfileActivity extends AppCompatActivity {
         UCrop.Options options = new UCrop.Options();
         options.setActiveControlsWidgetColor(ContextCompat.getColor(mContext, R.color.button));
         options.setToolbarTitle("Edit Photo");
-        options.setStatusBarColor(ContextCompat.getColor(mContext, R.color.white));
         options.setToolbarColor(ContextCompat.getColor(mContext, R.color.white));
         options.setToolbarWidgetColor(ContextCompat.getColor(mContext, R.color.button));
         Intent myIntent = UCrop.of(sourceUri, destinationUri)

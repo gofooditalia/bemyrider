@@ -16,7 +16,10 @@ import com.app.bemyrider.R;
 import com.app.bemyrider.model.ProviderHistoryPojoItem;
 import com.app.bemyrider.utils.CircleImageView;
 import com.app.bemyrider.utils.PrefsUtil;
-import com.squareup.picasso.Picasso;
+// Coil Imports
+import coil.Coil;
+import coil.request.ImageRequest;
+// import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
@@ -87,12 +90,19 @@ public class RvOngoingServiceRequestAdapter extends RecyclerView.Adapter<RvOngoi
                 break;
         }
 
-        if (arrayList.get(position).getCustomerImage().equals("")) {
+        // Coil Migration from Picasso
+        String imageUrl = arrayList.get(position).getCustomerImage();
+        ImageRequest.Builder profileBuilder = new ImageRequest.Builder(context)
+                .placeholder(R.drawable.loading)
+                .error(R.mipmap.user) // Replicato .error()
+                .target(holder.img_request_userprofile);
+
+        if (imageUrl.equals("")) {
             holder.img_request_userprofile.setImageResource(R.mipmap.user);
         } else {
             try {
-                Picasso.get().load(arrayList.get(position).getCustomerImage()).placeholder(R.drawable.loading)
-                        .error(R.mipmap.user).into(holder.img_request_userprofile);
+                profileBuilder.data(imageUrl);
+                Coil.imageLoader(context).enqueue(profileBuilder.build());
             } catch (IllegalArgumentException e) {
                 e.printStackTrace();
             }

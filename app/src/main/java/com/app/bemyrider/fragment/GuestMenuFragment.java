@@ -25,7 +25,10 @@ import com.app.bemyrider.databinding.FragmentGuestMenuBinding;
 import com.app.bemyrider.model.ModelForDrawer;
 import com.app.bemyrider.myinterfaces.MenuItemClickListener;
 import com.app.bemyrider.utils.ConnectionManager;
-import com.squareup.picasso.Picasso;
+// Coil Imports
+import coil.Coil;
+import coil.request.ImageRequest;
+// import com.squareup.picasso.Picasso;
 
 public class GuestMenuFragment extends Fragment implements MenuItemClickListener {
 
@@ -56,7 +59,14 @@ public class GuestMenuFragment extends Fragment implements MenuItemClickListener
         connectionManager.registerInternetCheckReceiver();
         connectionManager.checkConnection(context);
 
-        Picasso.get().load(R.drawable.ic_user_menu).placeholder(R.drawable.loading).into(binding.imgProfile);
+        // Coil Migration from Picasso
+        ImageRequest request = new ImageRequest.Builder(context)
+            .data(R.drawable.ic_user_menu)
+            .placeholder(R.drawable.loading)
+            .target(binding.imgProfile)
+            .build();
+        Coil.imageLoader(context).enqueue(request);
+
         binding.txtUserName.setText(getResources().getString(R.string.guest_user));
 
         setUpMenuItems();

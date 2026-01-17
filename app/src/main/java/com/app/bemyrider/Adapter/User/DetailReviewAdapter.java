@@ -13,7 +13,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.app.bemyrider.model.ProviderServiceReviewDataItem;
 import com.app.bemyrider.R;
 import com.app.bemyrider.utils.Utils;
-import com.squareup.picasso.Picasso;
+// Coil Imports
+import coil.Coil;
+import coil.request.ImageRequest;
+// import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
@@ -44,7 +47,14 @@ public class DetailReviewAdapter extends RecyclerView.Adapter<DetailReviewAdapte
         holder.txt_date.setText(data.get(position).getCreatedDate());
         holder.txt_subjectName.setText(Utils.decodeEmoji(data.get(position).getReview()));
         holder.txt_rateCount.setText(data.get(position).getRating());
-        Picasso.get().load(data.get(position).getProfileImage()).placeholder(R.drawable.loading).into(holder.img_profile);
+        
+        // Coil Migration from Picasso
+        ImageRequest request = new ImageRequest.Builder(mContext)
+            .data(data.get(position).getProfileImage())
+            .placeholder(R.drawable.loading)
+            .target(holder.img_profile)
+            .build();
+        Coil.imageLoader(mContext).enqueue(request);
 
         /*holder.relative_review.setOnClickListener(new View.OnClickListener() {
             @Override

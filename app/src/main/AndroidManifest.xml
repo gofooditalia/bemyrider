@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    package="com.app.bemyrider">
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -402,6 +401,12 @@
             android:screenOrientation="portrait"
             android:windowSoftInputMode="stateHidden" />
         <activity
+            android:name=".activity.partner.Partner_ServiceRequest_TabLayout_Activity"
+            android:configChanges="keyboardHidden|screenSize|screenLayout|orientation"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
             android:name=".activity.partner.Partner_ServiceRequestDetail_Tablayout_Activity"
             android:configChanges="keyboardHidden|screenSize|screenLayout|orientation"
             android:exported="false"
@@ -409,12 +414,6 @@
             android:windowSoftInputMode="stateHidden" />
         <activity
             android:name=".activity.partner.Partner_ServiceDetail_Activity"
-            android:configChanges="keyboardHidden|screenSize|screenLayout|orientation"
-            android:exported="false"
-            android:screenOrientation="portrait"
-            android:windowSoftInputMode="stateHidden" />
-        <activity
-            android:name=".activity.partner.Partner_ServiceRequest_TabLayout_Activity"
             android:configChanges="keyboardHidden|screenSize|screenLayout|orientation"
             android:exported="false"
             android:screenOrientation="portrait"
@@ -509,6 +508,13 @@
             android:exported="false"
             android:screenOrientation="portrait"
             android:theme="@style/AppThemeNoActionBar" />
+
+        <activity
+            android:name="com.google.android.libraries.places.widget.AutocompleteActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden"
+            tools:replace="android:windowSoftInputMode" />
 
         <!-- <activity
             android:name="com.app.bemyrider.activity.LinkedInLoginWebViewActivity"

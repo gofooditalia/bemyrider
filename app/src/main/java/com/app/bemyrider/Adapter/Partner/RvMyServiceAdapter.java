@@ -15,7 +15,10 @@ import com.app.bemyrider.model.partner.MyServiceListItem;
 import com.app.bemyrider.R;
 import com.app.bemyrider.utils.CircleImageView;
 import com.app.bemyrider.utils.PrefsUtil;
-import com.squareup.picasso.Picasso;
+// Coil Imports
+import coil.Coil;
+import coil.request.ImageRequest;
+// import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
@@ -50,11 +53,19 @@ public class RvMyServiceAdapter extends RecyclerView.Adapter<RvMyServiceAdapter.
         holder.txt_service_price.setText(String.format("%s%s", PrefsUtil.with(mContext).readString("CurrencySign"), item.getPrice()));
         holder.txt_dur.setText(item.getAddress());
 
-        if (item.getServiceImage().equals("")) {
+        // Coil Migration from Picasso
+        String imageUrl = item.getServiceImage();
+
+        if (imageUrl.equals("")) {
             holder.img_service.setImageResource(R.mipmap.user);
         } else {
             try {
-                Picasso.get().load(item.getServiceImage()).placeholder(R.mipmap.user).placeholder(R.drawable.loading).into(holder.img_service);
+                ImageRequest request = new ImageRequest.Builder(mContext)
+                    .data(imageUrl)
+                    .placeholder(R.drawable.loading) 
+                    .target(holder.img_service)
+                    .build();
+                Coil.imageLoader(mContext).enqueue(request);
             } catch (Exception e) {
                 e.printStackTrace();
             }

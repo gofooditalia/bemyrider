@@ -4,21 +4,23 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Rect;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
-import android.view.WindowManager;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.databinding.DataBindingUtil;
 
-import com.app.bemyrider.activity.partner.PartnerReviewsActivity;
 import com.app.bemyrider.AsyncTask.WebServiceCall;
 import com.app.bemyrider.R;
 import com.app.bemyrider.WebServices.WebServiceUrl;
+import com.app.bemyrider.activity.partner.PartnerReviewsActivity;
 import com.app.bemyrider.databinding.PartnerProfileAcitvityBinding;
 import com.app.bemyrider.model.CommonPojo;
 import com.app.bemyrider.model.ProfileItem;
@@ -27,68 +29,52 @@ import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.LocaleManager;
 import com.app.bemyrider.utils.PrefsUtil;
 import com.app.bemyrider.utils.Utils;
-import com.squareup.picasso.Picasso;
 
 import java.util.LinkedHashMap;
+import java.util.Objects;
 
-/**
- * Modified by Hardik Talaviya on 4/12/19.
- */
+import coil.Coil;
+import coil.request.ImageRequest;
 
 public class PartnerProfileActivity extends AppCompatActivity {
 
+    private static final String TAG = "PartnerProfileActivity";
     private PartnerProfileAcitvityBinding binding;
-    private Context mContext = PartnerProfileActivity.this;
+    private final Context mContext = this;
     private String partnerId = "";
-    private AsyncTask getProfileAsync, reportUserAsync;
+    private WebServiceCall getProfileAsync, reportUserAsync; // MODIFICA QUI: Da AsyncTask a WebServiceCall
     private ConnectionManager connectionManager;
     private String isFlag = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = DataBindingUtil.setContentView(PartnerProfileActivity.this, R.layout.partner_profile_acitvity, null);
+        binding = DataBindingUtil.setContentView(this, R.layout.partner_profile_acitvity);
 
-        if (getIntent().hasExtra(Utils.PROVIDER_ID)) {
-            if (getIntent().getStringExtra(Utils.PROVIDER_ID) != null
-                    && getIntent().getStringExtra(Utils.PROVIDER_ID).length() > 0) {
-                partnerId = getIntent().getStringExtra(Utils.PROVIDER_ID);
-            } else {
-                finish();
-            }
+        String providerId = getIntent().getStringExtra(Utils.PROVIDER_ID);
+        if (providerId != null && !providerId.isEmpty()) {
+            partnerId = providerId;
         } else {
             finish();
+            return;
         }
 
         initView();
-
         serviceCall();
 
-        binding.relReportUser.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                serviceCallReportUser();
-            }
-        });
+        binding.relReportUser.setOnClickListener(v -> serviceCallReportUser());
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-    }
-
-    /*---------------- Get Profile Api Call ------------------*/
     private void serviceCall() {
         binding.progress.setVisibility(View.VISIBLE);
         binding.llMain.setVisibility(View.GONE);
         binding.relReportUser.setVisibility(View.GONE);
 
         LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-
-        textParams.put("loginuser_id", PrefsUtil.with(PartnerProfileActivity.this).readString("UserId"));
+        textParams.put("loginuser_id", PrefsUtil.with(this).readString("UserId"));
         textParams.put("profile_id", partnerId);
 
-        new WebServiceCall(mContext, WebServiceUrl.URL_PROFILE, textParams, ProfilePojo.class, false,
+        getProfileAsync = new WebServiceCall(mContext, WebServiceUrl.URL_PROFILE, textParams, ProfilePojo.class, false,
                 new WebServiceCall.OnResultListener() {
                     @Override
                     public void onResult(boolean status, Object obj) {
@@ -97,148 +83,19 @@ public class PartnerProfileActivity extends AppCompatActivity {
                         binding.relReportUser.setVisibility(View.VISIBLE);
                         if (status) {
                             ProfilePojo response_profile = (ProfilePojo) obj;
+                            if (response_profile == null || response_profile.getData() == null) {
+                                Toast.makeText(mContext, R.string.profile_loading_error, Toast.LENGTH_SHORT).show();
+                                return;
+                            }
                             final ProfileItem pItem = response_profile.getData();
-
-                            if (pItem.getProfileImg().equals("")) {
-                                //binding.ppaImgBg.setImageResource(R.mipmap.user);
-                                binding.ppaImgProfile.setImageResource(R.mipmap.user);
-                            } else {
-                                try {
-                                    Picasso.get().load(pItem.getProfileImg()).placeholder(R.drawable.loading).into(binding.ppaImgProfile);
-                                    // Picasso.get().load(pItem.getProfileImg()).placeholder(R.drawable.loading).into(binding.ppaImgBg);
-                                } catch (IllegalArgumentException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-
-                            String strDeliveryType = "";
-
-                            if (response_profile.getData().getSmallDelivery().equals("y")) {
-                                strDeliveryType = getResources().getString(R.string.small);
-                            }
-
-                            if (response_profile.getData().getMediumDelivery().equals("y")) {
-                                if (strDeliveryType.equals(""))
-                                    strDeliveryType = getResources().getString(R.string.medium);
-                                else
-                                    strDeliveryType = strDeliveryType + " , " + getResources().getString(R.string.medium);
-                            }
-
-                            if (response_profile.getData().getLargeDelivery().equals("y")) {
-                                if (strDeliveryType.equals(""))
-                                    strDeliveryType = getResources().getString(R.string.large);
-                                else
-                                    strDeliveryType = strDeliveryType + " , " + getResources().getString(R.string.large);
-                            }
-
-                            binding.txtDeliveryType.setText(strDeliveryType);
-
-                            isFlag = pItem.getIs_flag();
-                            if (isFlag.equalsIgnoreCase("y")) {
-                                binding.imgReportUser.setImageResource(R.mipmap.ic_report_user_filled);
-                            } else {
-                                binding.imgReportUser.setImageResource(R.mipmap.ic_report_user);
-                            }
-
-                            if (pItem.getUserName() != null && pItem.getUserName().length() > 0) {
-                                binding.ppaTxtUsername.setText(pItem.getUserName());
-                            } else {
-                                binding.ppaTxtUsername.setText("-");
-                            }
-
-                           /* if (pItem.getEmailMask() != null && pItem.getEmailMask().length() > 0) {
-                                binding.ppaTxtUseremail.setText(pItem.getEmailMask());
-                            } else {
-                                binding.ppaTxtUseremail.setText("-");
-                            }
-
-                            if (pItem.getContactMask() != null && pItem.getContactMask().length() > 0) {
-                                binding.ppaTxtUsercontactno.setText(String.format("%s %s", pItem.getCountryCode(), pItem.getContactMask()));
-                            } else {
-                                binding.ppaTxtUsercontactno.setText("-");
-                            }*/
-
-                            if (pItem.getAddress() != null && pItem.getAddress().length() > 0) {
-                                binding.ppaTxtAddress.setText(pItem.getAddress());
-                            } else {
-                                binding.ppaTxtAddress.setText("-");
-                            }
-                            if (pItem.getPositiveRating() != null
-                                    && pItem.getPositiveRating().length() > 0) {
-                                binding.ppaTxtPositiveRatings.setText(String.format("%s %s", pItem.getPositiveRating(), getString(R.string.positive_ratings)));
-                            } else {
-                                binding.ppaTxtPositiveRatings.setText(getString(R.string.no_positive_ratings));
-                            }
-
-                            if (pItem.getTaskAssigned() != null && pItem.getTaskAssigned().length() > 0) {
-                                binding.ppaTxtWorkedOn.setText(String.format("%s %s %s", getString(R.string.str_worked_on), pItem.getTaskAssigned(), getString(R.string.tasks)));
-                            } else {
-                                binding.ppaTxtWorkedOn.setText(String.format("%s 0 %s", getString(R.string.str_worked_on), getString(R.string.tasks)));
-                            }
-
-                            if (pItem.getDescription() != null && pItem.getDescription().length() > 0) {
-                                binding.ppaTxtAboutUser.setText(Utils.decodeEmoji(pItem.getDescription().toString()));
-                            } else {
-                                binding.ppaTxtAboutUser.setText("-");
-                            }
-
-                            if (!pItem.getAvailableDays().equals("")) {
-                                binding.ppaTxtAvailableDays.setText(pItem.getAvailableDaysList());
-                            } else {
-                                binding.ppaTxtAvailableDays.setText("-");
-                            }
-
-                            if (pItem.getAvailableTimeStart() != null
-
-                                    && pItem.getAvailableTimeStart().length() > 0
-                                    && pItem.getAvailableTimeEnd() != null
-                                    && pItem.getAvailableTimeEnd().length() > 0) {
-                                binding.ppaTxtServiceTime.setText(String.format("%s - %s", pItem.getAvailableTimeStart(), pItem.getAvailableTimeEnd()));
-                            } else {
-                                binding.ppaTxtServiceTime.setText("-");
-                            }
-
-                            if (pItem.getStartRating() != null && pItem.getStartRating().length() > 0) {
-                                binding.ppaTxtRating.setText(String.format("%s ", pItem.getStartRating()));
-                            } else {
-                                binding.ppaTxtRating.setText("0 ");
-                            }
-
-                            if (pItem.getTotalService() != null && pItem.getTotalService().length() > 0) {
-                                binding.ppaTxtServiceCount.setText(pItem.getTotalService());
-                            } else {
-                                binding.ppaTxtServiceCount.setText("-");
-                            }
-
-                            binding.ppaTxtViewAllReviews.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    Intent i = new Intent(mContext, PartnerReviewsActivity.class);
-                                    i.putExtra(Utils.PROVIDER_ID, pItem.getId());
-                                    startActivity(i);
-                                }
-                            });
-
-                            binding.ppaTxtViewAllServices.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    Intent i = new Intent(mContext, UserServicesActivity.class);
-                                    i.putExtra(Utils.PROVIDER_ID, pItem.getId());
-                                    i.putExtra("providerImage", pItem.getProfileImg());
-                                    startActivity(i);
-                                }
-                            });
-
+                            updateUI(pItem);
                         } else {
                             Toast.makeText(mContext, obj.toString(), Toast.LENGTH_SHORT).show();
                         }
-
                     }
 
                     @Override
-                    public void onAsync(AsyncTask asyncTask) {
-                        getProfileAsync = asyncTask;
-                    }
+                    public void onAsync(AsyncTask asyncTask) { getProfileAsync = null; }
 
                     @Override
                     public void onCancelled() {
@@ -247,18 +104,84 @@ public class PartnerProfileActivity extends AppCompatActivity {
                 });
     }
 
-    /*----------------- Report user Api Call --------------------*/
+    private void updateUI(@NonNull ProfileItem pItem) {
+        ImageRequest.Builder profileBuilder = new ImageRequest.Builder(mContext)
+                .placeholder(R.drawable.loading)
+                .error(R.mipmap.user)
+                .target(binding.ppaImgProfile);
+
+        if (pItem.getProfileImg() != null && !pItem.getProfileImg().isEmpty()) {
+            profileBuilder.data(pItem.getProfileImg());
+        } else {
+            profileBuilder.data(R.mipmap.user);
+        }
+        Coil.imageLoader(mContext).enqueue(profileBuilder.build());
+
+        StringBuilder strDeliveryType = new StringBuilder();
+        if (pItem.getSmallDelivery() != null && pItem.getSmallDelivery().equals("y")) {
+            strDeliveryType.append(getString(R.string.small));
+        }
+        if (pItem.getMediumDelivery() != null && pItem.getMediumDelivery().equals("y")) {
+            if (strDeliveryType.length() > 0) strDeliveryType.append(" , ");
+            strDeliveryType.append(getString(R.string.medium));
+        }
+        if (pItem.getLargeDelivery() != null && pItem.getLargeDelivery().equals("y")) {
+            if (strDeliveryType.length() > 0) strDeliveryType.append(" , ");
+            strDeliveryType.append(getString(R.string.large));
+        }
+        binding.txtDeliveryType.setText(strDeliveryType.toString());
+
+        isFlag = pItem.getIs_flag();
+        binding.imgReportUser.setImageResource("y".equalsIgnoreCase(isFlag) ? R.mipmap.ic_report_user_filled : R.mipmap.ic_report_user);
+
+        binding.ppaTxtUsername.setText(pItem.getUserName() != null && !pItem.getUserName().isEmpty() ? pItem.getUserName() : "-");
+        binding.ppaTxtAddress.setText(pItem.getAddress() != null && !pItem.getAddress().isEmpty() ? pItem.getAddress() : "-");
+        binding.ppaTxtPositiveRatings.setText(pItem.getPositiveRating() != null && !pItem.getPositiveRating().isEmpty() ?
+                String.format("%s %s", pItem.getPositiveRating(), getString(R.string.positive_ratings)) : getString(R.string.no_positive_ratings));
+
+        binding.ppaTxtWorkedOn.setText(pItem.getTaskAssigned() != null && !pItem.getTaskAssigned().isEmpty() ?
+                String.format("%s %s %s", getString(R.string.str_worked_on), pItem.getTaskAssigned(), getString(R.string.tasks)) :
+                String.format("%s 0 %s", getString(R.string.str_worked_on), getString(R.string.tasks)));
+
+        binding.ppaTxtAboutUser.setText(pItem.getDescription() != null && !pItem.getDescription().isEmpty() ?
+                Utils.decodeEmoji(pItem.getDescription()) : "-");
+
+        binding.ppaTxtAvailableDays.setText(!pItem.getAvailableDays().isEmpty() ? pItem.getAvailableDaysList() : "-");
+
+        if (pItem.getAvailableTimeStart() != null && !pItem.getAvailableTimeStart().isEmpty() &&
+                pItem.getAvailableTimeEnd() != null && !pItem.getAvailableTimeEnd().isEmpty()) {
+            binding.ppaTxtServiceTime.setText(String.format("%s - %s", pItem.getAvailableTimeStart(), pItem.getAvailableTimeEnd()));
+        } else {
+            binding.ppaTxtServiceTime.setText("-");
+        }
+
+        binding.ppaTxtRating.setText(pItem.getStartRating() != null && !pItem.getStartRating().isEmpty() ?
+                String.format("%s ", pItem.getStartRating()) : "0 ");
+        binding.ppaTxtServiceCount.setText(pItem.getTotalService() != null && !pItem.getTotalService().isEmpty() ? pItem.getTotalService() : "-");
+
+        binding.ppaTxtViewAllReviews.setOnClickListener(v -> {
+            Intent i = new Intent(mContext, PartnerReviewsActivity.class);
+            i.putExtra(Utils.PROVIDER_ID, pItem.getId());
+            startActivity(i);
+        });
+
+        binding.ppaTxtViewAllServices.setOnClickListener(v -> {
+            Intent i = new Intent(mContext, UserServicesActivity.class);
+            i.putExtra(Utils.PROVIDER_ID, pItem.getId());
+            i.putExtra("providerImage", pItem.getProfileImg());
+            startActivity(i);
+        });
+    }
+
     private void serviceCallReportUser() {
         binding.imgReportUser.setVisibility(View.GONE);
         binding.pgReportUser.setVisibility(View.VISIBLE);
 
         LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-
-        textParams.put("user_id", PrefsUtil.with(PartnerProfileActivity.this).readString("UserId"));
-
+        textParams.put("user_id", PrefsUtil.with(this).readString("UserId"));
         textParams.put("flag_user_id", partnerId);
 
-        new WebServiceCall(mContext, WebServiceUrl.URL_FLAGUSER, textParams, CommonPojo.class, false,
+        reportUserAsync = new WebServiceCall(mContext, WebServiceUrl.URL_FLAGUSER, textParams, CommonPojo.class, false,
                 new WebServiceCall.OnResultListener() {
                     @Override
                     public void onResult(boolean status, Object obj) {
@@ -266,7 +189,7 @@ public class PartnerProfileActivity extends AppCompatActivity {
                         binding.imgReportUser.setVisibility(View.VISIBLE);
                         if (status) {
                             CommonPojo commonPojo = (CommonPojo) obj;
-                            if (isFlag.equalsIgnoreCase("y")) {
+                            if ("y".equalsIgnoreCase(isFlag)) {
                                 binding.imgReportUser.setImageResource(R.mipmap.ic_report_user);
                                 isFlag = "n";
                             } else {
@@ -280,9 +203,7 @@ public class PartnerProfileActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onAsync(AsyncTask asyncTask) {
-                        reportUserAsync = asyncTask;
-                    }
+                    public void onAsync(AsyncTask asyncTask) { reportUserAsync = null; }
 
                     @Override
                     public void onCancelled() {
@@ -294,34 +215,29 @@ public class PartnerProfileActivity extends AppCompatActivity {
     private void initView() {
         binding.appBarLayout.addOnOffsetChangedListener((appBarLayout, verticalOffset) -> {
             if (Math.abs(verticalOffset) == appBarLayout.getTotalScrollRange()) {
-                // collapsed
-                if (!binding.ppaTxtUsername.getText().equals(""))
-                    binding.txtHeaderName.setText(binding.ppaTxtUsername.getText());
-                else
-                    binding.txtHeaderName.setText(getResources().getString(R.string.provider_profile));
-
-                binding.toolbar.setBackgroundColor(getResources().getColor(R.color.toolbar_bg_color));
-                binding.txtHeaderName.setTextColor(getResources().getColor(R.color.white));
-                binding.llMain.setPadding(0, 50,0,0);
+                CharSequence username = binding.ppaTxtUsername.getText();
+                binding.txtHeaderName.setText(!username.toString().isEmpty() ? username : getString(R.string.provider_profile));
+                binding.toolbar.setBackgroundColor(ContextCompat.getColor(this, R.color.toolbar_bg_color));
+                binding.txtHeaderName.setTextColor(ContextCompat.getColor(this, R.color.white));
+                binding.llMain.setPadding(0, 50, 0, 0);
             } else {
-                // expanded
-                // binding.txtHeaderName.setText(getResources().getString(R.string.provider_profile));
                 binding.txtHeaderName.setText("");
-                binding.txtHeaderName.setTextColor(getResources().getColor(R.color.white));
-                binding.toolbar.setBackgroundColor(getResources().getColor(R.color.transparent));
-                binding.llMain.setPadding(0, 0,0,0);
-
+                binding.toolbar.setBackgroundColor(ContextCompat.getColor(this, R.color.transparent));
+                binding.llMain.setPadding(0, 0, 0, 0);
             }
         });
 
         getStatusBarHeight();
-        /*Init Internet Connection Class For No Internet Banner*/
         connectionManager = new ConnectionManager(mContext);
         connectionManager.registerInternetCheckReceiver();
         connectionManager.checkConnection(mContext);
 
-        binding.imgBack.setOnClickListener(v -> {
-            onBackPressed();
+        binding.imgBack.setOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                finish();
+            }
         });
     }
 
@@ -331,40 +247,30 @@ public class PartnerProfileActivity extends AppCompatActivity {
         window.getDecorView().getWindowVisibleDisplayFrame(rectangle);
         int statusBarHeight = rectangle.top;
         int contentViewTop = window.findViewById(Window.ID_ANDROID_CONTENT).getTop();
-        int titleBarHeight= contentViewTop - statusBarHeight;
-        binding.linHeader.setPadding(0,titleBarHeight + 50,0,0);
+        int titleBarHeight = contentViewTop - statusBarHeight;
+        binding.linHeader.setPadding(0, titleBarHeight + 50, 0, 0);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
-            onBackPressed();
+            getOnBackPressedDispatcher().onBackPressed();
             return true;
         }
-        return false;
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
     protected void onDestroy() {
-        try {
-            connectionManager.unregisterReceiver();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        try {
-            if (getProfileAsync != null) {
-                getProfileAsync.cancel(true);
+        if (connectionManager != null) {
+            try {
+                connectionManager.unregisterReceiver();
+            } catch (Exception e) {
+                Log.e(TAG, "Error unregistering connection manager", e);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
-        try {
-            if (reportUserAsync != null) {
-                reportUserAsync.cancel(true);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        Utils.cancelAsyncTask(getProfileAsync);
+        Utils.cancelAsyncTask(reportUserAsync);
         super.onDestroy();
     }
 

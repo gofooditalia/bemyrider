@@ -15,7 +15,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.app.bemyrider.activity.user.ServiceDetailActivity;
 import com.app.bemyrider.R;
 import com.app.bemyrider.model.user.ProviderListItem;
-import com.squareup.picasso.Picasso;
+// Coil Imports
+import coil.Coil;
+import coil.request.ImageRequest;
+// import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
@@ -51,23 +54,39 @@ public class ProviderAdapter extends RecyclerView.Adapter<ProviderAdapter.MyView
         holder.txt_address_provider.setText(item.getAddress());
         holder.txt_description.setText(item.getServiceDescription());
         holder.txt_serviceName.setText(String.format("%s %s", item.getProviderFirstName(), item.getProviderLastName()));
-        if (item.getProviderImage() != null && item.getProviderImage().length() > 0) {
-            Picasso.get().load(item.getProviderImage()).placeholder(R.drawable.loading).into(holder.img_profile);
+
+        // Coil Migration: Profile Image
+        String profileImageUrl = item.getProviderImage();
+        ImageRequest.Builder profileBuilder = new ImageRequest.Builder(act)
+                .placeholder(R.drawable.loading)
+                .target(holder.img_profile);
+
+        if (profileImageUrl != null && profileImageUrl.length() > 0) {
+            profileBuilder.data(profileImageUrl);
         } else {
-            Picasso.get().load(R.mipmap.user).placeholder(R.drawable.loading).into(holder.img_profile);
+            profileBuilder.data(R.mipmap.user);
         }
-        if (item.getFavoriteId() != 0 && item.getFavoriteId() > 0) {
-            if (item.getFavoriteId() != 0) {
-                Picasso.get().load(R.mipmap.ic_heart_fill).placeholder(R.drawable.loading).into(holder.img_fav);
-                holder.img_fav.setTag("0");
-            } else {
-                Picasso.get().load(R.mipmap.ic_heart_empty).placeholder(R.drawable.loading).into(holder.img_fav);
-                holder.img_fav.setTag("1");
-            }
+        Coil.imageLoader(act).enqueue(profileBuilder.build());
+
+        // Coil Migration: Heart Image
+        int heartResource;
+        String tag;
+        if (item.getFavoriteId() > 0) {
+            heartResource = R.mipmap.ic_heart_fill;
+            tag = "0"; // Tag 0 per favorito
         } else {
-            Picasso.get().load(R.mipmap.ic_heart_empty).placeholder(R.drawable.loading).into(holder.img_fav);
-            holder.img_fav.setTag("1");
+            heartResource = R.mipmap.ic_heart_empty;
+            tag = "1"; // Tag 1 per non favorito
         }
+
+        ImageRequest favRequest = new ImageRequest.Builder(act)
+                .data(heartResource)
+                .placeholder(R.drawable.loading)
+                .target(holder.img_fav)
+                .build();
+        Coil.imageLoader(act).enqueue(favRequest);
+        holder.img_fav.setTag(tag);
+
 
         holder.item_main.setOnClickListener(v -> {
             Intent i = new Intent(act, ServiceDetailActivity.class);

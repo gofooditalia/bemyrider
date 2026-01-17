@@ -15,8 +15,6 @@ import android.view.animation.TranslateAnimation;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-
 import com.app.bemyrider.R;
 
 
@@ -115,8 +113,6 @@ public class ConnectionManager {
         } else {
             if (showInternet) {
 
-                sendBroadcast();
-
                 final RelativeLayout relativeLayout = (snackView).findViewById(R.id.snackbar_relativelayout);
                 TextView textView = (snackView).findViewById(R.id.snackbar_text);
                 relativeLayout.setBackgroundColor(mActivity.getResources().getColor(R.color.colorDarkGreen));
@@ -159,11 +155,5 @@ public class ConnectionManager {
         animate.setFillAfter(true);
         animate.setInterpolator(new DecelerateInterpolator());
         view.startAnimation(animate);
-    }
-
-    private void sendBroadcast() {
-        Intent intent = new Intent("internet");
-        intent.putExtra("message", "refresh");
-        LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
     }
 }

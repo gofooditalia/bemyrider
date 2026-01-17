@@ -5,7 +5,6 @@ import com.app.bemyrider.model.CommonPojo
 import com.app.bemyrider.model.LanguagePojo
 import com.app.bemyrider.model.NewLoginPojo
 import com.app.bemyrider.model.ProfilePojo
-import com.app.bemyrider.model.partner.CountryCodePojo
 import com.app.bemyrider.network.ApiServiceKt
 import com.app.bemyrider.network.RetrofitClient
 import com.google.gson.Gson
@@ -34,8 +33,6 @@ class AppRepository {
     }
 
     suspend fun getLanguages(): Response<LanguagePojo> = apiService.getLanguages()
-
-    suspend fun getCountryCodes(): Response<CountryCodePojo> = apiService.getCountryCodes()
 
     suspend fun updateAvailabilityStatus(userId: String, isAvailable: String): Response<CommonPojo> {
         return apiService.updateAvailabilityStatus(userId, isAvailable)
@@ -128,7 +125,8 @@ class AppRepository {
     // --- Helpers per il parsing (Porting dal Java) ---
 
     private fun <T : Any> parseGenericResponse(response: Response<ResponseBody>, type: Class<T>): T {
-        val result = type.newInstance() // Nota: richiede costruttore vuoto
+        // Correzione per l'API deprecata newInstance()
+        val result = type.getDeclaredConstructor().newInstance()
         
         try {
             if (response.isSuccessful && response.body() != null) {

@@ -33,7 +33,10 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
-import com.squareup.picasso.Picasso;
+// Coil Imports
+import coil.Coil;
+import coil.request.ImageRequest;
+// import com.squareup.picasso.Picasso;
 
 public class ProviderProfileFragment extends Fragment {
 
@@ -103,14 +106,14 @@ public class ProviderProfileFragment extends Fragment {
 
     private void shareProfile() {
         if (profilePojoData != null && profilePojoData.getId() != null) {
-            String shareBody = "Ciao! Prenota il mio servizio su Bemyrider: https://bemyrider.it/rider?id=" + profilePojoData.getId();
+            String shareBody = getString(R.string.share_profile_body) + profilePojoData.getId();
             Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
             sharingIntent.setType("text/plain");
-            sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "Il mio profilo Bemyrider");
+            sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, getString(R.string.share_profile_subject));
             sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, shareBody);
-            startActivity(Intent.createChooser(sharingIntent, "Condividi via"));
+            startActivity(Intent.createChooser(sharingIntent, getString(R.string.share_profile_subject)));
         } else {
-            Toast.makeText(context, "Profilo non caricato, impossibile condividere.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, getString(R.string.profile_not_loaded_share_error), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -124,7 +127,7 @@ public class ProviderProfileFragment extends Fragment {
                 profilePojoData = profilePojo.getData();
                 updateUI(profilePojoData);
             } else {
-                Toast.makeText(context, "Errore caricamento profilo", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, getString(R.string.profile_loading_error), Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -144,7 +147,7 @@ public class ProviderProfileFragment extends Fragment {
                     binding.progressAvailable.setVisibility(View.GONE);
                     binding.switchAvailableNow.setVisibility(View.VISIBLE);
                     if (commonPojo == null || !commonPojo.isStatus()) {
-                        Toast.makeText(context, "Failed to update status", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(context, getString(R.string.failed_to_update_status), Toast.LENGTH_SHORT).show();
                         binding.switchAvailableNow.setOnCheckedChangeListener(null);
                         binding.switchAvailableNow.setChecked(!binding.switchAvailableNow.isChecked());
                         binding.switchAvailableNow.setOnCheckedChangeListener((buttonView, isChecked) -> {
@@ -167,10 +170,10 @@ public class ProviderProfileFragment extends Fragment {
                         account.getPhotoUrl() != null ? account.getPhotoUrl().toString() : "", "g", account.getId(), PrefsUtil.with(context).readString("UserId"))
                         .observe(getViewLifecycleOwner(), newLoginPojo -> {
                            if(newLoginPojo != null && newLoginPojo.isStatus()){
-                               Toast.makeText(context, "Google account connected!", Toast.LENGTH_SHORT).show();
+                               Toast.makeText(context, getString(R.string.google_account_connected), Toast.LENGTH_SHORT).show();
                                performFetchProfile();
                            } else {
-                               Toast.makeText(context, "Failed to connect Google account", Toast.LENGTH_SHORT).show();
+                               Toast.makeText(context, getString(R.string.failed_to_connect_google_account), Toast.LENGTH_SHORT).show();
                            }
                         });
             }
@@ -182,12 +185,15 @@ public class ProviderProfileFragment extends Fragment {
     private void updateUI(ProfileItem data) {
         if (data == null) return;
 
+        // Coil Migration from Picasso
         if (data.getProfileImg() != null && !data.getProfileImg().isEmpty()) {
-            Picasso.get()
-                   .load(data.getProfileImg())
+            ImageRequest request = new ImageRequest.Builder(context)
+                   .data(data.getProfileImg())
                    .placeholder(R.mipmap.ic_launcher_round)
                    .error(R.mipmap.ic_launcher_round)
-                   .into(binding.imgProfile);
+                   .target(binding.imgProfile)
+                   .build();
+            Coil.imageLoader(context).enqueue(request);
         }
 
         binding.txtUsername.setText(String.format("%s %s", data.getFirstName(), data.getLastName()));
@@ -215,16 +221,16 @@ public class ProviderProfileFragment extends Fragment {
         binding.txtResidentialAddress.setText(data.getResidential_address());
         
         binding.txtRating.setText(data.getStartRating());
-        binding.txtTotaReview.setText("(" + data.getTotalReview() + " Reviews)");
+        binding.txtTotaReview.setText(String.format("(%s%s)", data.getTotalReview(), getString(R.string.reviews_suffix)));
 
         if (data.getAvailableTimeStart() != null && data.getAvailableTimeEnd() != null) {
-            binding.txtServicetime.setText(data.getAvailableTimeStart() + " to " + data.getAvailableTimeEnd());
+            binding.txtServicetime.setText(data.getAvailableTimeStart() + getString(R.string.time_separator) + data.getAvailableTimeEnd());
         }
 
         StringBuilder deliveryType = new StringBuilder();
-        if ("y".equalsIgnoreCase(data.getSmallDelivery())) deliveryType.append(getString(R.string.small)).append(", ");
-        if ("y".equalsIgnoreCase(data.getMediumDelivery())) deliveryType.append(getString(R.string.medium)).append(", ");
-        if ("y".equalsIgnoreCase(data.getLargeDelivery())) deliveryType.append(getString(R.string.large)).append(", ");
+        if ("y".equalsIgnoreCase(data.getSmallDelivery())) deliveryType.append(getString(R.string.small)).append(getString(R.string.comma_separator));
+        if ("y".equalsIgnoreCase(data.getMediumDelivery())) deliveryType.append(getString(R.string.medium)).append(getString(R.string.comma_separator));
+        if ("y".equalsIgnoreCase(data.getLargeDelivery())) deliveryType.append(getString(R.string.large)).append(getString(R.string.comma_separator));
         
         if (deliveryType.length() > 2) {
             binding.txtDeliveryType.setText(deliveryType.substring(0, deliveryType.length() - 2));

@@ -13,7 +13,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.app.bemyrider.R;
 import com.app.bemyrider.databinding.ItemPartnerPaymentHistoryBinding;
 import com.app.bemyrider.model.partner.PartnerPaymentHistoryItem;
-import com.squareup.picasso.Picasso;
+// Coil Imports
+import coil.Coil;
+import coil.request.ImageRequest;
+// import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.Locale;
@@ -46,11 +49,20 @@ public class PartnerPaymentHistoryAdapter extends RecyclerView.Adapter<PartnerPa
         holder.bind(arrayList.get(position));
 
         /*------------- Load profile image -------------*/
-        if (!TextUtils.isEmpty(arrayList.get(position).getProfile_image())) {
-            Picasso.get().load(arrayList.get(position).getProfile_image()).placeholder(R.drawable.loading).into(holder.binding.imgProfile);
+        String imageUrl = arrayList.get(position).getProfile_image();
+
+        ImageRequest.Builder builder = new ImageRequest.Builder(context)
+            .placeholder(R.drawable.loading)
+            .target(holder.binding.imgProfile);
+
+        if (!TextUtils.isEmpty(imageUrl)) {
+            builder.data(imageUrl);
         } else {
-            Picasso.get().load(R.mipmap.user).placeholder(R.drawable.loading).into(holder.binding.imgProfile);
+            builder.data(R.mipmap.user); // Carica da risorsa se l'URL è vuoto
         }
+
+        Coil.imageLoader(context).enqueue(builder.build());
+
 
         /*----- Set Status text -----*/
         holder.binding.txtStatus.setText(arrayList.get(position).getStatus());

@@ -16,7 +16,10 @@ import com.app.bemyrider.activity.user.BookedServiceDetailActivity;
 import com.app.bemyrider.R;
 import com.app.bemyrider.model.CustomerHistoryPojoItem;
 import com.app.bemyrider.utils.PrefsUtil;
-import com.squareup.picasso.Picasso;
+// Coil Imports
+import coil.Coil;
+import coil.request.ImageRequest;
+// import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
@@ -64,11 +67,18 @@ public class ServiceListUpcomingAdapter extends RecyclerView.Adapter<ServiceList
             holder.txtServiceName.setText("");
         }
 
-        if (item.getProviderImage() != null && item.getProviderImage().length() > 0) {
-            Picasso.get().load(item.getProviderImage()).placeholder(R.drawable.loading).into(holder.imgProfile);
+        // Coil Migration from Picasso
+        String imageUrl = item.getProviderImage();
+        ImageRequest.Builder profileBuilder = new ImageRequest.Builder(act)
+                .placeholder(R.drawable.loading)
+                .target(holder.imgProfile);
+
+        if (imageUrl != null && imageUrl.length() > 0) {
+            profileBuilder.data(imageUrl);
         } else {
-            Picasso.get().load(R.mipmap.user).placeholder(R.drawable.loading).into(holder.imgProfile);
+            profileBuilder.data(R.mipmap.user);
         }
+        Coil.imageLoader(act).enqueue(profileBuilder.build());
 
         /*----- Set Status text & background color -----*/
         holder.txtStatus.setText(item.getServiceStatusDisplayName());

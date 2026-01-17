@@ -15,7 +15,10 @@ import com.app.bemyrider.model.partner.MyServiceListItem;
 import com.app.bemyrider.R;
 import com.app.bemyrider.utils.CircleImageView;
 import com.app.bemyrider.utils.PrefsUtil;
-import com.squareup.picasso.Picasso;
+// Coil Imports
+import coil.Coil;
+import coil.request.ImageRequest;
+// import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
@@ -51,11 +54,19 @@ public class ProviderServicesAdapter extends RecyclerView.Adapter<ProviderServic
         holder.txt_service_price.setText(PrefsUtil.with(mContext).readString("CurrencySign") + item.getPrice());
         holder.txt_dur.setText(item.getAddress());
 
-        if (item.getServiceImage().equals("")) {
+        // Coil Migration from Picasso
+        String imageUrl = item.getServiceImage();
+        ImageRequest.Builder builder = new ImageRequest.Builder(mContext)
+            .placeholder(R.drawable.loading) // Usiamo R.drawable.loading come placeholder
+            .error(R.mipmap.user) // Assumo che R.mipmap.user sia l'errore inteso
+            .target(holder.img_service);
+            
+        if (imageUrl.equals("")) {
             holder.img_service.setImageResource(R.mipmap.user);
         } else {
             try {
-                Picasso.get().load(item.getServiceImage()).placeholder(R.mipmap.user).placeholder(R.drawable.loading).into(holder.img_service);
+                builder.data(imageUrl);
+                Coil.imageLoader(mContext).enqueue(builder.build());
             } catch (Exception e) {
                 e.printStackTrace();
             }

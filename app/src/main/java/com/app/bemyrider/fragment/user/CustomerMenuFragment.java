@@ -50,7 +50,10 @@ import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.PrefsUtil;
 import com.app.bemyrider.utils.SecurePrefsUtil;
 import com.app.bemyrider.utils.Utils;
-import com.squareup.picasso.Picasso;
+// Coil Imports
+import coil.Coil;
+import coil.request.ImageRequest;
+// import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.util.LinkedHashMap;
@@ -99,15 +102,19 @@ public class CustomerMenuFragment extends Fragment implements MenuItemClickListe
     }
 
     private void setProfileData() {
-        if (PrefsUtil.with(activity).readString("UserImg") != null && !"".equals(PrefsUtil.with(activity).readString("UserImg"))) {
-            binding.imgProfile.setColorFilter(ContextCompat.getColor(context,
-                    R.color.transparent));
-            Picasso.get().load(PrefsUtil.with(activity).readString("UserImg")).placeholder(R.drawable.loading).into(binding.imgProfile);
+        String userImg = PrefsUtil.with(activity).readString("UserImg");
+        ImageRequest.Builder profileBuilder = new ImageRequest.Builder(context)
+                .placeholder(R.drawable.loading)
+                .target(binding.imgProfile);
+
+        if (userImg != null && !userImg.isEmpty()) {
+            binding.imgProfile.setColorFilter(ContextCompat.getColor(context, R.color.transparent));
+            profileBuilder.data(userImg);
         } else {
-            binding.imgProfile.setColorFilter(ContextCompat.getColor(context,
-                    R.color.white));
-            Picasso.get().load(R.drawable.ic_user_menu).placeholder(R.drawable.loading).into(binding.imgProfile);
+            binding.imgProfile.setColorFilter(ContextCompat.getColor(context, R.color.white));
+            profileBuilder.data(R.drawable.ic_user_menu);
         }
+        Coil.imageLoader(context).enqueue(profileBuilder.build());
 
         if (PrefsUtil.with(activity).readString("UserName") != null && !"".equals(PrefsUtil.with(activity).readString("UserName"))) {
             binding.txtUserName.setText(PrefsUtil.with(activity).readString("UserName"));

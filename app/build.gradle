@@ -1,8 +1,8 @@
 plugins {
     id 'com.android.application'
     id 'com.google.gms.google-services'
-    id 'kotlin-android'
-    id 'kotlin-kapt'
+    // Rimosso: id 'kotlin-android' (Deprecated: built-in Kotlin in AGP 9.0+)
+    // Rimosso: id 'kotlin-kapt' (Incompatibile con built-in Kotlin, da sostituire con KSP se necessario)
 }
 
 // Helper to read local.properties
@@ -16,15 +16,15 @@ def getLocalProperty(String key) {
 
 android {
     namespace "com.app.bemyrider"
-    compileSdk 36
+    compileSdkVersion 36 // Changed from 'compileSdk 36' to 'compileSdkVersion 36' to resolve deprecation warning
 
     defaultConfig {
         applicationId "com.app.bemyrider"
         minSdk 29
         targetSdk 36
-        versionCode 18 // Incremented for new release
-        versionName "1.2.2" // Updated for new release
-        multiDexEnabled true
+        versionCode 20
+        versionName "1.2.4"
+        // multiDexEnabled true <-- Rimosso: minSdk 29 non richiede più Multidex.
         
         resValue "string", "google_maps_api_key", getLocalProperty('GOOGLE_MAPS_API_KEY') ?: ""
     }
@@ -50,13 +50,11 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = '1.8'
-    }
+    // Rimosso: java { ... }
 
     dataBinding {
         enabled = true
@@ -65,6 +63,7 @@ android {
 
     buildFeatures {
         viewBinding true
+        resValues true // Aggiunto per abilitare resValue in defaultConfig
     }
     lint {
         abortOnError false
@@ -74,7 +73,7 @@ android {
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.2.0"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.3.0"
     
     // Lifecycle components - Updated
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.10.0'
@@ -93,15 +92,16 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.7.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
     implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.2.0'
-    implementation 'androidx.multidex:multidex:2.0.1'
+    // implementation 'androidx.multidex:multidex:2.0.1' <-- Rimosso: minSdk >= 21
     implementation "androidx.security:security-crypto:1.1.0"
-    implementation 'com.squareup.picasso:picasso:2.8' // Kept at 2.8, warning ignored as it's a false positive
+    // Migrated from Picasso (com.squareup.picasso:picasso:2.8) to Coil, a modern Kotlin-first image loader.
+    implementation 'io.coil-kt:coil:2.7.0'
     implementation 'com.intuit.sdp:sdp-android:1.1.1'
     implementation 'com.intuit.ssp:ssp-android:1.1.1'
     implementation 'com.stripe:stripe-android:22.6.0' // Updated
-    implementation 'com.github.yalantis:ucrop:2.2.8'
+    implementation 'com.github.yalantis:ucrop:2.2.11'
     implementation 'org.greenrobot:eventbus:3.3.1'
     implementation 'com.wdullaer:materialdatetimepicker:4.2.3'
     implementation 'com.github.gcacace:signature-pad:1.3.1'    
-    implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.1.0'
+    // Rimosso LocalBroadcastManager (deprecato e non più in uso nel codice sorgente)
 }

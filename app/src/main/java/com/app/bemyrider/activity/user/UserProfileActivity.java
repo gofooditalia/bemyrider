@@ -1,6 +1,5 @@
 package com.app.bemyrider.activity.user;
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.text.util.Linkify;
@@ -9,7 +8,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -23,8 +25,6 @@ import com.app.bemyrider.utils.PrefsUtil;
 import com.app.bemyrider.viewmodel.UserProfileViewModel;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.squareup.picasso.Picasso;
-
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -32,27 +32,22 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Objects;
 
-/**
- * Created by nct121 on 5/12/16.
- * Modified by Hardik Talaviya on 9/12/19.
- * Modernized by Gemini on 2024.
- */
+import coil.Coil;
+import coil.request.ImageRequest;
 
 public class UserProfileActivity extends AppCompatActivity {
 
+    private static final String TAG = "UserProfileActivity";
     private ActivityUserProfileBinding binding;
     private ConnectionManager connectionManager;
-    private Context context;
-    private Activity activity;
     private UserProfileViewModel viewModel;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        context = UserProfileActivity.this;
-        activity = UserProfileActivity.this;
-
-        binding = DataBindingUtil.setContentView(activity, R.layout.activity_user_profile, null);
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_user_profile);
         viewModel = new ViewModelProvider(this).get(UserProfileViewModel.class);
 
         init();
@@ -62,68 +57,59 @@ public class UserProfileActivity extends AppCompatActivity {
             binding.TxtProfileMail.setAutoLinkMask(Linkify.EMAIL_ADDRESSES);
         }
 
-        connectionManager = new ConnectionManager(context);
-        
-        // Verifica connessione usando il metodo statico corretto
         if (ConnectionManager.getConnectivityStatus(this) != ConnectionManager.TYPE_NOT_CONNECTED) {
             fetchProfileData();
         } else {
             getOfflineDetails();
         }
 
-        binding.imgBack.setOnClickListener(v -> {
-            onBackPressed();
-        });
+        binding.imgBack.setOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
 
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                finish();
+            }
+        });
     }
 
     protected void init() {
-        /*Init Internet Connection Class For No Internet Banner*/
-        connectionManager = new ConnectionManager(context);
+        connectionManager = new ConnectionManager(this);
         connectionManager.registerInternetCheckReceiver();
-        connectionManager.checkConnection(context);
+        connectionManager.checkConnection(this);
 
         binding.appBarLayout.addOnOffsetChangedListener((appBarLayout, verticalOffset) -> {
             if (Math.abs(verticalOffset) == appBarLayout.getTotalScrollRange()) {
                 // collapsed
-                if (!binding.TxtProfileNname.getText().equals(""))
-                    binding.txtHeaderName.setText(binding.TxtProfileNname.getText());
-                else
-                    binding.txtHeaderName.setText(getResources().getString(R.string.user_profile));
-
-                binding.toolbar.setBackgroundColor(getResources().getColor(R.color.toolbar_bg_color));
-                binding.txtHeaderName.setTextColor(getResources().getColor(R.color.white));
+                CharSequence profileName = binding.TxtProfileNname.getText();
+                binding.txtHeaderName.setText(!profileName.toString().isEmpty() ? profileName : getString(R.string.user_profile));
+                binding.toolbar.setBackgroundColor(ContextCompat.getColor(this, R.color.toolbar_bg_color));
+                binding.txtHeaderName.setTextColor(ContextCompat.getColor(this, R.color.white));
             } else {
                 // expanded
                 binding.txtHeaderName.setText("");
-                binding.txtHeaderName.setTextColor(getResources().getColor(R.color.white));
-                binding.toolbar.setBackgroundColor(getResources().getColor(R.color.transparent));
+                binding.toolbar.setBackgroundColor(ContextCompat.getColor(this, R.color.transparent));
             }
         });
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                onBackPressed();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            getOnBackPressedDispatcher().onBackPressed();
+            return true;
         }
+        return super.onOptionsItemSelected(item);
     }
 
-    /*---------------- Profile Detail Api Call ---------------------*/
     protected void fetchProfileData() {
         binding.llUserProfileDetail.setVisibility(View.GONE);
         binding.linHeader.setVisibility(View.GONE);
         binding.progress.setVisibility(View.VISIBLE);
 
-        String profileId;
-        if (getIntent().getStringExtra("userId") != null) {
-            profileId = getIntent().getStringExtra("userId");
-        } else {
-            profileId = PrefsUtil.with(activity).readString("UserId");
+        String profileId = getIntent().getStringExtra("userId");
+        if (profileId == null) {
+            profileId = PrefsUtil.with(this).readString("UserId");
         }
 
         viewModel.getProfile(profileId).observe(this, profilePojo -> {
@@ -131,64 +117,67 @@ public class UserProfileActivity extends AppCompatActivity {
             binding.linHeader.setVisibility(View.VISIBLE);
             binding.llUserProfileDetail.setVisibility(View.VISIBLE);
             
-            if (profilePojo != null && profilePojo.isStatus()) {
+            if (profilePojo != null && profilePojo.isStatus() && profilePojo.getData() != null) {
                 updateUI(profilePojo.getData());
             } else {
-                Toast.makeText(activity, profilePojo != null ? "Errore caricamento profilo" : getString(R.string.server_error), Toast.LENGTH_SHORT).show();
+                String errorMsg = profilePojo != null ? "Error loading profile" : getString(R.string.server_error);
+                Toast.makeText(this, errorMsg, Toast.LENGTH_SHORT).show();
             }
         });
     }
     
     private void updateUI(ProfileItem profileData) {
+        if (profileData == null) return;
+        
         binding.TxtProfileNname.setText(profileData.getUserName());
-        binding.TxtProfileNumber.setText(profileData.getCountryCode() + " " + profileData.getContactMask());
+        binding.TxtProfileNumber.setText(String.format("%s %s", profileData.getCountryCode(), profileData.getContactMask()));
         binding.TxtProfileMail.setText(profileData.getEmailMask());
 
-        if (!profileData.getAddress().equals("")) {
-            PrefsUtil.with(activity).write("customer_address", profileData.getAddress());
-            binding.TxtProfileAddress.setText(profileData.getAddress());
-        } else {
-            binding.TxtProfileAddress.setText("N/A");
-        }
-        if (profileData.getProfileImg() != null && profileData.getProfileImg().length() > 0) {
-            Picasso.get().load(profileData.getProfileImg()).placeholder(R.drawable.loading).into(binding.imgProfile);
-        } else {
-            Picasso.get().load(R.mipmap.user).placeholder(R.drawable.loading).into(binding.imgProfile);
-        }
+        binding.TxtProfileAddress.setText(!profileData.getAddress().isEmpty() ? profileData.getAddress() : "N/A");
 
-        if (!profileData.getTaskAssigned().equals("")) {
-            binding.txtAssignedTasks.setText(profileData.getTaskAssigned());
-        } else {
-            binding.txtAssignedTasks.setText("N/A");
-        }
+        ImageRequest.Builder requestBuilder = new ImageRequest.Builder(this)
+                .placeholder(R.drawable.loading)
+                .error(R.mipmap.user)
+                .target(binding.imgProfile);
 
-        PrefsUtil.with(activity).write("fb_id", profileData.getFbId());
-        PrefsUtil.with(activity).write("g_id", profileData.getGmailId());
-        PrefsUtil.with(activity).write("ln_id", profileData.getLinkedinId());
+        if (profileData.getProfileImg() != null && !profileData.getProfileImg().isEmpty()) {
+            requestBuilder.data(profileData.getProfileImg());
+        } else {
+            requestBuilder.data(R.mipmap.user);
+        }
+        Coil.imageLoader(this).enqueue(requestBuilder.build());
+
+        binding.txtAssignedTasks.setText(!profileData.getTaskAssigned().isEmpty() ? profileData.getTaskAssigned() : "N/A");
+
+        PrefsUtil.with(this).write("fb_id", profileData.getFbId());
+        PrefsUtil.with(this).write("g_id", profileData.getGmailId());
+        PrefsUtil.with(this).write("ln_id", profileData.getLinkedinId());
     }
 
     @Override
     public void onStart() {
         super.onStart();
-        EventBus.getDefault().register(this);
+        if(!EventBus.getDefault().isRegistered(this)) {
+            EventBus.getDefault().register(this);
+        }
     }
 
     @Override
     public void onStop() {
-        EventBus.getDefault().unregister(this);
+        if(EventBus.getDefault().isRegistered(this)) {
+            EventBus.getDefault().unregister(this);
+        }
         super.onStop();
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMessageEvent(MessageEvent event) {
         try {
-            if (event.getType().equalsIgnoreCase("connection")) {
-                if (event.getMessage().equalsIgnoreCase("disconnected")) {
-                    getOfflineDetails();
-                }
+            if (Objects.equals(event.getType(), "connection") && Objects.equals(event.getMessage(), "disconnected")) {
+                getOfflineDetails();
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(TAG, "Error handling message event", e);
         }
     }
 
@@ -198,65 +187,36 @@ public class UserProfileActivity extends AppCompatActivity {
             binding.linHeader.setVisibility(View.VISIBLE);
             binding.llUserProfileDetail.setVisibility(View.VISIBLE);
             
-            File f = new File(getFilesDir().getPath() + "/" + "offline.json");
-            //check whether file exists
+            File f = new File(getFilesDir().getPath() + "/offline.json");
             if (!f.exists()) return;
             
-            FileInputStream is = new FileInputStream(f);
-            int size = is.available();
-            byte[] buffer = new byte[size];
-            is.read(buffer);
-            is.close();
-            String s = new String(buffer);
-            JSONObject object = new JSONObject(s);
-            JSONObject dataObj = object.getJSONObject("data");
-            JSONObject serviceList = dataObj.getJSONObject("profileData");
-            GsonBuilder gsonBuilder = new GsonBuilder();
-            gsonBuilder.setDateFormat("M/d/yy hh:mm a"); //Format of our JSON dates
-            Gson gson = gsonBuilder.create();
-            ProfileItem profileData = gson.fromJson(serviceList.toString(), ProfileItem.class);
-
-            // Usa lo stesso metodo di aggiornamento UI per consistenza
-            // Nota: L'oggetto ProfileItem offline potrebbe avere campi diversi (es. ContactNumber invece di ContactMask)
-            // Quindi replico la logica offline specifica qui sotto
-            
-            binding.TxtProfileNname.setText(profileData.getUserName());
-            binding.TxtProfileNumber.setText(String.format("%s %s", profileData.getCountryCode(), profileData.getContactNumber()));
-            binding.TxtProfileMail.setText(profileData.getEmail());
-            
-            if (!profileData.getAddress().equals("")) {
-                PrefsUtil.with(activity).write("customer_address", profileData.getAddress());
-                binding.TxtProfileAddress.setText(profileData.getAddress());
-            } else {
-                binding.TxtProfileAddress.setText("N/A");
+            try (FileInputStream is = new FileInputStream(f)) {
+                byte[] buffer = new byte[is.available()];
+                if (is.read(buffer) <= 0) {
+                    Log.w(TAG, "Offline file is empty.");
+                    return;
+                }
+                String s = new String(buffer);
+                JSONObject object = new JSONObject(s);
+                JSONObject dataObj = object.getJSONObject("data");
+                JSONObject serviceList = dataObj.getJSONObject("profileData");
+                Gson gson = new GsonBuilder().setDateFormat("M/d/yy hh:mm a").create();
+                ProfileItem offlineProfileData = gson.fromJson(serviceList.toString(), ProfileItem.class);
+                updateUI(offlineProfileData);
             }
-            if (profileData.getProfileImg() != null && profileData.getProfileImg().length() > 0) {
-                Picasso.get().load(profileData.getProfileImg()).placeholder(R.drawable.loading).into(binding.imgProfile);
-            } else {
-                Picasso.get().load(R.mipmap.user).placeholder(R.drawable.loading).into(binding.imgProfile);
-            }
-
-            if (!profileData.getTaskAssigned().equals("")) {
-                binding.txtAssignedTasks.setText(profileData.getTaskAssigned());
-            } else {
-                binding.txtAssignedTasks.setText("N/A");
-            }
-
-            PrefsUtil.with(activity).write("fb_id", profileData.getFbId());
-            PrefsUtil.with(activity).write("g_id", profileData.getGmailId());
-            PrefsUtil.with(activity).write("ln_id", profileData.getLinkedinId());
-
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (IOException | org.json.JSONException e) {
+            Log.e(TAG, "Error reading offline details", e);
         }
     }
 
     @Override
     protected void onDestroy() {
-        try {
-            connectionManager.unregisterReceiver();
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (connectionManager != null) {
+            try {
+                connectionManager.unregisterReceiver();
+            } catch (Exception e) {
+                Log.e(TAG, "Error unregistering connection manager", e);
+            }
         }
         super.onDestroy();
     }

@@ -16,7 +16,10 @@ import android.widget.TextView;
 import com.app.bemyrider.R;
 import com.app.bemyrider.model.ProviderServiceMediaDataItem;
 import com.app.bemyrider.model.partner.ImageItem;
-import com.squareup.picasso.Picasso;
+// Coil Imports
+import coil.Coil;
+import coil.request.ImageRequest;
+// import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,7 +68,15 @@ public class GridViewAdapter extends ArrayAdapter {
         String imgName = item.getImageName();
 
         //holder.txt_name.setText(imgName);
-        Picasso.get().load(uriPath).placeholder(R.drawable.loading).into(holder.image);
+        
+        // Coil Migration from Picasso
+        ImageRequest request = new ImageRequest.Builder(context)
+            .data(uriPath)
+            .placeholder(R.drawable.loading)
+            .target(holder.image)
+            .build();
+        Coil.imageLoader(context).enqueue(request);
+        
 //        holder.image.setScaleType(ImageView.ScaleType.CENTER_CROP);
 //        holder.image.setLayoutParams(new GridView.LayoutParams(20, 20));
 

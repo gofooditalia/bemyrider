@@ -39,7 +39,10 @@ import com.app.bemyrider.utils.Utils;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.Marker;
-import com.squareup.picasso.Picasso;
+// Coil Imports
+import coil.Coil;
+import coil.request.ImageRequest;
+// import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -297,11 +300,23 @@ public class ProviderListActivity extends AppCompatActivity implements OnMapRead
                 img_fav.setVisibility(View.VISIBLE);
                 if (status) {
                     Toast.makeText(context, ((CommonPojo) obj).getMessage(), Toast.LENGTH_SHORT).show();
+                    
+                    // Coil Migration from Picasso
                     if (img_fav.getTag().equals("1")) {
-                        Picasso.get().load(R.mipmap.ic_heart_fill).placeholder(R.drawable.loading).into(img_fav);
+                        ImageRequest request = new ImageRequest.Builder(context)
+                            .data(R.mipmap.ic_heart_fill)
+                            .placeholder(R.drawable.loading)
+                            .target(img_fav)
+                            .build();
+                        Coil.imageLoader(context).enqueue(request);
                         img_fav.setTag("0");
                     } else if (img_fav.getTag().equals("0")) {
-                        Picasso.get().load(R.mipmap.ic_heart_empty).placeholder(R.drawable.loading).into(img_fav);
+                        ImageRequest request = new ImageRequest.Builder(context)
+                            .data(R.mipmap.ic_heart_empty)
+                            .placeholder(R.drawable.loading)
+                            .target(img_fav)
+                            .build();
+                        Coil.imageLoader(context).enqueue(request);
                         img_fav.setTag("1");
                     }
                 } else {
@@ -360,23 +375,39 @@ public class ProviderListActivity extends AppCompatActivity implements OnMapRead
                 txt_rating.setText("0.0");
             }
             txt_serviceName.setText(String.format("%s %s", item.getProviderFirstName(), item.getProviderLastName()));
+            
+            // Coil Migration: Provider Image
+            ImageRequest.Builder profileBuilder = new ImageRequest.Builder(context)
+                .placeholder(R.drawable.loading)
+                .target(img_profile);
+                
             if (item.getProviderImage() != null && item.getProviderImage().length() > 0) {
-                Picasso.get().load(item.getProviderImage()).placeholder(R.drawable.loading).into(img_profile);
+                profileBuilder.data(item.getProviderImage());
             } else {
-                Picasso.get().load(R.mipmap.user).placeholder(R.drawable.loading).into(img_profile);
+                profileBuilder.data(R.mipmap.user);
             }
-            if (item.getFavoriteId() != 0 && item.getFavoriteId() > 0) {
-                if (item.getFavoriteId() != 0) {
-                    Picasso.get().load(R.mipmap.ic_heart_fill).placeholder(R.drawable.loading).into(img_fav);
-                    img_fav.setTag("1");
-                } else {
-                    Picasso.get().load(R.mipmap.ic_heart_empty).placeholder(R.drawable.loading).into(img_fav);
-                    img_fav.setTag("2");
-                }
+            Coil.imageLoader(context).enqueue(profileBuilder.build());
+
+            // Coil Migration: Heart Image
+            int heartResource;
+            String tag;
+
+            if (item.getFavoriteId() > 0) {
+                heartResource = R.mipmap.ic_heart_fill;
+                tag = "1";
             } else {
-                Picasso.get().load(R.mipmap.ic_heart_empty).placeholder(R.drawable.loading).into(img_fav);
-                img_fav.setTag("2");
+                heartResource = R.mipmap.ic_heart_empty;
+                tag = "2";
             }
+            
+            ImageRequest favRequest = new ImageRequest.Builder(context)
+                .data(heartResource)
+                .placeholder(R.drawable.loading)
+                .target(img_fav)
+                .build();
+            Coil.imageLoader(context).enqueue(favRequest);
+            img_fav.setTag(tag);
+
 
             myContentsView.setOnClickListener(v -> {
                 Intent i = new Intent(ProviderListActivity.this, ServiceDetailActivity.class);

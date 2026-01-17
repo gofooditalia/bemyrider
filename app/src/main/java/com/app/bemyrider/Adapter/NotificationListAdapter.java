@@ -18,7 +18,10 @@ import com.app.bemyrider.activity.user.MessageDetailActivity;
 import com.app.bemyrider.R;
 import com.app.bemyrider.model.NotificationListItem;
 import com.app.bemyrider.utils.PrefsUtil;
-import com.squareup.picasso.Picasso;
+// Coil Imports
+import coil.Coil;
+import coil.request.ImageRequest;
+// import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,11 +59,18 @@ public class NotificationListAdapter extends RecyclerView.Adapter<NotificationLi
                 holder.txtDateTime.setText("");
             }
 
-            if (item.getImage() != null && item.getImage().length() > 0) {
-                Picasso.get().load(item.getImage()).placeholder(R.drawable.loading).into(holder.imgProfile);
+            // Coil Migration from Picasso
+            String imageUrl = item.getImage();
+            ImageRequest.Builder profileBuilder = new ImageRequest.Builder(act)
+                    .placeholder(R.drawable.loading)
+                    .target(holder.imgProfile);
+
+            if (imageUrl != null && imageUrl.length() > 0) {
+                profileBuilder.data(imageUrl);
             } else {
-                Picasso.get().load(R.mipmap.user).placeholder(R.drawable.loading).into(holder.imgProfile);
+                profileBuilder.data(R.mipmap.user);
             }
+            Coil.imageLoader(act).enqueue(profileBuilder.build());
 
             /*---------- Notification item click redirection ------------*/
             holder.itemView.getRootView().setOnClickListener(new View.OnClickListener() {

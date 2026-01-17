@@ -12,7 +12,10 @@ import android.widget.RelativeLayout;
 
 import com.app.bemyrider.R;
 import com.app.bemyrider.model.ProviderServiceMediaDataItem;
-import com.squareup.picasso.Picasso;
+// Coil Imports
+import coil.Coil;
+import coil.request.ImageRequest;
+// import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
@@ -57,8 +60,14 @@ public class GridImagesAdapter extends BaseAdapter {
         ProgressBar pgDelete = convertView.findViewById(R.id.pgDelete);
         RelativeLayout relative_imageremove = (RelativeLayout) convertView.findViewById(R.id.relative_imageremove);
 
+        // Coil Migration from Picasso
         try {
-            Picasso.get().load(arrayList.get(position).getMediaUrl()).placeholder(R.drawable.loading).into(Img_photos);
+            ImageRequest request = new ImageRequest.Builder(context)
+                .data(arrayList.get(position).getMediaUrl())
+                .placeholder(R.drawable.loading)
+                .target(Img_photos)
+                .build();
+            Coil.imageLoader(context).enqueue(request);
 //            Img_photos.setScaleType(ImageView.ScaleType.CENTER_CROP);
 //            Img_photos.setLayoutParams(new GridView.LayoutParams(20, 20));
         } catch (IllegalArgumentException e) {
