@@ -1,6 +1,5 @@
 package com.app.bemyrider.fragment.partner;
 
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -44,7 +43,7 @@ public class Fragment_Previous_ServiceRequest extends Fragment {
     private LinearLayoutManager layoutManager;
     private boolean isLoading = false;
     private String keyWord = "";
-    private AsyncTask previousServiceAsync;
+    private WebServiceCall previousServiceAsync;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -161,8 +160,8 @@ public class Fragment_Previous_ServiceRequest extends Fragment {
             }
 
             @Override
-            public void onAsync(AsyncTask asyncTask) {
-                previousServiceAsync = asyncTask;
+            public void onAsync(Object asyncTask) {
+                previousServiceAsync = null;
             }
 
             @Override
@@ -187,13 +186,7 @@ public class Fragment_Previous_ServiceRequest extends Fragment {
 
     @Override
     public void onDestroy() {
-        try {
-            if (previousServiceAsync != null) {
-                previousServiceAsync.cancel(true);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        Utils.cancelAsyncTask(previousServiceAsync);
         super.onDestroy();
     }
 }

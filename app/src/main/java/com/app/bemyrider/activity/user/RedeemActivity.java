@@ -1,9 +1,7 @@
 package com.app.bemyrider.activity.user;
 
 import android.content.Context;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.text.Html;
 import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.Toast;
@@ -19,13 +17,14 @@ import com.app.bemyrider.model.CommonPojo;
 import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.LocaleManager;
 import com.app.bemyrider.utils.PrefsUtil;
+import com.app.bemyrider.utils.Utils;
 
 import java.util.LinkedHashMap;
 
 public class RedeemActivity extends AppCompatActivity {
 
     private Button Btn_submit;
-    private AsyncTask redeemRequestAsync;
+    private WebServiceCall redeemRequestAsync;
     private Context context;
     private ConnectionManager connectionManager;
 
@@ -37,20 +36,19 @@ public class RedeemActivity extends AppCompatActivity {
         setTitle(HtmlCompat.fromHtml("<font color=#FFFFFF>" + getString(R.string.redeem_request),HtmlCompat.FROM_HTML_MODE_LEGACY));
 
         ActionBar actionBar = getSupportActionBar();
-        actionBar.setHomeButtonEnabled(true);
-        actionBar.setDisplayHomeAsUpEnabled(true);
+        if (actionBar != null) {
+            actionBar.setHomeButtonEnabled(true);
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
 
         initViews();
 
         Btn_submit.setOnClickListener(view -> serviceCallRedeem());
-
-
     }
 
     private void initViews() {
         context = RedeemActivity.this;
 
-        /*Init Internet Connection Class For No Internet Banner*/
         connectionManager = new ConnectionManager(context);
         connectionManager.registerInternetCheckReceiver();
         connectionManager.checkConnection(context);
@@ -59,9 +57,7 @@ public class RedeemActivity extends AppCompatActivity {
     }
 
     private void serviceCallRedeem() {
-
         LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-
         textParams.put("user_id", PrefsUtil.with(RedeemActivity.this).readString("UserId"));
 
         new WebServiceCall(RedeemActivity.this, WebServiceUrl.URL_REDDEMRE_REQUEST,
@@ -74,38 +70,24 @@ public class RedeemActivity extends AppCompatActivity {
                     Toast.makeText(RedeemActivity.this, (String) obj, Toast.LENGTH_SHORT).show();
                 }
             }
-
-            @Override
-            public void onAsync(AsyncTask asyncTask) {
-                redeemRequestAsync = asyncTask;
-            }
-
-            @Override
-            public void onCancelled() {
-                redeemRequestAsync = null;
-            }
+            @Override public void onAsync(Object obj) { redeemRequestAsync = null; }
+            @Override public void onCancelled() { redeemRequestAsync = null; }
         });
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        if (id == android.R.id.home) {
-            finish();
+        if (item.getItemId() == android.R.id.home) {
+            onBackPressed();
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
     @Override
     protected void onDestroy() {
-        try {
-            connectionManager.unregisterReceiver();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        if (redeemRequestAsync != null) {
-            redeemRequestAsync.cancel(true);
-        }
+        try { connectionManager.unregisterReceiver(); } catch (Exception e) { e.printStackTrace(); }
+        Utils.cancelAsyncTask(redeemRequestAsync);
         super.onDestroy();
     }
 

@@ -6,9 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.text.Html;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
@@ -77,7 +75,7 @@ public class MessageDetailActivity extends AppCompatActivity {
 
     private LinearLayoutManager layoutManager;
     private boolean attachedFile = false;
-    private AsyncTask sendMessageAsync, messageDetailAsync;
+    private WebServiceCall sendMessageAsync, messageDetailAsync;
 
     /*pagination vars start*/
     private boolean loading = true;
@@ -89,20 +87,15 @@ public class MessageDetailActivity extends AppCompatActivity {
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_message_detail, null);
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_message_detail);
         mContext = MessageDetailActivity.this;
         mActivity = MessageDetailActivity.this;
 
         permissionUtils = new PermissionUtils(mActivity, mContext, new PermissionUtils.OnPermissionGrantedListener() {
             @Override
-            public void onCameraPermissionGranted() {
-
-            }
-
+            public void onCameraPermissionGranted() {}
             @Override
-            public void onStoragePermissionGranted() {
-                openAndPickFile();
-            }
+            public void onStoragePermissionGranted() { openAndPickFile(); }
         });
 
         initViews();
@@ -124,17 +117,13 @@ public class MessageDetailActivity extends AppCompatActivity {
                                 page++;
                                 serviceCallGetMessageDetail(false);
                             }
-                            //Do pagination.. i.e. fetch new data
                         }
                     }
                 }
             }
         });
 
-        binding.layoutBottompanel.imgAttachFiles.setOnClickListener(view -> {
-            permissionUtils.checkStoragePermission();
-//            checkPermission();
-        });
+        binding.layoutBottompanel.imgAttachFiles.setOnClickListener(view -> permissionUtils.checkStoragePermission());
 
         binding.layoutBottompanel.ImgSend.setOnClickListener(v -> {
             if (!binding.layoutBottompanel.edtMessage.getText().toString().trim().equals("")) {
@@ -146,15 +135,13 @@ public class MessageDetailActivity extends AppCompatActivity {
     }
 
     private void initViews() {
-        setTitle(HtmlCompat.fromHtml("<font color=#FFFFFF>",HtmlCompat.FROM_HTML_MODE_LEGACY));
-
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
+            actionBar.setTitle(HtmlCompat.fromHtml("<font color=#FFFFFF>",HtmlCompat.FROM_HTML_MODE_LEGACY));
             actionBar.setHomeButtonEnabled(true);
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
-        /*Init Internet Connection Class For No Internet Banner*/
         connectionManager = new ConnectionManager(mContext);
         connectionManager.registerInternetCheckReceiver();
         connectionManager.checkConnection(mContext);
@@ -167,48 +154,32 @@ public class MessageDetailActivity extends AppCompatActivity {
         galleryActivityResult();
     }
 
-    private void permissionMessageDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
-        builder.setPositiveButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dialogInterface.dismiss();
-            }
-        }).setMessage(getString(R.string.cancelling_granted)).show();
-    }
-
     private void galleryActivityResult() {
         actResGallery = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
-                    @Override
-                    public void onActivityResult(ActivityResult result) {
-                        try {
-                            Intent data = result.getData();
-                            if (result.getResultCode() == RESULT_OK) {
-                                if (data != null) {
-                                    FileUtilPOJO fileUtils = FileUtils.getPath(MessageDetailActivity.this, data.getData());
-                                    if (fileUtils.isRequiredDownload()) {
-                                        String[] strArr = fileUtils.getPath().split(",");
-                                        new DownloadAsync(MessageDetailActivity.this, Uri.parse(strArr[2]), strArr[0], strArr[1], downloadResult -> {
-                                            realPath = downloadResult;
-                                            fileName = realPath.substring(realPath.lastIndexOf("/") + 1);
-                                            attachedFile = true;
-                                            binding.layoutBottompanel.edtMessage.setText(fileName);
-                                            Log.e("PAAAAAAAAAAAAAAAAAAATH", realPath);
-                                        }).execute();
-
-                                    } else {
-                                        realPath = fileUtils.getPath();
-                                        fileName = realPath.substring(realPath.lastIndexOf("/") + 1);
-                                        attachedFile = true;
-                                        binding.layoutBottompanel.edtMessage.setText(fileName);
-                                        Log.e("PAAAAAAAAAAAAAAAAAAATH", realPath);
-                                    }
-                                }
+                new ActivityResultContracts.StartActivityForResult(), result -> {
+                    try {
+                        Intent data = result.getData();
+                        if (result.getResultCode() == RESULT_OK && data != null) {
+                            FileUtilPOJO fileUtils = FileUtils.getPath(MessageDetailActivity.this, data.getData());
+                            if (fileUtils.isRequiredDownload()) {
+                                String[] strArr = fileUtils.getPath().split(",");
+                                new DownloadAsync(MessageDetailActivity.this, Uri.parse(strArr[2]), strArr[0], strArr[1], downloadResult -> {
+                                    realPath = downloadResult;
+                                    fileName = realPath.substring(realPath.lastIndexOf("/") + 1);
+                                    attachedFile = true;
+                                    binding.layoutBottompanel.edtMessage.setText(fileName);
+                                    Log.e("PAAAAAAAAAAAAAAAAAAATH", realPath);
+                                }).execute();
+                            } else {
+                                realPath = fileUtils.getPath();
+                                fileName = realPath.substring(realPath.lastIndexOf("/") + 1);
+                                attachedFile = true;
+                                binding.layoutBottompanel.edtMessage.setText(fileName);
+                                Log.e("PAAAAAAAAAAAAAAAAAAATH", realPath);
                             }
-                        } catch (Exception e) {
-                            e.printStackTrace();
                         }
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
                 });
     }
@@ -220,7 +191,6 @@ public class MessageDetailActivity extends AppCompatActivity {
         actResGallery.launch(Intent.createChooser(intent, "select multiple images"));
     }
 
-    /*-------------- Send Message Api Call ----------------*/
     private void serviceCallSendMessage() {
         binding.layoutBottompanel.ImgSend.setVisibility(View.GONE);
         binding.layoutBottompanel.pgSend.setVisibility(View.VISIBLE);
@@ -254,24 +224,14 @@ public class MessageDetailActivity extends AppCompatActivity {
                             messageDetailItemAdapter.notifyDataSetChanged();
                             binding.recyclerMessageDetails.scrollToPosition(0);
                         } else {
-                            Toast.makeText(MessageDetailActivity.this, (String) obj,
-                                    Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MessageDetailActivity.this, (String) obj, Toast.LENGTH_SHORT).show();
                         }
                     }
-
-                    @Override
-                    public void onAsync(AsyncTask asyncTask) {
-                        sendMessageAsync = asyncTask;
-                    }
-
-                    @Override
-                    public void onCancelled() {
-                        sendMessageAsync = null;
-                    }
+                    @Override public void onAsync(Object obj) { sendMessageAsync = null; }
+                    @Override public void onCancelled() { sendMessageAsync = null; }
                 });
     }
 
-    /*--------------- Get All Message Api Call --------------------*/
     private void serviceCallGetMessageDetail(boolean clearFlag) {
         if (clearFlag) {
             page = 1;
@@ -313,9 +273,10 @@ public class MessageDetailActivity extends AppCompatActivity {
 
                             serviceId = messageDetailPojo.getData().getServiceId();
 
-                            setTitle(HtmlCompat.fromHtml("<font color=#FFFFFF>" + messageDetailPojo.getData().getServiceName(),HtmlCompat.FROM_HTML_MODE_LEGACY));
+                            if (getSupportActionBar() != null) {
+                                getSupportActionBar().setTitle(HtmlCompat.fromHtml("<font color=#FFFFFF>" + messageDetailPojo.getData().getServiceName(),HtmlCompat.FROM_HTML_MODE_LEGACY));
+                            }
 
-                            /*If user deleted or service completed then hide send mess layout*/
                             if (messageDetailPojo.getData().getIsActive().equalsIgnoreCase("du") ||
                                     messageDetailPojo.getData().getSerActive().equalsIgnoreCase("n")) {
                                 binding.layoutBottompanel.llMainBottomPanel.setVisibility(View.GONE);
@@ -348,14 +309,8 @@ public class MessageDetailActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onAsync(AsyncTask asyncTask) {
-                        messageDetailAsync = asyncTask;
-                    }
-
-                    @Override
-                    public void onCancelled() {
-                        messageDetailAsync = null;
-                    }
+                    public void onAsync(Object obj) { messageDetailAsync = null; }
+                    @Override public void onCancelled() { messageDetailAsync = null; }
                 });
 
     }
@@ -364,28 +319,17 @@ public class MessageDetailActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
             onBackPressed();
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        EventBus.getDefault().register(this);
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        EventBus.getDefault().unregister(this);
-    }
+    @Override public void onStart() { super.onStart(); if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this); }
+    @Override public void onStop() { super.onStop(); EventBus.getDefault().unregister(this); }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMessageEvent(EventBusMessage event) {
         try {
-            //{customer_id=2, service_id=19, notification_type=m, user_id=2, title=Robert Brown sent you message on Room Lighting service, user_type=c, service_request_id=233, provider_id=1}
-            //JSONObject object = new JSONObject(event.getData());
-
             if (event.getType().equalsIgnoreCase("msg")) {
                 Map<String, String> remoteMessage = event.getData();
                 if (PrefsUtil.with(MessageDetailActivity.this).readString("UserType").equalsIgnoreCase("c")) {
@@ -402,39 +346,25 @@ public class MessageDetailActivity extends AppCompatActivity {
                     }
                 }
             }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == PermissionUtils.REQ_CODE_STORAGE) {
-            if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                ToastMaster.showShort(mContext, R.string.err_permission_storage);
-            } else {
-                permissionUtils.checkStoragePermission();
-            }
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) permissionUtils.checkStoragePermission();
+            else ToastMaster.showShort(mContext, R.string.err_permission_storage);
         }
     }
 
-
     @Override
     protected void onDestroy() {
-        try {
-            connectionManager.unregisterReceiver();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        try { connectionManager.unregisterReceiver(); } catch (Exception e) { e.printStackTrace(); }
         Utils.cancelAsyncTask(sendMessageAsync);
         Utils.cancelAsyncTask(messageDetailAsync);
         super.onDestroy();
     }
 
-    @Override
-    protected void attachBaseContext(Context newBase) {
-        super.attachBaseContext(LocaleManager.onAttach(newBase));
-    }
+    @Override protected void attachBaseContext(Context newBase) { super.attachBaseContext(LocaleManager.onAttach(newBase)); }
 }

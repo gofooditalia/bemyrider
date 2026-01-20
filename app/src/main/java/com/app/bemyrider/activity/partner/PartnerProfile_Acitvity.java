@@ -2,7 +2,6 @@ package com.app.bemyrider.activity.partner;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
@@ -42,7 +41,7 @@ public class PartnerProfile_Acitvity extends AppCompatActivity {
             txt_rating, txt_tota_review, txt_viewall, txt_about_user, txt_available_days, txt_address_pro, txt_worked_on;
     private final Context mContext = this;
     private SwitchCompat switch_available_now;
-    private WebServiceCall availableStatusAsync, getProfileAsync; // MODIFICA QUI: Da AsyncTask a WebServiceCall
+    private WebServiceCall availableStatusAsync, getProfileAsync;
     private ConnectionManager connectionManager;
 
     @Override
@@ -86,7 +85,7 @@ public class PartnerProfile_Acitvity extends AppCompatActivity {
                     switch_available_now.setChecked("y".equals(switchstatus));
                 }
             }
-            @Override public void onAsync(AsyncTask asyncTask) { availableStatusAsync = null; }
+            @Override public void onAsync(Object asyncTask) { availableStatusAsync = null; }
             @Override public void onCancelled() { availableStatusAsync = null; }
         });
     }
@@ -110,7 +109,7 @@ public class PartnerProfile_Acitvity extends AppCompatActivity {
                 }
                 updateUI(response_profile.getData());
             }
-            @Override public void onAsync(AsyncTask asyncTask) { getProfileAsync = null; }
+            @Override public void onAsync(Object asyncTask) { getProfileAsync = null; }
             @Override public void onCancelled() { getProfileAsync = null; }
         });
     }

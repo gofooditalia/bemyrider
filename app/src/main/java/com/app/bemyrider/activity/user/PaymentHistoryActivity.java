@@ -58,7 +58,7 @@ public class PaymentHistoryActivity extends AppCompatActivity {
     private ActivityPaymentHistoryBinding binding;
     private PaymentHistoryAdapter paymentHistoryAdapter;
     private ArrayList<TransectionListItem> paymentHistoryPojoItems;
-    private AsyncTask paymentHistoryAsync;
+    private WebServiceCall paymentHistoryAsync;
     private Context context;
     private ConnectionManager connectionManager;
     private LinearLayoutManager linearLayoutManager;
@@ -194,8 +194,8 @@ public class PaymentHistoryActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onAsync(AsyncTask asyncTask) {
-                paymentHistoryAsync = asyncTask;
+            public void onAsync(Object asyncTask) {
+                paymentHistoryAsync = (WebServiceCall) asyncTask;
             }
 
             @Override

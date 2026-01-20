@@ -4,7 +4,6 @@ import static android.content.Context.MODE_PRIVATE;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -40,7 +39,7 @@ public class ProviderMessageFragment extends Fragment {
     private MessageListAdapter messageListAdapter;
     private LinearLayoutManager layoutManager;
     private SharedPreferences preferences;
-    private AsyncTask messageListAsync;
+    private WebServiceCall messageListAsync;
     private Context context;
     private AppCompatActivity activity;
     private ConnectionManager connectionManager;
@@ -161,8 +160,8 @@ public class ProviderMessageFragment extends Fragment {
             }
 
             @Override
-            public void onAsync(AsyncTask asyncTask) {
-                messageListAsync = asyncTask;
+            public void onAsync(Object asyncTask) {
+                messageListAsync = null;
             }
 
             @Override

@@ -11,10 +11,8 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Editable;
-import android.text.Html;
 import android.text.InputFilter;
 import android.text.TextWatcher;
 import android.view.MenuItem;
@@ -23,8 +21,6 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -74,9 +70,8 @@ public class FeedbackActivity extends AppCompatActivity {
     private ConnectionManager connectionManager;
 
     private ActivityFeedbackBinding binding;
-    private Uri mCropImageUri, resultUri;
-    private AsyncTask sendFeedbackAsync;
-    private String selectedImagePath = "", path = "";
+    private WebServiceCall sendFeedbackAsync;
+    private String selectedImagePath = "";
 
     private ActivityResultLauncher<Uri> actResCamera;
     private ActivityResultLauncher<Intent> actResGallery;
@@ -85,12 +80,12 @@ public class FeedbackActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = DataBindingUtil.setContentView(FeedbackActivity.this, R.layout.activity_feedback, null);
+        binding = DataBindingUtil.setContentView(FeedbackActivity.this, R.layout.activity_feedback);
 
         initViews();
 
         binding.edtFnameFeedback.setFilters(new InputFilter[]{EMOJI_FILTER});
-        binding.edtFnameFeedback.setFilters(new InputFilter[]{EMOJI_FILTER});
+        binding.edtLnameFeedback.setFilters(new InputFilter[]{EMOJI_FILTER});
         binding.edtFnameFeedback.setText(PrefsUtil.with(FeedbackActivity.this).readString("FirstName"));
         binding.edtLnameFeedback.setText(PrefsUtil.with(FeedbackActivity.this).readString("LastName"));
         binding.edtEmailFeedback.setText(PrefsUtil.with(FeedbackActivity.this).readString("eMail"));
@@ -117,80 +112,33 @@ public class FeedbackActivity extends AppCompatActivity {
             }
         });
 
-        binding.edtUploadFeedback.setOnClickListener(view -> {
-            openCameraGalleryDialog();
-        });
+        binding.edtUploadFeedback.setOnClickListener(view -> openCameraGalleryDialog());
 
         binding.edtFnameFeedback.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                binding.tilFnameFeedback.setError("");
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-
-            }
+            @Override public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+            @Override public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) { binding.tilFnameFeedback.setError(""); }
+            @Override public void afterTextChanged(Editable editable) {}
         });
 
         binding.edtLnameFeedback.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                binding.tilLnameFeedback.setError("");
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-
-            }
+            @Override public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+            @Override public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) { binding.tilLnameFeedback.setError(""); }
+            @Override public void afterTextChanged(Editable editable) {}
         });
 
         binding.edtEmailFeedback.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                binding.tilEmailFeedback.setError("");
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-
-            }
+            @Override public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+            @Override public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) { binding.tilEmailFeedback.setError(""); }
+            @Override public void afterTextChanged(Editable editable) {}
         });
 
         binding.edtFeedback.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                binding.tilFeedback.setError("");
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-
-            }
+            @Override public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+            @Override public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) { binding.tilFeedback.setError(""); }
+            @Override public void afterTextChanged(Editable editable) {}
         });
     }
 
-    /*--------------------- Send Feed Back Api Call -----------------------*/
     private void serviceCallSendFeedback() {
         binding.btnSubmitFeedback.setClickable(false);
         binding.pgSubmit.setVisibility(View.VISIBLE);
@@ -203,7 +151,9 @@ public class FeedbackActivity extends AppCompatActivity {
         textParams.put("message", Utils.encodeEmoji(binding.edtFeedback.getText().toString().trim()));
         textParams.put("firstName", binding.edtFnameFeedback.getText().toString().trim());
         textParams.put("lastName", binding.edtLnameFeedback.getText().toString().trim());
-        fileParams.put("user_img", new File(selectedImagePath));
+        if (!selectedImagePath.isEmpty()) {
+            fileParams.put("user_img", new File(selectedImagePath));
+        }
 
         new WebServiceCall(FeedbackActivity.this, WebServiceUrl.URL_SEND_FEEDBACK, textParams,
                 fileParams, CommonPojo.class, false, new WebServiceCall.OnResultListener() {
@@ -211,8 +161,8 @@ public class FeedbackActivity extends AppCompatActivity {
             public void onResult(boolean status, Object obj) {
                 binding.pgSubmit.setVisibility(View.GONE);
                 binding.btnSubmitFeedback.setClickable(true);
-                Toast.makeText(FeedbackActivity.this, ((CommonPojo) obj).getMessage(), Toast.LENGTH_SHORT).show();
                 if (status) {
+                    Toast.makeText(FeedbackActivity.this, ((CommonPojo) obj).getMessage(), Toast.LENGTH_SHORT).show();
                     if (PrefsUtil.with(FeedbackActivity.this).readString("UserType").equals("p")) {
                         Intent intent = new Intent(FeedbackActivity.this, ProviderHomeActivity.class);
                         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -222,14 +172,15 @@ public class FeedbackActivity extends AppCompatActivity {
                         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                         startActivity(intent);
                     }
+                    finish();
                 } else {
                     Toast.makeText(FeedbackActivity.this, (String) obj, Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
-            public void onAsync(AsyncTask asyncTask) {
-                sendFeedbackAsync = asyncTask;
+            public void onAsync(Object obj) {
+                sendFeedbackAsync = null;
             }
 
             @Override
@@ -268,72 +219,45 @@ public class FeedbackActivity extends AppCompatActivity {
     }
 
     private void initViews() {
-        mContext = FeedbackActivity.this;
-        mActivity = FeedbackActivity.this;
+        mContext = this;
+        mActivity = this;
 
-        setTitle(HtmlCompat.fromHtml("<font color=#FFFFFF>" + getString(R.string.feedback), HtmlCompat.FROM_HTML_MODE_LEGACY));
-
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setHomeButtonEnabled(true);
-            actionBar.setDisplayHomeAsUpEnabled(true);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle(HtmlCompat.fromHtml("<font color=#FFFFFF>" + getString(R.string.feedback), HtmlCompat.FROM_HTML_MODE_LEGACY));
+            getSupportActionBar().setHomeButtonEnabled(true);
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
-        /*Init Internet Connection Class For No Internet Banner*/
         connectionManager = new ConnectionManager(mContext);
         connectionManager.registerInternetCheckReceiver();
         connectionManager.checkConnection(mContext);
 
     }
 
-    private void permissionMessageDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
-        builder.setPositiveButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dialogInterface.dismiss();
-            }
-        }).setMessage(getString(R.string.cancelling_granted)).show();
-    }
-
     private void initActivityResult() {
-        actResCamera = registerForActivityResult(new ActivityResultContracts.TakePicture(), new ActivityResultCallback<Boolean>() {
-            @Override
-            public void onActivityResult(Boolean result) {
-                if (result) {
-                    if (selectedImagePath != "") {
-                        Uri uri = Uri.parse(selectedImagePath);
-                        openCropActivity(uri, uri);
-                    }
-                }
+        actResCamera = registerForActivityResult(new ActivityResultContracts.TakePicture(), result -> {
+            if (result && !selectedImagePath.isEmpty()) {
+                Uri uri = Uri.parse(selectedImagePath);
+                openCropActivity(uri, uri);
             }
         });
 
-        actResGallery = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
-            @Override
-            public void onActivityResult(ActivityResult result) {
-                Intent data = result.getData();
+        actResGallery = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+            Intent data = result.getData();
+            if (result.getResultCode() == RESULT_OK && data != null) {
                 try {
                     Uri sourceUri = data.getData();
                     File file = Utils.createTempFileInAppPackage(mContext);
-                    Uri destinationUri = Uri.fromFile(file);
-                    openCropActivity(sourceUri, destinationUri);
+                    openCropActivity(sourceUri, Uri.fromFile(file));
                 } catch (Exception e) {
                     Log.e(TAG, "actResGallery:" + e.getMessage());
                 }
             }
         });
 
-        actResCropper = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
-            @Override
-            public void onActivityResult(ActivityResult result) {
-                Intent data = result.getData();
-                try {
-                    Uri uri = UCrop.getOutput(data);
-                    showImage(uri);
-                } catch (Exception e) {
-                    Log.e(TAG, "onActivityResult: " + e.getMessage());
-                }
+        actResCropper = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+            if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                showImage(UCrop.getOutput(result.getData()));
             }
         });
     }
@@ -341,27 +265,16 @@ public class FeedbackActivity extends AppCompatActivity {
     private void openCameraGalleryDialog() {
         final Dialog d = new Dialog(mActivity);
         d.setContentView(getLayoutInflater().inflate(R.layout.dialog_camera_gallery, null));
-
-        WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
         Window window = d.getWindow();
-        lp.copyFrom(window.getAttributes());
-        // This makes the dialog take up the full width
-        lp.width = WindowManager.LayoutParams.MATCH_PARENT;
-        lp.height = WindowManager.LayoutParams.WRAP_CONTENT;
-        window.setAttributes(lp);
-
-        LinearLayoutCompat linCamera = d.findViewById(R.id.linCamera);
-        LinearLayoutCompat linGallery = d.findViewById(R.id.linGallery);
-
-        linCamera.setOnClickListener(view -> {
-            d.dismiss();
-            permissionUtils.checkCameraPermission();
-        });
-
-        linGallery.setOnClickListener(view -> {
-            d.dismiss();
-            permissionUtils.checkStoragePermission();
-        });
+        if (window != null) {
+            WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
+            lp.copyFrom(window.getAttributes());
+            lp.width = WindowManager.LayoutParams.MATCH_PARENT;
+            lp.height = WindowManager.LayoutParams.WRAP_CONTENT;
+            window.setAttributes(lp);
+        }
+        d.findViewById(R.id.linCamera).setOnClickListener(view -> { d.dismiss(); permissionUtils.checkCameraPermission(); });
+        d.findViewById(R.id.linGallery).setOnClickListener(view -> { d.dismiss(); permissionUtils.checkStoragePermission(); });
         d.show();
     }
 
@@ -371,44 +284,19 @@ public class FeedbackActivity extends AppCompatActivity {
         options.setToolbarTitle("Edit Photo");
         options.setToolbarColor(ContextCompat.getColor(mContext, R.color.white));
         options.setToolbarWidgetColor(ContextCompat.getColor(mContext, R.color.button));
-        Intent myIntent = UCrop.of(sourceUri, destinationUri)
-                .withOptions(options)
-                .withAspectRatio(5f, 5f)
-                .getIntent(mContext);
-        actResCropper.launch(myIntent);
+        actResCropper.launch(UCrop.of(sourceUri, destinationUri).withOptions(options).withAspectRatio(5f, 5f).getIntent(mContext));
     }
 
     private void showImage(Uri imageUri) {
         try {
-            File file;
             FileUtilPOJO fileUtils = FileUtils.getPath(mContext, imageUri);
-            file = new File(fileUtils.getPath());
-            InputStream inputStream = new FileInputStream(file);
-            Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
-            //binding.imgUserprofile.setImageBitmap(bitmap);
-            selectedImagePath = file.getAbsolutePath();
-            binding.edtUploadFeedback.setText(selectedImagePath);
-            LogMaster.e("ZZZ", selectedImagePath);
+            if (fileUtils != null) {
+                selectedImagePath = fileUtils.getPath();
+                binding.edtUploadFeedback.setText(selectedImagePath);
+                LogMaster.e("ZZZ", selectedImagePath);
+            }
         } catch (Exception e) {
             Log.e(TAG, "showImage: " + e.getMessage());
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == PermissionUtils.REQ_CODE_CAMERA) {
-            if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                ToastMaster.showShort(mContext, R.string.err_permission_camera);
-            } else {
-                permissionUtils.checkCameraPermission();
-            }
-        } else if (requestCode == PermissionUtils.REQ_CODE_STORAGE) {
-            if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                ToastMaster.showShort(mContext, R.string.err_permission_storage);
-            } else {
-                permissionUtils.checkStoragePermission();
-            }
         }
     }
 
@@ -416,26 +304,18 @@ public class FeedbackActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
             onBackPressed();
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
     @Override
     protected void onDestroy() {
-        try {
-            connectionManager.unregisterReceiver();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        try { connectionManager.unregisterReceiver(); } catch (Exception e) { e.printStackTrace(); }
         Utils.cancelAsyncTask(sendFeedbackAsync);
-
-        /** clear cache dir of picture which is taken photo from camera */
         Utils.clearCameraCache(mContext);
         super.onDestroy();
     }
 
-    @Override
-    protected void attachBaseContext(Context newBase) {
-        super.attachBaseContext(LocaleManager.onAttach(newBase));
-    }
+    @Override protected void attachBaseContext(Context newBase) { super.attachBaseContext(LocaleManager.onAttach(newBase)); }
 }

@@ -1,9 +1,7 @@
 package com.app.bemyrider.activity.user;
 
 import android.content.Context;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.text.Html;
 import android.util.TypedValue;
 import android.view.MenuItem;
 import android.view.View;
@@ -27,6 +25,7 @@ import com.app.bemyrider.model.CommonPojo;
 import com.app.bemyrider.model.NotificationListPojo;
 import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.LocaleManager;
+import com.app.bemyrider.utils.Log;
 import com.app.bemyrider.utils.PrefsUtil;
 import com.app.bemyrider.utils.Utils;
 
@@ -44,7 +43,7 @@ public class NotificationActivity extends AppCompatActivity {
     private ArrayList<String> checked;
     private ArrayList<String> all;
     private int final_size;
-    private AsyncTask updateSettingAsync, getNotificationAsync;
+    private WebServiceCall updateSettingAsync, getNotificationAsync;
     private Context context;
     private ConnectionManager connectionManager;
 
@@ -71,7 +70,6 @@ public class NotificationActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
-        /*Init Internet Connection Class For No Internet Banner*/
         connectionManager = new ConnectionManager(context);
         connectionManager.registerInternetCheckReceiver();
         connectionManager.checkConnection(context);
@@ -81,7 +79,6 @@ public class NotificationActivity extends AppCompatActivity {
 
     }
 
-    /*----------------- Update Setting Api Call ---------------------*/
     private void serviceCallUpdateSetting() {
         binding.btnSaveChange.setClickable(false);
         binding.pgSaveChanges.setVisibility(View.VISIBLE);
@@ -121,8 +118,8 @@ public class NotificationActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onAsync(AsyncTask asyncTask) {
-                        updateSettingAsync = asyncTask;
+                    public void onAsync(Object obj) {
+                        updateSettingAsync = null;
                     }
 
                     @Override
@@ -132,7 +129,6 @@ public class NotificationActivity extends AppCompatActivity {
                 });
     }
 
-    /*-------------------- Get Notification List Api Call ------------------------*/
     private void serviceCallGetNotification() {
         binding.llMain.setVisibility(View.GONE);
         binding.progress.setVisibility(View.VISIBLE);
@@ -187,7 +183,6 @@ public class NotificationActivity extends AppCompatActivity {
                         });
 
                         if (notificationListPojo.getData().get(i).getChecked().equals("true")) {
-//                        if (notificationListPojo.getData().get(i).getChecked().equals("false")) {
                             aSwitch.setChecked(true);
                         } else {
                             aSwitch.setChecked(false);
@@ -215,8 +210,8 @@ public class NotificationActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onAsync(AsyncTask asyncTask) {
-                getNotificationAsync = asyncTask;
+            public void onAsync(Object obj) {
+                getNotificationAsync = null;
             }
 
             @Override
@@ -230,6 +225,7 @@ public class NotificationActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
             onBackPressed();
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }

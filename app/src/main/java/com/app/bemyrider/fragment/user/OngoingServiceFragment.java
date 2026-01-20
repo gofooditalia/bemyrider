@@ -1,7 +1,6 @@
 package com.app.bemyrider.fragment.user;
 
 import android.content.Context;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -39,7 +38,7 @@ public class OngoingServiceFragment extends Fragment {
     private ArrayList<CustomerHistoryPojoItem> historyPojoItems;
     private LinearLayoutManager layoutManager;
     private boolean isLoading = false;
-    private AsyncTask ongoingServiceAsync;
+    private WebServiceCall ongoingServiceAsync;
     private Context context;
 
     @Override
@@ -126,8 +125,8 @@ public class OngoingServiceFragment extends Fragment {
             }
 
             @Override
-            public void onAsync(AsyncTask asyncTask) {
-                ongoingServiceAsync = asyncTask;
+            public void onAsync(Object asyncTask) {
+                ongoingServiceAsync = null;
             }
 
             @Override

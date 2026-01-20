@@ -2,10 +2,8 @@ package com.app.bemyrider.activity.user;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Editable;
-import android.text.Html;
 import android.text.TextWatcher;
 import android.view.MenuItem;
 import android.view.View;
@@ -64,7 +62,7 @@ public class UserServicesActivity extends AppCompatActivity {
     private LinearLayoutManager layoutManager;
     private String providerId = "";
     private String keyWord = "";
-    private AsyncTask serviceListAsync;
+    private WebServiceCall serviceListAsync;
     private ConnectionManager connectionManager;
 
     /*pagination vars start*/
@@ -87,11 +85,13 @@ public class UserServicesActivity extends AppCompatActivity {
                 Toast.makeText(mContext, getString(R.string.something_went_wrong),
                         Toast.LENGTH_SHORT).show();
                 finish();
+                return;
             }
         } else {
             Toast.makeText(mContext, getString(R.string.something_went_wrong),
                     Toast.LENGTH_SHORT).show();
             finish();
+            return;
         }
 
         initView();
@@ -169,7 +169,7 @@ public class UserServicesActivity extends AppCompatActivity {
                         i.putExtra("providerImage", getIntent().getStringExtra("providerImage"));
                         startActivity(i);
                         finish();
-                        return; // Esce dalla funzione per non fare altro UI update
+                        return;
                     }
                     // ------------------------------------------
 
@@ -195,8 +195,8 @@ public class UserServicesActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onAsync(AsyncTask asyncTask) {
-                serviceListAsync = asyncTask;
+            public void onAsync(Object asyncTask) {
+                serviceListAsync = null;
             }
 
             @Override
@@ -277,12 +277,16 @@ public class UserServicesActivity extends AppCompatActivity {
     @Override
     public void onStart() {
         super.onStart();
-        EventBus.getDefault().register(this);
+        if (!EventBus.getDefault().isRegistered(this)) {
+            EventBus.getDefault().register(this);
+        }
     }
 
     @Override
     public void onStop() {
-        EventBus.getDefault().unregister(this);
+        if (EventBus.getDefault().isRegistered(this)) {
+            EventBus.getDefault().unregister(this);
+        }
         super.onStop();
     }
 
@@ -334,7 +338,6 @@ public class UserServicesActivity extends AppCompatActivity {
 
             adapter.notifyDataSetChanged();
             binding.rvMyservice.removeOnScrollListener(listner);
-//            new ConnectionCheck().showDialogWithMessage(UserServicesActivity.this, getString(R.string.sync_data_message)).show();
 
         } catch (Exception e) {
             e.printStackTrace();

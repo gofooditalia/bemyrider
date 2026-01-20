@@ -1,14 +1,13 @@
 package com.app.bemyrider.activity.partner;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.text.Html;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
@@ -68,7 +67,7 @@ public class Partner_DisputeDetail_Activity extends AppCompatActivity {
     private DisputeDetailItemAdapter adapter;
     private String serviceRequestId = "", fileName, realPath = "";
     private boolean attachedFile = false;
-    private AsyncTask escalateToAdminAsync, acceptDisputeAsync, sendMessageAsync, disputeDetailAsync;
+    private WebServiceCall escalateToAdminAsync, acceptDisputeAsync, sendMessageAsync, disputeDetailAsync;
 
 
     private LinearLayoutManager linearLayoutManager;
@@ -84,7 +83,10 @@ public class Partner_DisputeDetail_Activity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = DataBindingUtil.setContentView(Partner_DisputeDetail_Activity.this, R.layout.partner_activity_dispute_detail, null);
+        binding = DataBindingUtil.setContentView(this, R.layout.partner_activity_dispute_detail);
+
+        mActivity = this;
+        mContext = this;
 
         permissionUtils = new PermissionUtils(mActivity, mContext, new PermissionUtils.OnPermissionGrantedListener() {
             @Override
@@ -116,7 +118,6 @@ public class Partner_DisputeDetail_Activity extends AppCompatActivity {
                                 page++;
                                 serviceCallGetDisputeDetails(false);
                             }
-                            //Do pagination.. i.e. fetch new data
                         }
                     }
                 }
@@ -127,7 +128,7 @@ public class Partner_DisputeDetail_Activity extends AppCompatActivity {
             if (!binding.layoutBottompanel.edtMessage.getText().toString().equals("")) {
                 serviceCallSendMessage();
             } else {
-                Toast.makeText(Partner_DisputeDetail_Activity.this, getResources().getString(R.string.please_enter_message_first), Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getResources().getString(R.string.please_enter_message_first), Toast.LENGTH_SHORT).show();
             }
 
         });
@@ -142,9 +143,6 @@ public class Partner_DisputeDetail_Activity extends AppCompatActivity {
     }
 
     private void initViews() {
-        mContext = Partner_DisputeDetail_Activity.this;
-        mActivity = Partner_DisputeDetail_Activity.this;
-
         setTitle(HtmlCompat.fromHtml("<font color=#FFFFFF>" + getString(R.string.dispute_details),HtmlCompat.FROM_HTML_MODE_LEGACY));
 
         ActionBar actionBar = getSupportActionBar();
@@ -159,9 +157,9 @@ public class Partner_DisputeDetail_Activity extends AppCompatActivity {
         connectionManager.checkConnection(mContext);
 
         binding.acceptDispute.getPaint().setUnderlineText(true);
-        if (PrefsUtil.with(Partner_DisputeDetail_Activity.this).readString("UserType").equals("p")) {
+        if (PrefsUtil.with(this).readString("UserType").equals("p")) {
             binding.acceptDispute.setText(HtmlCompat.fromHtml(getResources().getString(R.string.accept_dispute),HtmlCompat.FROM_HTML_MODE_LEGACY));
-        } else if (PrefsUtil.with(Partner_DisputeDetail_Activity.this).readString("UserType").equals("c")) {
+        } else if (PrefsUtil.with(this).readString("UserType").equals("c")) {
             binding.acceptDispute.setText(HtmlCompat.fromHtml(getResources().getString(R.string.cancel_dispute),HtmlCompat.FROM_HTML_MODE_LEGACY));
         }
 
@@ -179,36 +177,29 @@ public class Partner_DisputeDetail_Activity extends AppCompatActivity {
 
     private void initActivityResult() {
         actResGallery = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
-                    @Override
-                    public void onActivityResult(ActivityResult result) {
-                        try {
-                            Intent data = result.getData();
-                            if (result.getResultCode() == RESULT_OK) {
-                                if (data != null) {
-                                    FileUtilPOJO fileUtils = FileUtils.getPath(mContext, data.getData());
-                                    if (fileUtils.isRequiredDownload()) {
-                                        String[] strArr = fileUtils.getPath().split(",");
-                                        new DownloadAsync(mContext, Uri.parse(strArr[2]), strArr[0], strArr[1], downloadResult -> {
-                                            realPath = downloadResult;
-                                            fileName = realPath.substring(realPath.lastIndexOf("/") + 1);
-                                            attachedFile = true;
-                                            binding.layoutBottompanel.edtMessage.setText(fileName);
-                                            Log.e("PAAAAAAAAAAAAAAAAAAATH", realPath);
-                                        }).execute();
+                new ActivityResultContracts.StartActivityForResult(), result -> {
+                    try {
+                        Intent data = result.getData();
+                        if (result.getResultCode() == RESULT_OK && data != null) {
+                            FileUtilPOJO fileUtils = FileUtils.getPath(mContext, data.getData());
+                            if (fileUtils.isRequiredDownload()) {
+                                String[] strArr = fileUtils.getPath().split(",");
+                                new DownloadAsync(mContext, Uri.parse(strArr[2]), strArr[0], strArr[1], downloadResult -> {
+                                    realPath = downloadResult;
+                                    fileName = realPath.substring(realPath.lastIndexOf("/") + 1);
+                                    attachedFile = true;
+                                    binding.layoutBottompanel.edtMessage.setText(fileName);
+                                }).execute();
 
-                                    } else {
-                                        realPath = fileUtils.getPath();
-                                        fileName = realPath.substring(realPath.lastIndexOf("/") + 1);
-                                        attachedFile = true;
-                                        binding.layoutBottompanel.edtMessage.setText(fileName);
-                                        Log.e("PAAAAAAAAAAAAAAAAAAATH", realPath);
-                                    }
-                                }
+                            } else {
+                                realPath = fileUtils.getPath();
+                                fileName = realPath.substring(realPath.lastIndexOf("/") + 1);
+                                attachedFile = true;
+                                binding.layoutBottompanel.edtMessage.setText(fileName);
                             }
-                        } catch (Exception e) {
-                            e.printStackTrace();
                         }
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
                 });
     }
@@ -217,22 +208,12 @@ public class Partner_DisputeDetail_Activity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == PermissionUtils.REQ_CODE_STORAGE) {
-            if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                ToastMaster.showShort(mContext, R.string.err_permission_storage);
-            } else {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 permissionUtils.checkStoragePermission();
+            } else {
+                ToastMaster.showShort(mContext, R.string.err_permission_storage);
             }
         }
-    }
-
-    private void permissionMessageDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
-        builder.setPositiveButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dialogInterface.dismiss();
-            }
-        }).setMessage(getString(R.string.cancelling_granted)).show();
     }
 
     private void openAndPickFile() {
@@ -242,19 +223,16 @@ public class Partner_DisputeDetail_Activity extends AppCompatActivity {
         actResGallery.launch(Intent.createChooser(intent, "select multiple images"));
     }
 
-    /*----------------- Escalate To Admin Api Call -------------------*/
     private void serviceCallEscalateToAdmin() {
         binding.escalateToAdmin.setClickable(false);
         binding.acceptDispute.setClickable(false);
         binding.pgEscalateAdmin.setVisibility(View.VISIBLE);
 
         LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-
         textParams.put("service_id", serviceRequestId);
-        textParams.put("user_id", PrefsUtil.with(Partner_DisputeDetail_Activity.this).readString("UserId"));
+        textParams.put("user_id", PrefsUtil.with(this).readString("UserId"));
 
-        new WebServiceCall(Partner_DisputeDetail_Activity.this,
-                WebServiceUrl.URL_ESCALAPERTO_ADMIN, textParams, CommonPojo.class, false,
+        new WebServiceCall(this, WebServiceUrl.URL_ESCALAPERTO_ADMIN, textParams, CommonPojo.class, false,
                 new WebServiceCall.OnResultListener() {
                     @Override
                     public void onResult(boolean status, Object obj) {
@@ -262,41 +240,29 @@ public class Partner_DisputeDetail_Activity extends AppCompatActivity {
                         binding.escalateToAdmin.setClickable(true);
                         binding.acceptDispute.setClickable(true);
                         if (status) {
-                            CommonPojo commonPojo = (CommonPojo) obj;
-                            Toast.makeText(Partner_DisputeDetail_Activity.this, commonPojo.getMessage(), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(Partner_DisputeDetail_Activity.this, ((CommonPojo) obj).getMessage(), Toast.LENGTH_SHORT).show();
                             finish();
                         } else {
                             Toast.makeText(Partner_DisputeDetail_Activity.this, (String) obj, Toast.LENGTH_SHORT).show();
                         }
                     }
-
-                    @Override
-                    public void onAsync(AsyncTask asyncTask) {
-                        escalateToAdminAsync = asyncTask;
-                    }
-
-                    @Override
-                    public void onCancelled() {
-                        escalateToAdminAsync = null;
-                    }
+                    @Override public void onAsync(Object obj) { escalateToAdminAsync = null; }
+                    @Override public void onCancelled() { escalateToAdminAsync = null; }
                 });
 
 
     }
 
-    /*------------------- Accept Dispute Api Call ---------------------*/
     private void serviceCallAcceptDispute() {
         binding.acceptDispute.setClickable(false);
         binding.escalateToAdmin.setClickable(false);
         binding.pgAcceptDispute.setVisibility(View.VISIBLE);
 
         LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-
         textParams.put("service_id", serviceRequestId);
-        textParams.put("user_id", PrefsUtil.with(Partner_DisputeDetail_Activity.this).readString("UserId"));
+        textParams.put("user_id", PrefsUtil.with(this).readString("UserId"));
 
-        new WebServiceCall(Partner_DisputeDetail_Activity.this,
-                WebServiceUrl.URL_ACCEPT_DISPUTE, textParams, CommonPojo.class, false,
+        new WebServiceCall(this, WebServiceUrl.URL_ACCEPT_DISPUTE, textParams, CommonPojo.class, false,
                 new WebServiceCall.OnResultListener() {
                     @Override
                     public void onResult(boolean status, Object obj) {
@@ -304,7 +270,6 @@ public class Partner_DisputeDetail_Activity extends AppCompatActivity {
                         binding.acceptDispute.setClickable(true);
                         binding.escalateToAdmin.setClickable(true);
                         if (status) {
-                            CommonPojo pojo = (CommonPojo) obj;
                             binding.acceptDispute.setVisibility(View.GONE);
                             if (PrefsUtil.with(Partner_DisputeDetail_Activity.this).readString("UserType").equals("c")) {
                                 Intent intent = new Intent(Partner_DisputeDetail_Activity.this, ServiceHistoryActivity.class);
@@ -318,20 +283,11 @@ public class Partner_DisputeDetail_Activity extends AppCompatActivity {
                             Toast.makeText(Partner_DisputeDetail_Activity.this, (String) obj, Toast.LENGTH_SHORT).show();
                         }
                     }
-
-                    @Override
-                    public void onAsync(AsyncTask asyncTask) {
-                        acceptDisputeAsync = asyncTask;
-                    }
-
-                    @Override
-                    public void onCancelled() {
-                        acceptDisputeAsync = null;
-                    }
+                    @Override public void onAsync(Object obj) { acceptDisputeAsync = null; }
+                    @Override public void onCancelled() { acceptDisputeAsync = null; }
                 });
     }
 
-    /*-------------------- Send Message Api Call -----------------------*/
     private void serviceCallSendMessage() {
         binding.layoutBottompanel.ImgSend.setVisibility(View.GONE);
         binding.layoutBottompanel.pgSend.setVisibility(View.VISIBLE);
@@ -341,7 +297,7 @@ public class Partner_DisputeDetail_Activity extends AppCompatActivity {
 
         textParams.put("dispute_id", getIntent().getStringExtra("DisputeId"));
         textParams.put("message_text", binding.layoutBottompanel.edtMessage.getText().toString().trim());
-        textParams.put("user_id", PrefsUtil.with(Partner_DisputeDetail_Activity.this).readString("UserId"));
+        textParams.put("user_id", PrefsUtil.with(this).readString("UserId"));
 
         if (attachedFile) {
             fileParams.put("attachment", new File(realPath));
@@ -349,8 +305,7 @@ public class Partner_DisputeDetail_Activity extends AppCompatActivity {
             textParams.put("message_text", Utils.encodeEmoji(binding.layoutBottompanel.edtMessage.getText().toString().trim()));
         }
 
-        new WebServiceCall(Partner_DisputeDetail_Activity.this,
-                WebServiceUrl.URL_SEND_DISPUTE_MESSAGE, textParams, fileParams, SendDisputeMessagePojo.class,
+        new WebServiceCall(this, WebServiceUrl.URL_SEND_DISPUTE_MESSAGE, textParams, fileParams, SendDisputeMessagePojo.class,
                 false, new WebServiceCall.OnResultListener() {
             @Override
             public void onResult(boolean status, Object obj) {
@@ -366,20 +321,11 @@ public class Partner_DisputeDetail_Activity extends AppCompatActivity {
                     Toast.makeText(Partner_DisputeDetail_Activity.this, (String) obj, Toast.LENGTH_SHORT).show();
                 }
             }
-
-            @Override
-            public void onAsync(AsyncTask asyncTask) {
-                sendMessageAsync = asyncTask;
-            }
-
-            @Override
-            public void onCancelled() {
-                sendMessageAsync = null;
-            }
+            @Override public void onAsync(Object obj) { sendMessageAsync = null; }
+            @Override public void onCancelled() { sendMessageAsync = null; }
         });
     }
 
-    /*---------------- Get Dispute Details Api Call --------------------*/
     private void serviceCallGetDisputeDetails(boolean clearFlag) {
         if (clearFlag) {
             page = 1;
@@ -396,8 +342,7 @@ public class Partner_DisputeDetail_Activity extends AppCompatActivity {
         textParams.put("dispute_id", getIntent().getStringExtra("DisputeId"));
         textParams.put("page", String.valueOf(page));
 
-        new WebServiceCall(Partner_DisputeDetail_Activity.this,
-                WebServiceUrl.URL_DISPUTE_DETAILS, textParams, DisputeDetailPojo.class, false,
+        new WebServiceCall(this, WebServiceUrl.URL_DISPUTE_DETAILS, textParams, DisputeDetailPojo.class, false,
                 new WebServiceCall.OnResultListener() {
                     @Override
                     public void onResult(boolean status, Object obj) {
@@ -409,8 +354,6 @@ public class Partner_DisputeDetail_Activity extends AppCompatActivity {
                                 detailPojoItems.clear();
                                 String customerName = detailPojo.getData().getCustomerFirstname() + " " + detailPojo.getData().getCustomerLastname();
                                 String providerName = detailPojo.getData().getProviderFirstname() + " " + detailPojo.getData().getProviderLastname();
-
-                                /*Init Recycler View*/
                                 adapter = new DisputeDetailItemAdapter(detailPojoItems, Partner_DisputeDetail_Activity.this,
                                         customerName, providerName, detailPojo.getData().getCustomerImage(),
                                         detailPojo.getData().getProviderImage());
@@ -421,7 +364,6 @@ public class Partner_DisputeDetail_Activity extends AppCompatActivity {
 
                             detailPojoItems.addAll(detailPojo.getData().getMessageList());
                             adapter.notifyDataSetChanged();
-
                             loading = true;
 
                             if (detailPojoItems.size() > 0) {
@@ -442,25 +384,13 @@ public class Partner_DisputeDetail_Activity extends AppCompatActivity {
                             Toast.makeText(Partner_DisputeDetail_Activity.this, (String) obj, Toast.LENGTH_SHORT).show();
                         }
                     }
-
-                    @Override
-                    public void onAsync(AsyncTask asyncTask) {
-                        disputeDetailAsync = asyncTask;
-                    }
-
-                    @Override
-                    public void onCancelled() {
-                        disputeDetailAsync = null;
-                    }
+                    @Override public void onAsync(Object obj) { disputeDetailAsync = null; }
+                    @Override public void onCancelled() { disputeDetailAsync = null; }
                 });
     }
 
-    /*----------- Set up data --------------*/
     private void setData(DisputeDetailPojo detailPojo) {
-        /*--------- Set dispute created user name ----------*/
-        if (detailPojo.getData().getDisputeCreateUserId()
-                .equals(PrefsUtil.with(Partner_DisputeDetail_Activity.this)
-                        .readString("UserId"))) {
+        if (detailPojo.getData().getDisputeCreateUserId().equals(PrefsUtil.with(this).readString("UserId"))) {
             binding.txtRaiseBy.setText(mContext.getResources().getString(R.string.raise_by_me));
         } else {
             if (detailPojo.getData().getDisputeCreateUserId().equalsIgnoreCase(detailPojo.getData().getCustomerId())) {
@@ -470,7 +400,6 @@ public class Partner_DisputeDetail_Activity extends AppCompatActivity {
             }
         }
         binding.txtDisputeSubject.setText(detailPojo.getData().getDisputeTitle());
-
         serviceRequestId = detailPojo.getData().getServiceRequestId();
 
         if (detailPojo.getData().getEscalateAdmin().equals("y")) {
@@ -495,7 +424,6 @@ public class Partner_DisputeDetail_Activity extends AppCompatActivity {
             binding.layoutBottompanel.ImgSend.setClickable(true);
         }
 
-        /*---------- For deleted user ------------*/
         if (detailPojo.getData().getCustActive().equalsIgnoreCase("du") ||
                 detailPojo.getData().getProActive().equalsIgnoreCase("du")) {
             binding.layoutBottompanel.llMainBottomPanel.setVisibility(View.GONE);
@@ -510,6 +438,7 @@ public class Partner_DisputeDetail_Activity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
             onBackPressed();
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -521,17 +450,11 @@ public class Partner_DisputeDetail_Activity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        try {
-            connectionManager.unregisterReceiver();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        try { connectionManager.unregisterReceiver(); } catch (Exception e) { e.printStackTrace(); }
         Utils.cancelAsyncTask(escalateToAdminAsync);
         Utils.cancelAsyncTask(acceptDisputeAsync);
         Utils.cancelAsyncTask(sendMessageAsync);
         Utils.cancelAsyncTask(disputeDetailAsync);
         super.onDestroy();
     }
-
-
 }

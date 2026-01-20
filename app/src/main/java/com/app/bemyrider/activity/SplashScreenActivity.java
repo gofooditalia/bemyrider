@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Base64;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -37,7 +38,6 @@ import com.app.bemyrider.model.NewLoginPojoItem;
 import com.app.bemyrider.model.VersionDataPOJO;
 import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.LocaleManager;
-import android.util.Log;
 import com.app.bemyrider.utils.PrefsUtil;
 import com.app.bemyrider.utils.SecurePrefsUtil;
 import com.google.firebase.messaging.FirebaseMessaging;
@@ -254,8 +254,8 @@ public class SplashScreenActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onAsync(AsyncTask asyncTask) {
-                        autoLoginAsync = asyncTask;
+                    public void onAsync(Object obj) {
+                        autoLoginAsync = (AsyncTask) obj;
                     }
 
                     @Override
@@ -338,8 +338,8 @@ public class SplashScreenActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onAsync(AsyncTask asyncTask) {
-                        socialLoginAsync = asyncTask;
+                    public void onAsync(Object obj) {
+                        socialLoginAsync = (AsyncTask) obj;
                     }
 
                     @Override
@@ -390,8 +390,8 @@ public class SplashScreenActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onAsync(AsyncTask asyncTask) {
-                        offlineDataAsync = asyncTask;
+                    public void onAsync(Object obj) {
+                        offlineDataAsync = (AsyncTask) obj;
                     }
 
                     @Override
@@ -469,8 +469,8 @@ public class SplashScreenActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onAsync(AsyncTask asyncTask) {
-                        checkVersionAsync = asyncTask;
+                    public void onAsync(Object obj) {
+                        checkVersionAsync = (AsyncTask) obj;
                     }
 
                     @Override
@@ -581,8 +581,8 @@ public class SplashScreenActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onAsync(AsyncTask asyncTask) {
-                        getLanguageAsync = asyncTask;
+                    public void onAsync(Object obj) {
+                        getLanguageAsync = (AsyncTask) obj;
                     }
 
                     @Override

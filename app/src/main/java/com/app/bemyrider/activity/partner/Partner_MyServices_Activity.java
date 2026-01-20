@@ -2,10 +2,8 @@ package com.app.bemyrider.activity.partner;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Editable;
-import android.text.Html;
 import android.text.TextWatcher;
 import android.view.MenuItem;
 import android.view.View;
@@ -62,7 +60,7 @@ public class Partner_MyServices_Activity extends AppCompatActivity {
     private Context mContext = Partner_MyServices_Activity.this;
     private LinearLayoutManager layoutManager;
     private String keyWord = "";
-    private AsyncTask myServiceAsync;
+    private WebServiceCall myServiceAsync;
     private ConnectionManager connectionManager;
 
     /*pagination vars start*/
@@ -76,7 +74,6 @@ public class Partner_MyServices_Activity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(Partner_MyServices_Activity.this, R.layout.partner_activity_my_services, null);
-
         initView();
 
         serviceCall(true);
@@ -177,8 +174,8 @@ public class Partner_MyServices_Activity extends AppCompatActivity {
             }
 
             @Override
-            public void onAsync(AsyncTask asyncTask) {
-                myServiceAsync = asyncTask;
+            public void onAsync(Object asyncTask) {
+                myServiceAsync = null;
             }
 
             @Override

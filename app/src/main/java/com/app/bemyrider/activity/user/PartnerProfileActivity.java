@@ -3,7 +3,6 @@ package com.app.bemyrider.activity.user;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Rect;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
@@ -30,11 +29,11 @@ import com.app.bemyrider.utils.LocaleManager;
 import com.app.bemyrider.utils.PrefsUtil;
 import com.app.bemyrider.utils.Utils;
 
-import java.util.LinkedHashMap;
-import java.util.Objects;
-
 import coil.Coil;
 import coil.request.ImageRequest;
+
+import java.util.LinkedHashMap;
+import java.util.Objects;
 
 public class PartnerProfileActivity extends AppCompatActivity {
 
@@ -42,7 +41,7 @@ public class PartnerProfileActivity extends AppCompatActivity {
     private PartnerProfileAcitvityBinding binding;
     private final Context mContext = this;
     private String partnerId = "";
-    private WebServiceCall getProfileAsync, reportUserAsync; // MODIFICA QUI: Da AsyncTask a WebServiceCall
+    private WebServiceCall getProfileAsync, reportUserAsync;
     private ConnectionManager connectionManager;
     private String isFlag = "";
 
@@ -95,7 +94,7 @@ public class PartnerProfileActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onAsync(AsyncTask asyncTask) { getProfileAsync = null; }
+                    public void onAsync(Object obj) { getProfileAsync = null; }
 
                     @Override
                     public void onCancelled() {
@@ -203,7 +202,7 @@ public class PartnerProfileActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onAsync(AsyncTask asyncTask) { reportUserAsync = null; }
+                    public void onAsync(Object obj) { reportUserAsync = null; }
 
                     @Override
                     public void onCancelled() {
@@ -246,9 +245,12 @@ public class PartnerProfileActivity extends AppCompatActivity {
         Window window = getWindow();
         window.getDecorView().getWindowVisibleDisplayFrame(rectangle);
         int statusBarHeight = rectangle.top;
-        int contentViewTop = window.findViewById(Window.ID_ANDROID_CONTENT).getTop();
-        int titleBarHeight = contentViewTop - statusBarHeight;
-        binding.linHeader.setPadding(0, titleBarHeight + 50, 0, 0);
+        View contentView = window.findViewById(Window.ID_ANDROID_CONTENT);
+        if (contentView != null) {
+            int contentViewTop = contentView.getTop();
+            int titleBarHeight = contentViewTop - statusBarHeight;
+            binding.linHeader.setPadding(0, titleBarHeight + 50, 0, 0);
+        }
     }
 
     @Override

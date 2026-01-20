@@ -17,6 +17,7 @@ import androidx.core.text.HtmlCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.bemyrider.Adapter.User.SelectSubCategoryAdapter;
 import com.app.bemyrider.AsyncTask.WebServiceCall;
@@ -44,7 +45,7 @@ public class SubCategoryActivity extends AppCompatActivity {
     private ArrayList<SubCategoryItem> subCategoryItems = new ArrayList<>();
     private SelectSubCategoryAdapter subCategoryAdapter;
     private String categoryId = "", categoryName = "";
-    private AsyncTask subCategoryAsync, categoryListAsync;
+    private WebServiceCall subCategoryAsync, categoryListAsync;
     private Context context;
     private ConnectionManager connectionManager;
     private String providerId = "";
@@ -156,8 +157,8 @@ public class SubCategoryActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onAsync(AsyncTask asyncTask) {
-                categoryListAsync = asyncTask;
+            public void onAsync(Object asyncTask) {
+                categoryListAsync = (WebServiceCall) asyncTask;
             }
 
             @Override
@@ -193,8 +194,8 @@ public class SubCategoryActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onAsync(AsyncTask asyncTask) {
-                subCategoryAsync = asyncTask;
+            public void onAsync(Object asyncTask) {
+                subCategoryAsync = (WebServiceCall) asyncTask;
             }
 
             @Override

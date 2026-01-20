@@ -171,7 +171,7 @@
                         android:layout_height="wrap_content"
                         android:visibility="gone">
 
-                        <androidx.appcompat.widget.AppCompatEditText
+                        <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/et_signup_fname"
                             style="@style/StyledTilEditText"
                             android:layout_width="match_parent"
@@ -189,7 +189,7 @@
                         android:layout_height="wrap_content"
                         android:visibility="gone">
 
-                        <androidx.appcompat.widget.AppCompatEditText
+                        <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/et_signup_lname"
                             style="@style/StyledTilEditText"
                             android:layout_width="match_parent"
@@ -208,7 +208,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="@dimen/_15sdp">
 
-                        <androidx.appcompat.widget.AppCompatEditText
+                        <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/et_signup_email"
                             style="@style/StyledTilEditText"
                             android:layout_width="match_parent"
@@ -258,7 +258,7 @@
                             android:layout_toEndOf="@+id/spinner_countrycode"
                             android:layout_weight="2">
 
-                            <androidx.appcompat.widget.AppCompatEditText
+                            <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/et_signup_contactno"
                                 style="@style/StyledTilEditText"
                                 android:layout_width="match_parent"
@@ -281,7 +281,7 @@
                         app:passwordToggleDrawable="@drawable/show_password_selector"
                         app:passwordToggleEnabled="true">
 
-                        <androidx.appcompat.widget.AppCompatEditText
+                        <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/et_signup_password"
                             style="@style/StyledTilEditText"
                             android:layout_width="match_parent"
@@ -302,7 +302,7 @@
                         app:passwordToggleDrawable="@drawable/show_password_selector"
                         app:passwordToggleEnabled="true">
 
-                        <androidx.appcompat.widget.AppCompatEditText
+                        <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/et_signup_confirmpassword"
                             style="@style/StyledTilEditText"
                             android:layout_width="match_parent"

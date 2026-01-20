@@ -3,7 +3,6 @@ package com.app.bemyrider.activity.user;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -51,7 +50,7 @@ public class CustomerProfileActivity extends AppCompatActivity {
     private ActivityCustomerProfileBinding binding;
 
     private ProfileItem profileData;
-    private WebServiceCall profileDataAsync; // MODIFICA QUI: Da AsyncTask a WebServiceCall
+    private WebServiceCall profileDataAsync;
     private ConnectionManager connectionManager;
     private Context context;
     private ActivityResultLauncher<Intent> editProfileLauncher;
@@ -156,7 +155,7 @@ public class CustomerProfileActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onAsync(AsyncTask asyncTask) {
+            public void onAsync(Object asyncTask) {
                 profileDataAsync = null;
             }
 
@@ -234,7 +233,7 @@ public class CustomerProfileActivity extends AppCompatActivity {
             binding.llUserProfileDetail.setVisibility(View.VISIBLE);
             binding.ImgEdit.setVisibility(View.VISIBLE);
             Log.d(TAG, "Loading offline profile data.");
-            File f = new File(getFilesDir().getPath() + "/" + "offline.json");
+            java.io.File f = new java.io.File(getFilesDir().getPath() + "/" + "offline.json");
             if (!f.exists()) return;
 
             try (FileInputStream is = new FileInputStream(f)) {

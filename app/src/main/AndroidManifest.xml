@@ -347,9 +347,7 @@
                     android:pathPrefix="/deeplink"
                     android:scheme="bemyrider" />
                 <!--android:pathPrefix="/deeplink"-->
-                <!--<data
-                    android:host="demo.ncryptedprojects.com"
-                    android:scheme="taskgator" />-->
+                <!--<data android:scheme="taskgator" android:host="demo.ncryptedprojects.com"/>-->
                 <!-- <data android:scheme="taskgator" android:host="dev.ncryptedprojects.com"/> -->
             </intent-filter>
         </activity>

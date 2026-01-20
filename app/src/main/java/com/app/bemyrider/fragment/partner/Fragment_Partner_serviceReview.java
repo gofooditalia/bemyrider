@@ -1,7 +1,6 @@
 package com.app.bemyrider.fragment.partner;
 
 import android.content.Context;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -41,7 +40,7 @@ public class Fragment_Partner_serviceReview extends Fragment {
 
     private LinearLayoutManager layoutManager;
     private ProviderServiceDetailsItem serviceDetailData;
-    private AsyncTask reviewListAsync;
+    private WebServiceCall reviewListAsync;
     private Context context;
 
     /*pagination vars start*/
@@ -142,8 +141,8 @@ public class Fragment_Partner_serviceReview extends Fragment {
             }
 
             @Override
-            public void onAsync(AsyncTask asyncTask) {
-                reviewListAsync = asyncTask;
+            public void onAsync(Object asyncTask) {
+                reviewListAsync = null;
             }
 
             @Override

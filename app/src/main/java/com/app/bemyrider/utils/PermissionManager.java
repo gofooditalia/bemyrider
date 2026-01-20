@@ -123,7 +123,7 @@ public class PermissionManager {
         this.context = context;
     }
 
-    // Method which checks whether or not permission is allowed
+    //Method which checks whether or not permission is allowed
     public boolean isPermissionAllowed(String permission) {
         int permissionToCheck = ContextCompat.checkSelfPermission(context, permission);
 

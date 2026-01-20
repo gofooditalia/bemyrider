@@ -6,7 +6,6 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Editable;
-import android.text.Html;
 import android.text.InputFilter;
 import android.text.TextWatcher;
 import android.view.MenuItem;
@@ -43,7 +42,7 @@ import java.util.LinkedHashMap;
 public class ContactUsActivity extends AppCompatActivity {
 
     private ActivityContactUsBinding binding;
-    private AsyncTask contactUsAsync, countryCodeAsync;
+    private WebServiceCall contactUsAsync, countryCodeAsync;
     private Context context;
     private ConnectionManager connectionManager;
 
@@ -209,8 +208,8 @@ public class ContactUsActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onAsync(AsyncTask asyncTask) {
-                contactUsAsync = asyncTask;
+            public void onAsync(Object obj) {
+                // Added implementation for the missing abstract method onAsync(Object)
             }
 
             @Override
@@ -241,8 +240,8 @@ public class ContactUsActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onAsync(AsyncTask asyncTask) {
-                countryCodeAsync = asyncTask;
+            public void onAsync(Object obj) {
+                // Added implementation for the missing abstract method onAsync(Object)
             }
 
             @Override

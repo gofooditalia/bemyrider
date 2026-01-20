@@ -46,7 +46,7 @@ public class MessagesActivity extends AppCompatActivity {
     private ArrayList<MessageListPojoItem> messageListPojoItems;
     private MessageListAdapter messageListAdapter;
     private LinearLayoutManager layoutManager;
-    private AsyncTask messageListAsync;
+    private WebServiceCall messageListAsync;
     private Context context;
     private ConnectionManager connectionManager;
 
@@ -169,8 +169,8 @@ public class MessagesActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onAsync(AsyncTask asyncTask) {
-                messageListAsync = asyncTask;
+            public void onAsync(Object asyncTask) {
+                messageListAsync = (WebServiceCall) asyncTask;
             }
 
             @Override

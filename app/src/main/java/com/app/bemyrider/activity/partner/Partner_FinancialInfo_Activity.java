@@ -1,12 +1,7 @@
 package com.app.bemyrider.activity.partner;
 
 import android.content.Context;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.text.Html;
-
-import com.app.bemyrider.utils.LocaleManager;
-import com.app.bemyrider.utils.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
@@ -25,6 +20,8 @@ import com.app.bemyrider.model.FinancialInfoPojo;
 import com.app.bemyrider.model.FinancialInfoPojoItem;
 import com.app.bemyrider.model.MessageEvent;
 import com.app.bemyrider.utils.ConnectionManager;
+import com.app.bemyrider.utils.LocaleManager;
+import com.app.bemyrider.utils.Log;
 import com.app.bemyrider.utils.PrefsUtil;
 import com.app.bemyrider.utils.Utils;
 import com.google.gson.Gson;
@@ -46,14 +43,14 @@ import java.util.LinkedHashMap;
 public class Partner_FinancialInfo_Activity extends AppCompatActivity {
 
     private PartnerActivityFinancialInfoBinding binding;
-    private AsyncTask finincialDetailAsync;
+    private WebServiceCall finincialDetailAsync;
     private Context context;
     private ConnectionManager connectionManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = DataBindingUtil.setContentView(Partner_FinancialInfo_Activity.this, R.layout.partner_activity_financial_info, null);
+        binding = DataBindingUtil.setContentView(Partner_FinancialInfo_Activity.this, R.layout.partner_activity_financial_info);
 
         initViews();
 
@@ -122,8 +119,8 @@ public class Partner_FinancialInfo_Activity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onAsync(AsyncTask asyncTask) {
-                        finincialDetailAsync = asyncTask;
+                    public void onAsync(Object asyncTask) {
+                        finincialDetailAsync = null;
                     }
 
                     @Override
@@ -145,12 +142,16 @@ public class Partner_FinancialInfo_Activity extends AppCompatActivity {
     @Override
     public void onStart() {
         super.onStart();
-        EventBus.getDefault().register(this);
+        if (!EventBus.getDefault().isRegistered(this)) {
+            EventBus.getDefault().register(this);
+        }
     }
 
     @Override
     public void onStop() {
-        EventBus.getDefault().unregister(this);
+        if (EventBus.getDefault().isRegistered(this)) {
+            EventBus.getDefault().unregister(this);
+        }
         super.onStop();
     }
 
@@ -188,15 +189,13 @@ public class Partner_FinancialInfo_Activity extends AppCompatActivity {
             GsonBuilder gsonBuilder = new GsonBuilder();
             gsonBuilder.setDateFormat("M/d/yy hh:mm a"); //Format of our JSON dates
             Gson gson = gsonBuilder.create();
-            FinancialInfoPojoItem item = new FinancialInfoPojoItem();
-            item = gson.fromJson(financialInfo.toString(), FinancialInfoPojoItem.class);
+            FinancialInfoPojoItem item = gson.fromJson(financialInfo.toString(), FinancialInfoPojoItem.class);
             FinancialInfoPojo infoPojo = new FinancialInfoPojo();
             infoPojo.setData(item);
             binding.txtCompleteServiceA.setText(PrefsUtil.with(Partner_FinancialInfo_Activity.this).readString("CurrencySign") + infoPojo.getData().getTotalCompletedService());
             binding.txtTotalCommision.setText(String.format("%s%s", PrefsUtil.with(Partner_FinancialInfo_Activity.this).readString("CurrencySign"), infoPojo.getData().getTotalCommission()));
             binding.txtTotalEarned.setText(String.format("%s%s", PrefsUtil.with(Partner_FinancialInfo_Activity.this).readString("CurrencySign"), infoPojo.getData().getTotalNetEarned()));
             binding.txtTotal.setText(String.format("%s%s", PrefsUtil.with(Partner_FinancialInfo_Activity.this).readString("CurrencySign"), infoPojo.getData().getTotalEarned()));
-//            new ConnectionCheck().showDialogWithMessage(Partner_FinancialInfo_Activity.this, getString(R.string.sync_data_message)).show();
         } catch (Exception e) {
             e.printStackTrace();
         }

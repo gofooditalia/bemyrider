@@ -12,20 +12,21 @@ class AppSignupViewModel(application: Application) : AndroidViewModel(applicatio
 
     private val appRepository = AppRepository()
 
-    // Note: Returns NewLoginPojo instead of RegistrationPojo because AppRepository normalizes the response type.
+    // Note: Returns NewLoginPojo to match the type emitted in the try block (and assumed to be returned by appRepository.signup).
     fun signup(
         firstName: String, lastName: String, email: String, userType: String,
         contactNumber: String, password: String, rePassword: String,
-        countryCodeId: String, deviceToken: String?
+        countryCodeId: String?, deviceToken: String?
     ): LiveData<NewLoginPojo> = liveData(Dispatchers.IO) {
         try {
             val token = deviceToken ?: ""
-            val response = appRepository.signup(firstName, lastName, email, userType, contactNumber, password, rePassword, countryCodeId, token)
+            val country = countryCodeId ?: ""
+            val response = appRepository.signup(firstName, lastName, email, userType, contactNumber, password, rePassword, country, token)
             emit(response)
         } catch (e: Exception) {
             val error = NewLoginPojo()
-            error.setStatus(false)
-            error.setMessage(e.localizedMessage ?: "Errore sconosciuto")
+            error.isStatus = false
+            error.message = e.localizedMessage ?: "Error sconosciuto"
             emit(error)
         }
     }
@@ -42,14 +43,14 @@ class AppSignupViewModel(application: Application) : AndroidViewModel(applicatio
                 emit(response.body()!!)
             } else {
                 val error = NewLoginPojo()
-                error.setStatus(false)
-                error.setMessage("Errore server: ${response.code()}")
+                error.isStatus = false
+                error.message = "Error server: ${response.code()}"
                 emit(error)
             }
         } catch (e: Exception) {
             val error = NewLoginPojo()
-            error.setStatus(false)
-            error.setMessage(e.localizedMessage ?: "Errore sconosciuto")
+            error.isStatus = false
+            error.message = e.localizedMessage ?: "Error sconosciuto"
             emit(error)
         }
     }

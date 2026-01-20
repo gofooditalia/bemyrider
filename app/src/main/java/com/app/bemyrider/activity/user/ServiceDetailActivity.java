@@ -60,7 +60,7 @@ public class ServiceDetailActivity extends AppCompatActivity {
             R.drawable.tabicon_review_style,
             R.drawable.tabicon_images_style
     };
-    private WebServiceCall serviceDetailAsync, actionFavouriteAsync; // MODIFICA QUI: Da AsyncTask a WebServiceCall
+    private WebServiceCall serviceDetailAsync, actionFavouriteAsync;
     private final ArrayList<ProviderServiceReviewDataItem> reviewArrayList = new ArrayList<>();
     private boolean isFavRefresh = false;
     private String providerServiceId = "";
@@ -157,7 +157,7 @@ public class ServiceDetailActivity extends AppCompatActivity {
                     Toast.makeText(ServiceDetailActivity.this, Objects.toString(obj, getString(R.string.server_error)), Toast.LENGTH_LONG).show();
                 }
             }
-            @Override public void onAsync(AsyncTask asyncTask) { serviceDetailAsync = null; }
+            @Override public void onAsync(Object asyncTask) { serviceDetailAsync = null; }
             @Override public void onCancelled() { serviceDetailAsync = null; }
         });
     }
@@ -225,7 +225,7 @@ public class ServiceDetailActivity extends AppCompatActivity {
                     Toast.makeText(ServiceDetailActivity.this, Objects.toString(obj, getString(R.string.server_error)), Toast.LENGTH_LONG).show();
                 }
             }
-            @Override public void onAsync(AsyncTask asyncTask) { actionFavouriteAsync = null; }
+            @Override public void onAsync(Object asyncTask) { actionFavouriteAsync = null; }
             @Override public void onCancelled() { actionFavouriteAsync = null; }
         });
     }

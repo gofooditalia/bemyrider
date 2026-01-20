@@ -2,7 +2,6 @@ package com.app.bemyrider.fragment;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -44,7 +43,7 @@ public class NotificationFragment extends Fragment {
     private ArrayList<NotificationListItem> notifications = new ArrayList<>();
     private int pastVisibleItems, visibleItemCount, totalItemCount;
     private boolean isLoading = false;
-    private AsyncTask notificationListAsync;
+    private WebServiceCall notificationListAsync;
     private Context context;
     private AppCompatActivity activity;
     private ConnectionManager connectionManager;
@@ -167,8 +166,8 @@ public class NotificationFragment extends Fragment {
                     }
 
                     @Override
-                    public void onAsync(AsyncTask asyncTask) {
-                        notificationListAsync = asyncTask;
+                    public void onAsync(Object asyncTask) {
+                        notificationListAsync = null;
                     }
 
                     @Override

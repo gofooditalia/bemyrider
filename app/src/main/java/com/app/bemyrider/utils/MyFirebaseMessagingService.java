@@ -110,7 +110,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                     }
                     
                     @Override
-                    public void onAsync(android.os.AsyncTask asyncTask) {
+                    public void onAsync(Object asyncTask) {
                         // Non necessario per la nuova implementazione
                     }
                     

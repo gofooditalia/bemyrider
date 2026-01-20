@@ -4,7 +4,6 @@ import static android.app.Activity.RESULT_OK;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -68,7 +67,7 @@ public class FavouriteFragment extends Fragment {
     private LinearLayoutManager layoutManager;
     private boolean loading = false;
     private String keyWord = "";
-    private AsyncTask favouriteAsync, getFavouriteListAsync;
+    private WebServiceCall favouriteAsync, getFavouriteListAsync;
     private Context context;
     private AppCompatActivity activity;
     private ConnectionManager connectionManager;
@@ -99,7 +98,7 @@ public class FavouriteFragment extends Fragment {
 
                     if (!loading) {
                         if ((visibleItemCount + pastVisibleItems) >= totalItemCount) {
-                            loading = true;
+                            loading = false;
                             if (favoriteServiceListPojoItems.size() < total_records) {
                                 page++;
                                 serviceCallGetFavoriteList(false);
@@ -207,8 +206,8 @@ public class FavouriteFragment extends Fragment {
             }
 
             @Override
-            public void onAsync(AsyncTask asyncTask) {
-                getFavouriteListAsync = asyncTask;
+            public void onAsync(Object asyncTask) {
+                getFavouriteListAsync = null;
             }
 
             @Override
@@ -256,8 +255,8 @@ public class FavouriteFragment extends Fragment {
             }
 
             @Override
-            public void onAsync(AsyncTask asyncTask) {
-                favouriteAsync = asyncTask;
+            public void onAsync(Object asyncTask) {
+                favouriteAsync = null;
             }
 
             @Override

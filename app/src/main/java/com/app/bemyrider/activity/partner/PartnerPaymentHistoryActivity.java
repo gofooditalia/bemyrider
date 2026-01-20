@@ -1,9 +1,7 @@
 package com.app.bemyrider.activity.partner;
 
 import android.content.Context;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.text.Html;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
@@ -44,7 +42,7 @@ public class PartnerPaymentHistoryActivity extends AppCompatActivity {
     private PartnerPaymentHistoryAdapter partnerPaymentHistoryAdapter;
     private ArrayList<PartnerPaymentHistoryItem> transactionArrayList = new ArrayList<>();
     private LinearLayoutManager linearLayoutManager;
-    private AsyncTask task;
+    private WebServiceCall task;
     private ConnectionManager connectionManager;
 
     /*pagination vars start*/
@@ -57,7 +55,7 @@ public class PartnerPaymentHistoryActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = DataBindingUtil.setContentView(PartnerPaymentHistoryActivity.this, R.layout.activity_partner_payment_history, null);
+        binding = DataBindingUtil.setContentView(PartnerPaymentHistoryActivity.this, R.layout.activity_partner_payment_history);
         initViews();
 
         serviceCallPaymentHistory(true);
@@ -176,8 +174,8 @@ public class PartnerPaymentHistoryActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onAsync(AsyncTask asyncTask) {
-                task = asyncTask;
+            public void onAsync(Object asyncTask) {
+                task = null;
             }
 
             @Override

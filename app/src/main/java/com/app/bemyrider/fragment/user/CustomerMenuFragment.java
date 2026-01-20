@@ -2,11 +2,9 @@ package com.app.bemyrider.fragment.user;
 
 import static android.app.Activity.RESULT_OK;
 
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,6 +15,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.databinding.DataBindingUtil;
@@ -31,16 +30,13 @@ import com.app.bemyrider.WebServices.WebServiceUrl;
 import com.app.bemyrider.activity.AccountSettingActivity;
 import com.app.bemyrider.activity.ContactUsActivity;
 import com.app.bemyrider.activity.FeedbackActivity;
-
 import com.app.bemyrider.activity.InfoPageActivity;
 import com.app.bemyrider.activity.NotificationListingActivity;
 import com.app.bemyrider.activity.LoginActivity;
-import com.app.bemyrider.activity.SignupActivity;
 import com.app.bemyrider.activity.user.CustomerProfileActivity;
 import com.app.bemyrider.activity.user.DisputeListActivity;
 import com.app.bemyrider.activity.user.EditProfileActivity;
 import com.app.bemyrider.activity.user.PaymentHistoryActivity;
-
 import com.app.bemyrider.databinding.FragmentCustomerMenuBinding;
 import com.app.bemyrider.model.CommonPojo;
 import com.app.bemyrider.model.ProfilePojo;
@@ -63,7 +59,7 @@ public class CustomerMenuFragment extends Fragment implements MenuItemClickListe
     FragmentCustomerMenuBinding binding;
     private Context context;
     private AppCompatActivity activity;
-    private AsyncTask profileDataAsync, userLogoutAsync;
+    private WebServiceCall profileDataAsync, userLogoutAsync;
     private ConnectionManager connectionManager;
     private ModelForDrawer[] drawerItem;
 
@@ -108,7 +104,7 @@ public class CustomerMenuFragment extends Fragment implements MenuItemClickListe
                 .target(binding.imgProfile);
 
         if (userImg != null && !userImg.isEmpty()) {
-            binding.imgProfile.setColorFilter(ContextCompat.getColor(context, R.color.transparent));
+            binding.imgProfile.setColorFilter(ContextCompat.getColor(context, android.R.color.transparent));
             profileBuilder.data(userImg);
         } else {
             binding.imgProfile.setColorFilter(ContextCompat.getColor(context, R.color.white));
@@ -141,9 +137,6 @@ public class CustomerMenuFragment extends Fragment implements MenuItemClickListe
 
     void setUpMenuItems() {
         drawerItem = new ModelForDrawer[8];
-        //drawerItem[0] = new ModelForDrawer(R.drawable.ic_search_menu, getString(R.string.search_service));
-       // drawerItem[0] = new ModelForDrawer(R.drawable.ic_service_menu, getString(R.string.services));
-        //drawerItem[0] = new ModelForDrawer(R.drawable.wallet_icon, getString(R.string.wallet));
         drawerItem[0] = new ModelForDrawer(R.drawable.ic_notification_menu, getString(R.string.notifications_title));
         drawerItem[1] = new ModelForDrawer(R.drawable.ic_resolution_menu, getString(R.string.resolution_center));
         drawerItem[2] = new ModelForDrawer(R.drawable.ic_payment_history_menu, getString(R.string.payment_history));
@@ -160,7 +153,6 @@ public class CustomerMenuFragment extends Fragment implements MenuItemClickListe
         binding.recCustMenu.setAdapter(adapter);
     }
 
-    /*---------------- Profile Detail Api Call ---------------------*/
     protected void getProfileData() {
         binding.pgEdit.setVisibility(View.VISIBLE);
 
@@ -190,8 +182,8 @@ public class CustomerMenuFragment extends Fragment implements MenuItemClickListe
             }
 
             @Override
-            public void onAsync(AsyncTask asyncTask) {
-                profileDataAsync = asyncTask;
+            public void onAsync(Object asyncTask) {
+                profileDataAsync = null;
             }
 
             @Override
@@ -216,15 +208,6 @@ public class CustomerMenuFragment extends Fragment implements MenuItemClickListe
     @Override
     public void onMenuItemClick(ModelForDrawer modelForDrawer, int position) {
         switch (position) {
-            /*case 0:
-                startActivity(new Intent(activity, SearchServiceActivity.class));
-                break;*/
-           /* case 0:
-                startActivity(new Intent(activity, ServiceHistoryActivity.class));
-                break;*/
-            /*case 0:
-                startActivity(new Intent(activity, WalletActivity.class));
-                break;*/
             case 0:
                 startActivity(new Intent(activity, NotificationListingActivity.class));
                 break;
@@ -249,32 +232,20 @@ public class CustomerMenuFragment extends Fragment implements MenuItemClickListe
             case 7:
                 AlertDialog.Builder builder = new AlertDialog.Builder(activity);
                 builder.setMessage(R.string.sure_logout)
-                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                serviceCallLogout();
-                            }
-                        })
-                        .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                dialogInterface.cancel();
-                            }
-                        }).show();
+                        .setPositiveButton(R.string.yes, (dialogInterface, i) -> serviceCallLogout())
+                        .setNegativeButton(R.string.no, (dialogInterface, i) -> dialogInterface.cancel()).show();
                 break;
             default:
                 break;
         }
     }
 
-    /*--------------------- Log Out Api Call ----------------------*/
     private void serviceCallLogout() {
         LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
 
         SecurePrefsUtil securePrefs = SecurePrefsUtil.with(activity);
         PrefsUtil prefsUtil = PrefsUtil.with(activity);
         
-        // Fallback a PrefsUtil se SecurePrefsUtil non ha UserId
         String userId = securePrefs.readString("UserId");
         if (userId == null || userId.isEmpty()) {
             userId = prefsUtil.readString("UserId");
@@ -293,31 +264,27 @@ public class CustomerMenuFragment extends Fragment implements MenuItemClickListe
                 CommonPojo.class, true, new WebServiceCall.OnResultListener() {
             @Override
             public void onResult(boolean status, Object obj) {
-                // Anche se l'API fallisce, procediamo con il logout locale
                 File offlineFile = new File(activity.getFilesDir().getPath(), "/offline.json");
                 if (offlineFile.exists()) {
                     offlineFile.delete();
                 }
                 
-                // Pulisci sia SecurePrefsUtil che PrefsUtil per sicurezza
                 SecurePrefsUtil.with(activity).clearPrefs();
                 PrefsUtil.with(activity).clearPrefs();
                 
-                // Vai a LoginActivity con flag per pulire lo stack
                 Intent intent = new Intent(activity, LoginActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
                 activity.finish();
                 
                 if (!status) {
-                    // Mostra messaggio solo se necessario, ma procedi comunque
                     Toast.makeText(context, getString(R.string.logout), Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
-            public void onAsync(AsyncTask asyncTask) {
-                userLogoutAsync = asyncTask;
+            public void onAsync(Object asyncTask) {
+                userLogoutAsync = null;
             }
 
             @Override

@@ -40,7 +40,7 @@ public class InfoPageActivity extends AppCompatActivity {
     private LinearLayoutManager layoutManager;
     private InfoPageAdapter infoPageAdapter;
     private ArrayList<InfoPagePojoItem> arrayList = new ArrayList<>();
-    private AsyncTask infoPageListAsync;
+    private WebServiceCall infoPageListAsync;
     private ConnectionManager connectionManager;
 
     @Override
@@ -95,8 +95,8 @@ public class InfoPageActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onAsync(AsyncTask asyncTask) {
-                        infoPageListAsync = asyncTask;
+                    public void onAsync(Object asyncTask) {
+                        infoPageListAsync = (WebServiceCall) asyncTask;
                     }
 
                     @Override

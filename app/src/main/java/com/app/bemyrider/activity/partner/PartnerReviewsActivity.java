@@ -1,9 +1,7 @@
 package com.app.bemyrider.activity.partner;
 
 import android.content.Context;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.text.Html;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
@@ -24,6 +22,7 @@ import com.app.bemyrider.model.ServiceReviewItem;
 import com.app.bemyrider.model.ServiceReviewPojo;
 import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.LocaleManager;
+import com.app.bemyrider.utils.Log;
 import com.app.bemyrider.utils.PrefsUtil;
 import com.app.bemyrider.utils.Utils;
 
@@ -41,7 +40,7 @@ public class PartnerReviewsActivity extends AppCompatActivity {
     private ArrayList<ServiceReviewItem> arrayList = new ArrayList<>();
     private Context mContext = PartnerReviewsActivity.this;
     private LinearLayoutManager layoutManager;
-    private AsyncTask reviewListAsync;
+    private WebServiceCall reviewListAsync;
     private ConnectionManager connectionManager;
 
     /*pagination vars start*/
@@ -156,8 +155,8 @@ public class PartnerReviewsActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onAsync(AsyncTask asyncTask) {
-                reviewListAsync = asyncTask;
+            public void onAsync(Object asyncTask) {
+                reviewListAsync = null;
             }
 
             @Override

@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
@@ -57,7 +56,7 @@ public class Partner_ServiceDetail_Activity extends AppCompatActivity {
             R.drawable.tabicon_review_style,
             R.drawable.tabicon_images_style
     };
-    private WebServiceCall serviceDetailAsync, deleteServiceAsync; // MODIFICA QUI: Da AsyncTask a WebServiceCall
+    private WebServiceCall serviceDetailAsync, deleteServiceAsync;
     private ConnectionManager connectionManager;
 
     @Override
@@ -143,7 +142,7 @@ public class Partner_ServiceDetail_Activity extends AppCompatActivity {
                     Toast.makeText(mContext, Objects.toString(obj, getString(R.string.server_error)), Toast.LENGTH_SHORT).show();
                 }
             }
-            @Override public void onAsync(AsyncTask asyncTask) { serviceDetailAsync = null; }
+            @Override public void onAsync(Object asyncTask) { serviceDetailAsync = null; }
             @Override public void onCancelled() { serviceDetailAsync = null; }
         });
     }
@@ -172,7 +171,7 @@ public class Partner_ServiceDetail_Activity extends AppCompatActivity {
                     Toast.makeText(mContext, Objects.toString(obj, getString(R.string.server_error)), Toast.LENGTH_SHORT).show();
                 }
             }
-            @Override public void onAsync(AsyncTask asyncTask) { deleteServiceAsync = null; }
+            @Override public void onAsync(Object asyncTask) { deleteServiceAsync = null; }
             @Override public void onCancelled() { deleteServiceAsync = null; }
         });
     }

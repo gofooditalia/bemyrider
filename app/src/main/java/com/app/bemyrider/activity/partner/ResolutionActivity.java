@@ -1,12 +1,10 @@
 package com.app.bemyrider.activity.partner;
 
+import android.app.Dialog;
 import android.content.Context;
-import android.os.AsyncTask;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
-import android.text.Html;
-
-import com.app.bemyrider.utils.LocaleManager;
-import com.app.bemyrider.utils.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
@@ -29,6 +27,8 @@ import com.app.bemyrider.model.DisputeListPojo;
 import com.app.bemyrider.model.DisputeListPojoItem;
 import com.app.bemyrider.model.MessageEvent;
 import com.app.bemyrider.utils.ConnectionManager;
+import com.app.bemyrider.utils.LocaleManager;
+import com.app.bemyrider.utils.Log;
 import com.app.bemyrider.utils.PrefsUtil;
 import com.app.bemyrider.utils.Utils;
 import com.google.gson.Gson;
@@ -63,7 +63,7 @@ public class ResolutionActivity extends AppCompatActivity {
     private RecyclerView.OnScrollListener listner;
     private LinearLayoutManager layoutManager;
     private boolean loading = true;
-    private AsyncTask disputeListAsync;
+    private WebServiceCall disputeListAsync;
     private Context context;
     private ConnectionManager connectionManager;
 
@@ -191,8 +191,8 @@ public class ResolutionActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onAsync(AsyncTask asyncTask) {
-                        disputeListAsync = asyncTask;
+                    public void onAsync(Object asyncTask) {
+                        disputeListAsync = null;
                     }
 
                     @Override
@@ -221,12 +221,16 @@ public class ResolutionActivity extends AppCompatActivity {
     @Override
     public void onStart() {
         super.onStart();
-        EventBus.getDefault().register(this);
+        if (!EventBus.getDefault().isRegistered(this)) {
+            EventBus.getDefault().register(this);
+        }
     }
 
     @Override
     public void onStop() {
-        EventBus.getDefault().unregister(this);
+        if (EventBus.getDefault().isRegistered(this)) {
+            EventBus.getDefault().unregister(this);
+        }
         super.onStop();
     }
 

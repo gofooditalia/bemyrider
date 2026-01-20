@@ -2,7 +2,6 @@ package com.app.bemyrider.fragment;
 
 import android.app.Activity;
 import android.content.Context;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -41,7 +40,7 @@ public class GuestDeliveryTypeFragment extends Fragment {
     private LinearLayoutManager layoutManager;
     private boolean isLoading = false;
     private int pastVisibleItems, visibleItemCount, totalItemCount, page = 1, total_page = 1;
-    private WebServiceCall searchListAsync; // MODIFICA QUI: Da AsyncTask a WebServiceCall
+    private WebServiceCall searchListAsync;
     private Context context;
     private Activity activity;
     private int currentIndex = 0;
@@ -165,7 +164,7 @@ public class GuestDeliveryTypeFragment extends Fragment {
                 }
                 isLoading = false;
             }
-            @Override public void onAsync(AsyncTask asyncTask) { /* Ignored, WebServiceCall no longer AsyncTask */ }
+            @Override public void onAsync(Object asyncTask) { /* Ignored, WebServiceCall no longer AsyncTask */ }
             @Override public void onCancelled() { searchListAsync = null; }
         });
     }
@@ -193,6 +192,6 @@ public class GuestDeliveryTypeFragment extends Fragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Utils.cancelAsyncTask(searchListAsync); // Questo chiamerà l'overload sbagliato, lo correggeremo dopo in Utils.java
+        Utils.cancelAsyncTask(searchListAsync);
     }
 }

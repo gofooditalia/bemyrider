@@ -2,7 +2,6 @@ package com.app.bemyrider.fragment.user;
 
 import android.app.Activity;
 import android.content.Context;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -51,7 +50,7 @@ public class DeliveryTypeFragment extends Fragment {
     private LinearLayoutManager layoutManager;
     private boolean isLoading = false;
     private int pastVisibleItems, visibleItemCount, totalItemCount, page = 1, total_page = 1;
-    private AsyncTask searchListAsync;
+    private WebServiceCall searchListAsync;
     private Context context;
     private Activity activity;
 
@@ -236,8 +235,8 @@ public class DeliveryTypeFragment extends Fragment {
             }
 
             @Override
-            public void onAsync(AsyncTask asyncTask) {
-                searchListAsync = asyncTask;
+            public void onAsync(Object asyncTask) {
+                searchListAsync = null;
             }
 
             @Override
@@ -273,8 +272,8 @@ public class DeliveryTypeFragment extends Fragment {
 
     @Override
     public void onDestroy() {
-        super.onDestroy();
         Utils.cancelAsyncTask(searchListAsync);
+        super.onDestroy();
     }
 
     @Override

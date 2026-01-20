@@ -1,7 +1,6 @@
 package com.app.bemyrider.fragment.user;
 
 import android.content.Context;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -43,7 +42,7 @@ public class CustomerMessagesFragment extends Fragment {
     private ArrayList<MessageListPojoItem> messageListPojoItems;
     private MessageListAdapter messageListAdapter;
     private LinearLayoutManager layoutManager;
-    private AsyncTask messageListAsync;
+    private WebServiceCall messageListAsync;
     private Context context;
     private AppCompatActivity activity;
 
@@ -54,7 +53,6 @@ public class CustomerMessagesFragment extends Fragment {
     private int page = 1;
     private int total_records = 0;
     private int pastVisibleItems = 0, visibleItemCount, totalItemCount;
-    /* pagination vars end */
 
     @Nullable
     @Override
@@ -164,8 +162,8 @@ public class CustomerMessagesFragment extends Fragment {
                     }
 
                     @Override
-                    public void onAsync(AsyncTask asyncTask) {
-                        messageListAsync = asyncTask;
+                    public void onAsync(Object asyncTask) {
+                        messageListAsync = null;
                     }
 
                     @Override

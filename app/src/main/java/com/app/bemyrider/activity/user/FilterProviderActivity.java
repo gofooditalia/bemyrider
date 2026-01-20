@@ -1,22 +1,17 @@
 package com.app.bemyrider.activity.user;
 
 import android.annotation.SuppressLint;
-import android.app.DatePickerDialog;
 import android.app.Dialog;
+import android.app.DatePickerDialog;
 import android.app.DialogFragment;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Editable;
-import android.text.Html;
 import android.text.TextWatcher;
 import android.text.format.DateFormat;
-
-import com.app.bemyrider.utils.LocaleManager;
-import com.app.bemyrider.utils.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
@@ -48,8 +43,10 @@ import com.app.bemyrider.model.user.FilterDataPOJO;
 import com.app.bemyrider.model.partner.SubCategoryItem;
 import com.app.bemyrider.model.partner.SubCategoryListPojo;
 import com.app.bemyrider.utils.ConnectionManager;
+import com.app.bemyrider.utils.Log;
 import com.app.bemyrider.utils.PrefsUtil;
 import com.app.bemyrider.utils.Utils;
+import com.app.bemyrider.utils.LocaleManager;
 import com.google.android.gms.common.api.Status;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
@@ -74,10 +71,7 @@ import java.util.Locale;
 public class FilterProviderActivity extends AppCompatActivity {
 
     private ActivityFilterProviderBinding binding;
-    //Filter services from search
-    //    edt_time,
     private DialogFragment dateFragment, timeFragment;
-    //    categoryId, serviceId, subCategoryId,
     private String serviceName, address, latitude, longitude, date, time;
     private ArrayList<SubCategoryItem> subCategoryItems = new ArrayList<>();
     private ArrayList<CategoryDataItem> categoryDataItems = new ArrayList<>();
@@ -90,7 +84,7 @@ public class FilterProviderActivity extends AppCompatActivity {
             minprice = "", maxprice = "";
     private Date currentDate;
     private int year, month, day;
-    private AsyncTask minMaxPriceAsync, subCatAsync, providerListAsync, serviceListAsync;
+    private WebServiceCall minMaxPriceAsync, subCatAsync, providerListAsync, serviceListAsync;
     private Context context;
     private ConnectionManager connectionManager;
     ActivityResultLauncher<Intent> locationActivityResultLauncher;
@@ -99,14 +93,16 @@ public class FilterProviderActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = DataBindingUtil.setContentView(FilterProviderActivity.this, R.layout.activity_filter_provider, null);
+        binding = DataBindingUtil.setContentView(FilterProviderActivity.this, R.layout.activity_filter_provider);
         this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 
         if (!Places.isInitialized()) {
             Places.initialize(getApplicationContext(), getResources().getString(R.string.google_api_key));
         }
 
-        setTitle(HtmlCompat.fromHtml("<font color=#FFFFFF>" + getString(R.string.filter_by),HtmlCompat.FROM_HTML_MODE_LEGACY));
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle(HtmlCompat.fromHtml("<font color=#FFFFFF>" + getString(R.string.filter_by), HtmlCompat.FROM_HTML_MODE_LEGACY));
+        }
 
         serviceName = getIntent().getStringExtra("serviceName");
         address = getIntent().getStringExtra("address");
@@ -126,16 +122,13 @@ public class FilterProviderActivity extends AppCompatActivity {
 
         dateFragment = new SelectDateFragment();
         timeFragment = new TimePickerFragment();
-        binding.txtLocation.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Autocomplete.IntentBuilder(
-                        AutocompleteActivityMode.FULLSCREEN, Arrays.asList(Place.Field.ID,
-                        Place.Field.DISPLAY_NAME, Place.Field.LOCATION, Place.Field.FORMATTED_ADDRESS))
-                        .build(FilterProviderActivity.this);
-                locationActivityResultLauncher.launch(intent);
+        binding.txtLocation.setOnClickListener(v -> {
+            Intent intent = new Autocomplete.IntentBuilder(
+                    AutocompleteActivityMode.FULLSCREEN, Arrays.asList(Place.Field.ID,
+                    Place.Field.DISPLAY_NAME, Place.Field.LOCATION, Place.Field.FORMATTED_ADDRESS))
+                    .build(FilterProviderActivity.this);
+            locationActivityResultLauncher.launch(intent);
 
-            }
         });
 
         binding.txtLocation.setText(address);
@@ -154,86 +147,67 @@ public class FilterProviderActivity extends AppCompatActivity {
 
         final Calendar calendar = Calendar.getInstance();
 
-        binding.EdtDate.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                currentDate = new Date();
-                month = calendar.get(Calendar.MONTH);
-                day = calendar.get(Calendar.DAY_OF_MONTH);
-                year = calendar.get(Calendar.YEAR);
+        binding.EdtDate.setOnClickListener(v -> {
+            currentDate = new Date();
+            month = calendar.get(Calendar.MONTH);
+            day = calendar.get(Calendar.DAY_OF_MONTH);
+            year = calendar.get(Calendar.YEAR);
 
-                DatePickerDialog.OnDateSetListener onDateSetListener = new DatePickerDialog.OnDateSetListener() {
-                    @Override
-                    public void onDateSet(DatePicker datePicker, int i, int i1, int i2) {
-                        binding.tilDate.setError(null);
+            DatePickerDialog.OnDateSetListener onDateSetListener = (datePicker, i, i1, i2) -> {
+                binding.tilDate.setError(null);
 
-                        calendar.set(calendar.YEAR, i);
-                        calendar.set(calendar.MONTH, i1);
-                        calendar.set(calendar.DAY_OF_MONTH, i2);
+                calendar.set(calendar.YEAR, i);
+                calendar.set(calendar.MONTH, i1);
+                calendar.set(calendar.DAY_OF_MONTH, i2);
 
-                        SimpleDateFormat sdfPassDate = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
-                        actualDate = sdfPassDate.format(calendar.getTime());
+                SimpleDateFormat sdfPassDate = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+                actualDate = sdfPassDate.format(calendar.getTime());
 
-                        SimpleDateFormat sdf = new SimpleDateFormat("dd-MMM-yyyy", Locale.US);
-                        binding.EdtDate.setText(sdf.format(calendar.getTime()));
-                    }
-                };
+                SimpleDateFormat sdf = new SimpleDateFormat("dd-MMM-yyyy", Locale.US);
+                binding.EdtDate.setText(sdf.format(calendar.getTime()));
+            };
 
-                DatePickerDialog.OnCancelListener onCancelListener = new DialogInterface.OnCancelListener() {
-                    @Override
-                    public void onCancel(DialogInterface dialogInterface) {
-                        binding.EdtDate.setText("");
-                    }
-                };
+            DatePickerDialog.OnCancelListener onCancelListener = dialogInterface -> binding.EdtDate.setText("");
 
-                DatePickerDialog datePickerDialog = new DatePickerDialog(FilterProviderActivity.this, onDateSetListener, year, month, day);
-                datePickerDialog.getDatePicker().setMinDate(currentDate.getTime());
-                datePickerDialog.setOnCancelListener(onCancelListener);
-                datePickerDialog.show();
-            }
+            DatePickerDialog datePickerDialog = new DatePickerDialog(FilterProviderActivity.this, onDateSetListener, year, month, day);
+            datePickerDialog.getDatePicker().setMinDate(currentDate.getTime());
+            datePickerDialog.setOnCancelListener(onCancelListener);
+            datePickerDialog.show();
         });
 
-        binding.rangeSeekbar5.addOnChangeListener(new RangeSlider.OnChangeListener() {
-            @SuppressLint("RestrictedApi")
-            @Override
-            public void onValueChange(@NonNull RangeSlider slider, float value, boolean fromUser) {
-                minprice = String.valueOf(slider.getValues().get(0));
-                maxprice = String.valueOf(slider.getValues().get(1));
-                binding.txtShowPrize.setText(String.format("%s%s - %s%s", PrefsUtil.with(FilterProviderActivity.this).readString("CurrencySign"), minprice, PrefsUtil.with(FilterProviderActivity.this).readString("CurrencySign"), maxprice));
-            }
+        binding.rangeSeekbar5.addOnChangeListener((slider, value, fromUser) -> {
+            minprice = String.valueOf(slider.getValues().get(0));
+            maxprice = String.valueOf(slider.getValues().get(1));
+            binding.txtShowPrize.setText(String.format("%s%s - %s%s", PrefsUtil.with(FilterProviderActivity.this).readString("CurrencySign"), minprice, PrefsUtil.with(FilterProviderActivity.this).readString("CurrencySign"), maxprice));
         });
 
-        binding.BtnApplyFilter.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (checkValidation()) {
-                    Intent i = new Intent(FilterProviderActivity.this, ProviderListActivity.class);
-                    Log.e("Intent", "onClick: " + selectedSubCatId);
-                    PrefsUtil.with(FilterProviderActivity.this).write("search_catId", selectedCatId);
-                    PrefsUtil.with(FilterProviderActivity.this).write("search_subcatId", selectedSubCatId);
-                    PrefsUtil.with(FilterProviderActivity.this).write("search_serviceId", selectedServiceId);
-                    PrefsUtil.with(FilterProviderActivity.this).write("search_actualDate", actualDate);
-                    PrefsUtil.with(FilterProviderActivity.this).write("search_displayDate", binding.EdtDate.getText().toString().trim());
-                    PrefsUtil.with(FilterProviderActivity.this).write("search_providerName", binding.EdtProviderName.getText().toString().trim());
-                    PrefsUtil.with(FilterProviderActivity.this).write("search_searchKeyword", binding.EdtSearchKeyword.getText().toString().trim());
-                    PrefsUtil.with(FilterProviderActivity.this).write("search_rating", String.valueOf(binding.ratingbarFilter.getRating()));
-                    i.putExtra("categoryId", selectedCatId);
-                    i.putExtra("subCategoryId", selectedSubCatId);
-                    i.putExtra("serviceId", selectedServiceId);
-                    i.putExtra("serviceName", selectedServiceName);
-                    i.putExtra("address", binding.txtLocation.getText().toString());
-                    i.putExtra("latitude", latitude);
-                    i.putExtra("longitude", longitude);
-                    i.putExtra("date", actualDate);
-                    i.putExtra("providerName", binding.EdtProviderName.getText().toString());
-                    i.putExtra("searchKeyWord", binding.EdtSearchKeyword.getText().toString());
-                    i.putExtra("rating", String.valueOf(binding.ratingbarFilter.getRating()));
-//                    i.putExtra("time", edt_time.getText().toString());
-                    i.putExtra("minRate", minprice);
-                    i.putExtra("maxRate", maxprice);
-                    startActivity(i);
-                    finish();
-                }
+        binding.BtnApplyFilter.setOnClickListener(v -> {
+            if (checkValidation()) {
+                Intent i = new Intent(FilterProviderActivity.this, ProviderListActivity.class);
+                Log.e("Intent", "onClick: " + selectedSubCatId);
+                PrefsUtil.with(FilterProviderActivity.this).write("search_catId", selectedCatId);
+                PrefsUtil.with(FilterProviderActivity.this).write("search_subcatId", selectedSubCatId);
+                PrefsUtil.with(FilterProviderActivity.this).write("search_serviceId", selectedServiceId);
+                PrefsUtil.with(FilterProviderActivity.this).write("search_actualDate", actualDate);
+                PrefsUtil.with(FilterProviderActivity.this).write("search_displayDate", binding.EdtDate.getText().toString().trim());
+                PrefsUtil.with(FilterProviderActivity.this).write("search_providerName", binding.EdtProviderName.getText().toString().trim());
+                PrefsUtil.with(FilterProviderActivity.this).write("search_searchKeyword", binding.EdtSearchKeyword.getText().toString().trim());
+                PrefsUtil.with(FilterProviderActivity.this).write("search_rating", String.valueOf(binding.ratingbarFilter.getRating()));
+                i.putExtra("categoryId", selectedCatId);
+                i.putExtra("subCategoryId", selectedSubCatId);
+                i.putExtra("serviceId", selectedServiceId);
+                i.putExtra("serviceName", selectedServiceName);
+                i.putExtra("address", binding.txtLocation.getText().toString());
+                i.putExtra("latitude", latitude);
+                i.putExtra("longitude", longitude);
+                i.putExtra("date", actualDate);
+                i.putExtra("providerName", binding.EdtProviderName.getText().toString());
+                i.putExtra("searchKeyWord", binding.EdtSearchKeyword.getText().toString());
+                i.putExtra("rating", String.valueOf(binding.ratingbarFilter.getRating()));
+                i.putExtra("minRate", minprice);
+                i.putExtra("maxRate", maxprice);
+                startActivity(i);
+                finish();
             }
         });
 
@@ -278,7 +252,6 @@ public class FilterProviderActivity extends AppCompatActivity {
         context = FilterProviderActivity.this;
         setupToolBar();
 
-        /*Init Internet Connection Class For No Internet Banner*/
         connectionManager = new ConnectionManager(context);
         connectionManager.registerInternetCheckReceiver();
         connectionManager.checkConnection(context);
@@ -310,30 +283,24 @@ public class FilterProviderActivity extends AppCompatActivity {
     }
 
     private void locationActivityResult() {
-        locationActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
-            @Override
-            public void onActivityResult(ActivityResult result) {
-                try {
-                    if (result.getResultCode() == RESULT_OK) {
-                        Place place = Autocomplete.getPlaceFromIntent(result.getData());
-                        Log.i("AUTO COMPLETE", "Place: " + place.getDisplayName() + ", " + place.getId());
-                        try {
-                            latitude = String.valueOf(place.getLocation().latitude);
-                            longitude = String.valueOf(place.getLocation().longitude);
-                            binding.txtLocation.setText(place.getDisplayName());
-                        } catch (NullPointerException npe) {
-                            npe.printStackTrace();
-                        }
-                    } else if (result.getResultCode() == AutocompleteActivity.RESULT_ERROR) {
-                        // TODO: Handle the error.
-                        Status status = Autocomplete.getStatusFromIntent(result.getData());
-                        Log.i("AUTO COMPLETE", status.getStatusMessage());
-                    } else if (result.getResultCode() == RESULT_CANCELED) {
-                        // The user canceled the operation.
+        locationActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+            try {
+                if (result.getResultCode() == RESULT_OK) {
+                    Place place = Autocomplete.getPlaceFromIntent(result.getData());
+                    Log.i("AUTO COMPLETE", "Place: " + place.getDisplayName() + ", " + place.getId());
+                    try {
+                        latitude = String.valueOf(place.getLocation().latitude);
+                        longitude = String.valueOf(place.getLocation().longitude);
+                        binding.txtLocation.setText(place.getDisplayName());
+                    } catch (NullPointerException npe) {
+                        npe.printStackTrace();
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
+                } else if (result.getResultCode() == AutocompleteActivity.RESULT_ERROR) {
+                    Status status = Autocomplete.getStatusFromIntent(result.getData());
+                    Log.i("AUTO COMPLETE", status.getStatusMessage());
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         });
     }
@@ -353,7 +320,6 @@ public class FilterProviderActivity extends AppCompatActivity {
             return false;
         } else if (binding.spSelectSubcat.getSelectedItemPosition() == 0) {
             Toast.makeText(this, getString(R.string.please_select_subcategory), Toast.LENGTH_SHORT).show();
-            //Toast.makeText(MainActivity.this, R.string.select_valid_address, Toast.LENGTH_LONG).show();
             return false;
         } else if (binding.spSelectService.getSelectedItemPosition() == 0) {
             Toast.makeText(FilterProviderActivity.this, R.string.provide_service_id, Toast.LENGTH_LONG).show();
@@ -363,7 +329,6 @@ public class FilterProviderActivity extends AppCompatActivity {
         }
     }
 
-    /*----------------- Min Max Price Api Call -------------------*/
     private void serviceCallMinMaxPrice() {
         binding.rangeSeekbar5.setVisibility(View.GONE);
         binding.progress.setVisibility(View.VISIBLE);
@@ -387,18 +352,14 @@ public class FilterProviderActivity extends AppCompatActivity {
                             binding.txtShowPrize.setText(String.format("%s%s - %s%s", PrefsUtil.with(FilterProviderActivity.this).readString("CurrencySign"), minprice, PrefsUtil.with(FilterProviderActivity.this).readString("CurrencySign"), maxprice));
                             binding.rangeSeekbar5.setValueFrom(Float.parseFloat(minprice));
                             binding.rangeSeekbar5.setValueTo(Float.parseFloat(maxprice));
-                            if ((Float.parseFloat(minMaxPricePojo.getData().getMinPrice()) - 10.0f) < 0) {
-                                binding.rangeSeekbar5.setValueFrom(Float.parseFloat(minprice));
-                            }
-
                         } else {
                             Toast.makeText(context, obj.toString(), Toast.LENGTH_SHORT).show();
                         }
                     }
 
                     @Override
-                    public void onAsync(AsyncTask asyncTask) {
-                        minMaxPriceAsync = asyncTask;
+                    public void onAsync(Object asyncTask) {
+                        minMaxPriceAsync = null;
                     }
 
                     @Override
@@ -408,7 +369,6 @@ public class FilterProviderActivity extends AppCompatActivity {
                 });
     }
 
-    /*----------------- Get Sub category Api Call --------------------*/
     private void getSubCatId() {
         binding.spSelectSubcat.setVisibility(View.GONE);
         binding.pgSubCat.setVisibility(View.VISIBLE);
@@ -443,8 +403,8 @@ public class FilterProviderActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onAsync(AsyncTask asyncTask) {
-                subCatAsync = asyncTask;
+            public void onAsync(Object asyncTask) {
+                subCatAsync = null;
             }
 
             @Override
@@ -455,7 +415,6 @@ public class FilterProviderActivity extends AppCompatActivity {
 
     }
 
-    /*--------- Get List(Cat,Sub Cat,Service Id) Api Call ----------*/
     private void getList() {
         binding.spSelectCat.setVisibility(View.GONE);
         binding.spSelectSubcat.setVisibility(View.GONE);
@@ -588,8 +547,8 @@ public class FilterProviderActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onAsync(AsyncTask asyncTask) {
-                providerListAsync = asyncTask;
+            public void onAsync(Object asyncTask) {
+                providerListAsync = null;
             }
 
             @Override
@@ -599,7 +558,6 @@ public class FilterProviderActivity extends AppCompatActivity {
         });
     }
 
-    /*-------------- Get Service Api Call ----------------*/
     private void getService() {
         binding.spSelectService.setVisibility(View.GONE);
         binding.pgService.setVisibility(View.VISIBLE);
@@ -634,8 +592,8 @@ public class FilterProviderActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onAsync(AsyncTask asyncTask) {
-                serviceListAsync = asyncTask;
+            public void onAsync(Object asyncTask) {
+                serviceListAsync = null;
             }
 
             @Override
@@ -695,12 +653,10 @@ public class FilterProviderActivity extends AppCompatActivity {
 
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
-            //Use the current time as the default values for the time picker
             final Calendar c = Calendar.getInstance();
             int hour = c.get(Calendar.HOUR_OF_DAY);
             int minute = c.get(Calendar.MINUTE);
 
-            //Create and return a new instance of TimePickerDialog
             return new TimePickerDialog(getActivity(), this, hour, minute,
                     DateFormat.is24HourFormat(getActivity()));
         }

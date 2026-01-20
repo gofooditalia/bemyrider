@@ -1,9 +1,7 @@
 package com.app.bemyrider.fragment.user;
 
 import android.content.Context;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import com.app.bemyrider.utils.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +21,7 @@ import com.app.bemyrider.model.CustomerHistoryPojo;
 import com.app.bemyrider.model.CustomerHistoryPojoItem;
 import com.app.bemyrider.utils.PrefsUtil;
 import com.app.bemyrider.utils.Utils;
+import com.app.bemyrider.utils.Log;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -42,7 +41,7 @@ public class PreviousServiceFragment extends Fragment {
     private ArrayList<CustomerHistoryPojoItem> historyPojoItems;
     private LinearLayoutManager layoutManager;
     private boolean isLoading = false;
-    private AsyncTask previousServiceAsync;
+    private WebServiceCall previousServiceAsync;
     private Context context;
 
     @Override
@@ -131,8 +130,8 @@ public class PreviousServiceFragment extends Fragment {
             }
 
             @Override
-            public void onAsync(AsyncTask asyncTask) {
-                previousServiceAsync = asyncTask;
+            public void onAsync(Object asyncTask) {
+                previousServiceAsync = null;
             }
 
             @Override

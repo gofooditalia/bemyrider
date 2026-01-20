@@ -2,12 +2,7 @@ package com.app.bemyrider.activity.user;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.text.Html;
-
-import com.app.bemyrider.utils.LocaleManager;
-import com.app.bemyrider.utils.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
@@ -30,6 +25,8 @@ import com.app.bemyrider.model.DisputeListPojo;
 import com.app.bemyrider.model.DisputeListPojoItem;
 import com.app.bemyrider.model.MessageEvent;
 import com.app.bemyrider.utils.ConnectionManager;
+import com.app.bemyrider.utils.LocaleManager;
+import com.app.bemyrider.utils.Log;
 import com.app.bemyrider.utils.PrefsUtil;
 import com.app.bemyrider.utils.Utils;
 import com.google.gson.Gson;
@@ -55,15 +52,14 @@ import java.util.List;
 
 public class DisputeListActivity extends AppCompatActivity {
 
-    //Dispute Listing for User
     private ActivityDisputelistBinding binding;
     private List<DisputeListPojoItem> disputeList;
     private DisputeListAdapter adapter;
-    private int pastVisibleItems, visibleItemCount, totalItemCount;
+    private int visibleItemCount, totalItemCount, pastVisibleItems;
     private int page = 1;
     private int total_records = 0;
     private RecyclerView.OnScrollListener listner;
-    private AsyncTask disputeListAsync;
+    private WebServiceCall disputeListAsync;
     private LinearLayoutManager layoutManager;
     private boolean loading = true;
     private SharedPreferences preferences;
@@ -111,7 +107,6 @@ public class DisputeListActivity extends AppCompatActivity {
         context = DisputeListActivity.this;
         initToolBar();
 
-        /*Init Internet Connection Class For No Internet Banner*/
         connectionManager = new ConnectionManager(context);
         connectionManager.registerInternetCheckReceiver();
         connectionManager.checkConnection(context);
@@ -140,7 +135,6 @@ public class DisputeListActivity extends AppCompatActivity {
         binding.rvDisputeList.setAdapter(adapter);
     }
 
-    /*----------------- Get Dispute List Api Call ------------------*/
     private void getDisputeList(final boolean isClear) {
         if (isClear) {
             page = 1;
@@ -155,9 +149,7 @@ public class DisputeListActivity extends AppCompatActivity {
         LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
 
         textParams.put("user_id", PrefsUtil.with(DisputeListActivity.this).readString("UserId"));
-
         textParams.put("page", String.valueOf(page));
-
         textParams.put("lId", preferences.getString("lanId", "1"));
 
         new WebServiceCall(this, url, textParams, DisputeListPojo.class, false,
@@ -169,7 +161,7 @@ public class DisputeListActivity extends AppCompatActivity {
                         }
                         if (status) {
                             DisputeListPojo disputeListPojo = (DisputeListPojo) obj;
-                            List<DisputeListPojoItem> list = ((DisputeListPojo) obj).getData().getDisputeList();
+                            List<DisputeListPojoItem> list = disputeListPojo.getData().getDisputeList();
                             if (isClear) {
                                 disputeList.clear();
                             }
@@ -198,16 +190,8 @@ public class DisputeListActivity extends AppCompatActivity {
                                     Toast.LENGTH_SHORT).show();
                         }
                     }
-
-                    @Override
-                    public void onAsync(AsyncTask asyncTask) {
-                        disputeListAsync = asyncTask;
-                    }
-
-                    @Override
-                    public void onCancelled() {
-                        disputeListAsync = null;
-                    }
+                    @Override public void onAsync(Object obj) { disputeListAsync = null; }
+                    @Override public void onCancelled() { disputeListAsync = null; }
                 });
     }
 
@@ -215,22 +199,13 @@ public class DisputeListActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
             onBackPressed();
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        EventBus.getDefault().register(this);
-    }
-
-    @Override
-    public void onStop() {
-        EventBus.getDefault().unregister(this);
-        super.onStop();
-    }
-
+    @Override public void onStart() { super.onStart(); if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this); }
+    @Override public void onStop() { super.onStop(); EventBus.getDefault().unregister(this); }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMessageEvent(MessageEvent event) {
@@ -241,9 +216,7 @@ public class DisputeListActivity extends AppCompatActivity {
                     getOfflineDetails();
                 }
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        } catch (Exception e) { e.printStackTrace(); }
 
     }
 
@@ -254,7 +227,7 @@ public class DisputeListActivity extends AppCompatActivity {
             binding.rvDisputeList.setVisibility(View.VISIBLE);
             Log.e("Offline", "onMessageEvent: My Dispute");
             File f = new File(getFilesDir().getPath() + "/" + "offline.json");
-            //check whether file exists
+            if (!f.exists()) return;
             FileInputStream is = new FileInputStream(f);
             int size = is.available();
             byte[] buffer = new byte[size];
@@ -265,48 +238,25 @@ public class DisputeListActivity extends AppCompatActivity {
             JSONObject dataObj = object.getJSONObject("data");
             JSONArray serviceList = dataObj.getJSONArray("disputeList");
             GsonBuilder gsonBuilder = new GsonBuilder();
-            gsonBuilder.setDateFormat("M/d/yy hh:mm a"); //Format of our JSON dates
+            gsonBuilder.setDateFormat("M/d/yy hh:mm a");
             Gson gson = gsonBuilder.create();
-            Type listType = new TypeToken<List<DisputeListPojoItem>>() {
-            }.getType();
+            Type listType = new TypeToken<List<DisputeListPojoItem>>() {}.getType();
             ArrayList<DisputeListPojoItem> arrayList = gson.fromJson(serviceList.toString(), listType);
-
-            //MyServiceListPojo response_myservice = new MyServiceListPojo();
-            // item.setData();
             disputeList.addAll(arrayList);
-            if (!(arrayList.size() > 0)) {
+            if (disputeList.isEmpty()) {
                 binding.txtNoRecordDis.setVisibility(View.VISIBLE);
-
             }
-           /* if (response_myservice.getData().size() > 0) {
-                loading = true;
-            }*/
-//                    next_avail_record = arrayList.size()
-
             adapter.notifyDataSetChanged();
             binding.rvDisputeList.removeOnScrollListener(listner);
-//            new ConnectionCheck().showDialogWithMessage(DisputeListActivity.this, getString(R.string.sync_data_message)).show();
-
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     @Override
     protected void onDestroy() {
-        try {
-            connectionManager.unregisterReceiver();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        try { connectionManager.unregisterReceiver(); } catch (Exception e) { e.printStackTrace(); }
         Utils.cancelAsyncTask(disputeListAsync);
         super.onDestroy();
     }
 
-    @Override
-    protected void attachBaseContext(Context newBase) {
-        super.attachBaseContext(LocaleManager.onAttach(newBase));
-    }
+    @Override protected void attachBaseContext(Context newBase) { super.attachBaseContext(LocaleManager.onAttach(newBase)); }
 }
-

@@ -2,9 +2,7 @@ package com.app.bemyrider.activity.partner;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.text.Html;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
@@ -25,6 +23,7 @@ import com.app.bemyrider.model.MessageListPojo;
 import com.app.bemyrider.model.MessageListPojoItem;
 import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.LocaleManager;
+import com.app.bemyrider.utils.Log;
 import com.app.bemyrider.utils.PrefsUtil;
 import com.app.bemyrider.utils.Utils;
 
@@ -42,7 +41,7 @@ public class Messages_Activity extends AppCompatActivity {
     private MessageListAdapter messageListAdapter;
     private LinearLayoutManager layoutManager;
     private SharedPreferences preferences;
-    private AsyncTask messageListAsync;
+    private WebServiceCall messageListAsync;
     private Context context;
     private ConnectionManager connectionManager;
 
@@ -56,7 +55,7 @@ public class Messages_Activity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = DataBindingUtil.setContentView(Messages_Activity.this, R.layout.partner_activity_messages, null);
+        binding = DataBindingUtil.setContentView(Messages_Activity.this, R.layout.partner_activity_messages);
 
         initViews();
 
@@ -169,8 +168,8 @@ public class Messages_Activity extends AppCompatActivity {
             }
 
             @Override
-            public void onAsync(AsyncTask asyncTask) {
-                messageListAsync = asyncTask;
+            public void onAsync(Object asyncTask) {
+                messageListAsync = null;
             }
 
             @Override
@@ -184,7 +183,8 @@ public class Messages_Activity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == android.R.id.home) {
-            finish();
+            onBackPressed();
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }

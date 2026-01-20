@@ -4,9 +4,7 @@ import static android.app.Activity.RESULT_OK;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import com.app.bemyrider.utils.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,6 +26,7 @@ import com.app.bemyrider.WebServices.WebServiceUrl;
 import com.app.bemyrider.databinding.FragmentServiceListingBinding;
 import com.app.bemyrider.model.CustomerHistoryPojo;
 import com.app.bemyrider.model.CustomerHistoryPojoItem;
+import com.app.bemyrider.utils.Log;
 import com.app.bemyrider.utils.PrefsUtil;
 import com.app.bemyrider.utils.Utils;
 
@@ -49,7 +48,7 @@ public class UpcomingServiceFragment extends Fragment {
     private ArrayList<CustomerHistoryPojoItem> historyPojoItems;
     private LinearLayoutManager layoutManager;
     private boolean isLoading = false;
-    private AsyncTask upcomingServiceAsync;
+    private WebServiceCall upcomingServiceAsync;
     private Context context;
     ActivityResultLauncher<Intent> myActivityResultLauncher;
 
@@ -151,8 +150,8 @@ public class UpcomingServiceFragment extends Fragment {
             }
 
             @Override
-            public void onAsync(AsyncTask asyncTask) {
-                upcomingServiceAsync = asyncTask;
+            public void onAsync(Object asyncTask) {
+                upcomingServiceAsync = null;
             }
 
             @Override

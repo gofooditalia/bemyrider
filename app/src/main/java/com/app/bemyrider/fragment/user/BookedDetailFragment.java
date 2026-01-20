@@ -5,14 +5,11 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
@@ -50,7 +47,7 @@ public class BookedDetailFragment extends Fragment {
             "5 Hours", "6 Hours", "7 Hours", "8 Hours", "9 Hours", "10 Hours", "11 Hours",
             "12 Hours", "13 Hours", "14 Hours", "15 Hours", "16 Hours", "17 Hours", "18 Hours",
             "19 Hours", "20 Hours", "21 Hours", "22 Hours", "23 Hours", "24 Hours"};*/
-    private AsyncTask acceptProposalAsync, sendProposalAsync;
+    private WebServiceCall acceptProposalAsync, sendProposalAsync;
     private Context context;
 
     @Override
@@ -196,8 +193,8 @@ public class BookedDetailFragment extends Fragment {
             }
 
             @Override
-            public void onAsync(AsyncTask asyncTask) {
-                acceptProposalAsync = asyncTask;
+            public void onAsync(Object asyncTask) {
+                acceptProposalAsync = null;
             }
 
             @Override
@@ -242,8 +239,8 @@ public class BookedDetailFragment extends Fragment {
             }
 
             @Override
-            public void onAsync(AsyncTask asyncTask) {
-                sendProposalAsync = asyncTask;
+            public void onAsync(Object asyncTask) {
+                sendProposalAsync = null;
             }
 
             @Override

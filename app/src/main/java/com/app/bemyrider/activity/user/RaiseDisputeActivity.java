@@ -4,9 +4,7 @@ import static com.app.bemyrider.utils.Utils.EMOJI_FILTER;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.text.Html;
 import android.text.InputFilter;
 import android.view.MenuItem;
 import android.view.View;
@@ -24,6 +22,7 @@ import com.app.bemyrider.databinding.ActivityRaiseDisputeBinding;
 import com.app.bemyrider.model.CommonPojo;
 import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.LocaleManager;
+import com.app.bemyrider.utils.Log;
 import com.app.bemyrider.utils.PrefsUtil;
 import com.app.bemyrider.utils.Utils;
 
@@ -37,7 +36,7 @@ public class RaiseDisputeActivity extends AppCompatActivity {
 
     private ActivityRaiseDisputeBinding binding;
     private String serviceRequestId = "";
-    private AsyncTask raiseDisputeAsync;
+    private WebServiceCall raiseDisputeAsync;
     private Context context;
     private ConnectionManager connectionManager;
 
@@ -73,7 +72,6 @@ public class RaiseDisputeActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
-        /*Init Internet Connection Class For No Internet Banner*/
         connectionManager = new ConnectionManager(context);
         connectionManager.registerInternetCheckReceiver();
         connectionManager.checkConnection(context);
@@ -81,7 +79,6 @@ public class RaiseDisputeActivity extends AppCompatActivity {
         binding.edtSubject.setFilters(new InputFilter[]{EMOJI_FILTER});
     }
 
-    /*------------------- Raise Dispute Api Call ---------------------*/
     private void raiseDispute() {
         binding.pgSubmit.setVisibility(View.VISIBLE);
 
@@ -89,11 +86,8 @@ public class RaiseDisputeActivity extends AppCompatActivity {
         LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
 
         textParams.put("service_request_id", serviceRequestId);
-
         textParams.put("user_id", PrefsUtil.with(RaiseDisputeActivity.this).readString("UserId"));
-
         textParams.put("title", binding.edtSubject.getText().toString().trim());
-
         textParams.put("message", Utils.encodeEmoji(binding.edtDesc.getText().toString().trim()));
 
         new WebServiceCall(this, url, textParams, CommonPojo.class, false,
@@ -104,41 +98,28 @@ public class RaiseDisputeActivity extends AppCompatActivity {
                         binding.btnSubmit.setClickable(true);
                         if (status) {
                             CommonPojo pojo = (CommonPojo) obj;
-                            Toast.makeText(RaiseDisputeActivity.this, pojo.getMessage(),
-                                    Toast.LENGTH_SHORT).show();
+                            Toast.makeText(RaiseDisputeActivity.this, pojo.getMessage(), Toast.LENGTH_SHORT).show();
                             Intent intent = new Intent(RaiseDisputeActivity.this, DisputeListActivity.class);
                             startActivity(intent);
                             finish();
                         } else {
-                            Toast.makeText(RaiseDisputeActivity.this, (String) obj,
-                                    Toast.LENGTH_SHORT).show();
+                            Toast.makeText(RaiseDisputeActivity.this, (String) obj, Toast.LENGTH_SHORT).show();
                         }
                     }
-
-                    @Override
-                    public void onAsync(AsyncTask asyncTask) {
-                        raiseDisputeAsync = asyncTask;
-                    }
-
-                    @Override
-                    public void onCancelled() {
-                        raiseDisputeAsync = null;
-                    }
+                    @Override public void onAsync(Object obj) { raiseDisputeAsync = null; }
+                    @Override public void onCancelled() { raiseDisputeAsync = null; }
                 });
     }
 
     private boolean checkValidation() {
-
         String strSubject = binding.edtSubject.getText().toString().trim();
         String strDesc = binding.edtDesc.getText().toString().trim();
 
         if (strSubject.length() <= 0) {
-            binding.tilSubject.setErrorEnabled(true);
             binding.tilSubject.setError(getString(R.string.provide_subject));
             binding.edtSubject.requestFocus();
             return false;
         } else if (strDesc.length() <= 0) {
-            binding.tilDesc.setErrorEnabled(true);
             binding.tilDesc.setError(getString(R.string.provide_desc));
             binding.edtDesc.requestFocus();
             return false;
@@ -150,17 +131,14 @@ public class RaiseDisputeActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
             onBackPressed();
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
     @Override
     protected void onDestroy() {
-        try {
-            connectionManager.unregisterReceiver();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        try { connectionManager.unregisterReceiver(); } catch (Exception e) { e.printStackTrace(); }
         Utils.cancelAsyncTask(raiseDisputeAsync);
         super.onDestroy();
     }
@@ -170,4 +148,3 @@ public class RaiseDisputeActivity extends AppCompatActivity {
         super.attachBaseContext(LocaleManager.onAttach(newBase));
     }
 }
-

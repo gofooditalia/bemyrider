@@ -4,13 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
-
-import com.app.bemyrider.databinding.FragmentWalletBinding;
-import com.app.bemyrider.utils.LocaleManager;
-import com.app.bemyrider.utils.Log;
-
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -31,6 +25,7 @@ import com.app.bemyrider.AsyncTask.ConnectionCheck;
 import com.app.bemyrider.AsyncTask.WebServiceCall;
 import com.app.bemyrider.R;
 import com.app.bemyrider.WebServices.WebServiceUrl;
+import com.app.bemyrider.databinding.FragmentWalletBinding;
 import com.app.bemyrider.model.CommonPojo;
 import com.app.bemyrider.model.DepositHistoryItem;
 import com.app.bemyrider.model.DepositHistoryPojo;
@@ -40,6 +35,8 @@ import com.app.bemyrider.model.RedeemHistoryPojoItem;
 import com.app.bemyrider.model.WalletDetailsPojo;
 import com.app.bemyrider.model.WalletDetailsPojoItem;
 import com.app.bemyrider.utils.ConnectionManager;
+import com.app.bemyrider.utils.LocaleManager;
+import com.app.bemyrider.utils.Log;
 import com.app.bemyrider.utils.PrefsUtil;
 import com.app.bemyrider.utils.Utils;
 import com.google.gson.Gson;
@@ -67,7 +64,7 @@ public class WalletActivity extends AppCompatActivity {
     private ArrayList<RedeemHistoryPojoItem> redeemHistoryPojoItems;
     private DepositHistoryAdapter depositHistoryAdapter;
     private RedeemRequestAdapter redeemRequestAdapter;
-    private AsyncTask redeemHistoryAsync, depositHistoryAsync, requestRedeemAsync,
+    private WebServiceCall redeemHistoryAsync, depositHistoryAsync, requestRedeemAsync,
             walletDetailAsync;
     private Context context;
     private Activity activity;
@@ -83,16 +80,6 @@ public class WalletActivity extends AppCompatActivity {
         binding = DataBindingUtil.setContentView(activity, R.layout.fragment_wallet, null);
 
         initViews();
-
-        if (PrefsUtil.with(activity).readString("UserType").equals("c")) {
-            binding.layoutRedeem.setVisibility(View.GONE);
-            binding.llBtnRedeem.setVisibility(View.GONE);
-            //binding.viewRedeem.setVisibility(View.GONE);
-            serviceCallGetDepositHistory();
-        } else {
-            binding.btnDeposite.setVisibility(View.GONE);
-            serviceCallGetRedeemHistory();
-        }
 
         if (new ConnectionCheck().isNetworkConnected(this)) {
             serviceCallGetWalletDetails();
@@ -183,8 +170,8 @@ public class WalletActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onAsync(AsyncTask asyncTask) {
-                redeemHistoryAsync = asyncTask;
+            public void onAsync(Object asyncTask) {
+                redeemHistoryAsync = (WebServiceCall) asyncTask;
             }
 
             @Override
@@ -224,8 +211,8 @@ public class WalletActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onAsync(AsyncTask asyncTask) {
-                depositHistoryAsync = asyncTask;
+            public void onAsync(Object asyncTask) {
+                depositHistoryAsync = (WebServiceCall) asyncTask;
             }
 
             @Override
@@ -258,8 +245,8 @@ public class WalletActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onAsync(AsyncTask asyncTask) {
-                requestRedeemAsync = asyncTask;
+            public void onAsync(Object asyncTask) {
+                requestRedeemAsync = (WebServiceCall) asyncTask;
             }
 
             @Override
@@ -299,8 +286,8 @@ public class WalletActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onAsync(AsyncTask asyncTask) {
-                walletDetailAsync = asyncTask;
+            public void onAsync(Object asyncTask) {
+                walletDetailAsync = (WebServiceCall) asyncTask;
             }
 
             @Override

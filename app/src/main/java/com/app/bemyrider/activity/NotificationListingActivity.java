@@ -13,6 +13,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.core.text.HtmlCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.recyclerview.widget.DefaultItemAnimator;
@@ -50,7 +51,7 @@ public class NotificationListingActivity extends AppCompatActivity {
     private ArrayList<NotificationListItem> notifications = new ArrayList<>();
     private int pastVisibleItems, visibleItemCount, totalItemCount;
     private boolean isLoading = false;
-    private AsyncTask notificationListAsync;
+    private WebServiceCall notificationListAsync;
     private Context context;
     private Activity activity;
     private ConnectionManager connectionManager;
@@ -176,8 +177,8 @@ public class NotificationListingActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onAsync(AsyncTask asyncTask) {
-                        notificationListAsync = asyncTask;
+                    public void onAsync(Object object) {
+                        notificationListAsync = (WebServiceCall) object;
                     }
 
                     @Override

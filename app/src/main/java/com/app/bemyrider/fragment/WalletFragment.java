@@ -4,7 +4,6 @@ import static android.app.Activity.RESULT_OK;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -64,7 +63,7 @@ public class WalletFragment extends Fragment {
     private ArrayList<RedeemHistoryPojoItem> redeemHistoryPojoItems;
     private DepositHistoryAdapter depositHistoryAdapter;
     private RedeemRequestAdapter redeemRequestAdapter;
-    private AsyncTask redeemHistoryAsync, depositHistoryAsync, requestRedeemAsync,
+    private WebServiceCall redeemHistoryAsync, depositHistoryAsync, requestRedeemAsync,
             walletDetailAsync;
     private Context context;
     private AppCompatActivity activity;
@@ -180,8 +179,8 @@ public class WalletFragment extends Fragment {
                     }
 
                     @Override
-                    public void onAsync(AsyncTask asyncTask) {
-                        redeemHistoryAsync = asyncTask;
+                    public void onAsync(Object asyncTask) {
+                        redeemHistoryAsync = null;
                     }
 
                     @Override
@@ -221,8 +220,8 @@ public class WalletFragment extends Fragment {
                     }
 
                     @Override
-                    public void onAsync(AsyncTask asyncTask) {
-                        depositHistoryAsync = asyncTask;
+                    public void onAsync(Object asyncTask) {
+                        depositHistoryAsync = null;
                     }
 
                     @Override
@@ -255,8 +254,8 @@ public class WalletFragment extends Fragment {
                     }
 
                     @Override
-                    public void onAsync(AsyncTask asyncTask) {
-                        requestRedeemAsync = asyncTask;
+                    public void onAsync(Object asyncTask) {
+                        requestRedeemAsync = null;
                     }
 
                     @Override
@@ -302,8 +301,8 @@ public class WalletFragment extends Fragment {
                     }
 
                     @Override
-                    public void onAsync(AsyncTask asyncTask) {
-                        walletDetailAsync = asyncTask;
+                    public void onAsync(Object asyncTask) {
+                        walletDetailAsync = null;
                     }
 
                     @Override

@@ -31,6 +31,7 @@ import com.app.bemyrider.activity.WebViewActivity;
 import com.app.bemyrider.databinding.ActivitySignupBinding;
 import com.app.bemyrider.model.NewLoginPojo;
 import com.app.bemyrider.model.NewLoginPojoItem;
+import com.app.bemyrider.model.RegistrationPojo;
 import com.app.bemyrider.model.partner.CountryCodePojoItem;
 import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.LocaleManager;
@@ -57,7 +58,7 @@ public class SignupActivity extends AppCompatActivity {
     private ArrayAdapter<CountryCodePojoItem> countrycodeAdapter;
     private AppSignupViewModel viewModel;
     private boolean doubleBackToExitPressedOnce = false;
-    private final Context mContext = SignupActivity.this; 
+    private final Context mContext = SignupActivity.this;
 
 
     @Override
@@ -183,16 +184,16 @@ public class SignupActivity extends AppCompatActivity {
         String rePassword = binding.etSignupConfirmpassword.getText().toString().trim();
         String deviceToken = PrefsUtil.with(SignupActivity.this).readString("device_token");
 
-        // Use NewLoginPojo instead of RegistrationPojo as AppRepository unifies response types
+        // Updated to expect RegistrationPojo from ViewModel
         viewModel.signup(firstName, lastName, email, strUserType, contactNumber, password, rePassword, selectedCountryCodePosition, deviceToken)
-            .observe(this, newLoginPojo -> {
+            .observe(this, registrationPojo -> {
                 binding.progressSignUp.setVisibility(View.GONE);
                 binding.btnSubmit.setClickable(true);
                 
-                if (newLoginPojo != null && newLoginPojo.isStatus()) {
+                if (registrationPojo != null && registrationPojo.isStatus()) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
                     builder.setCancelable(false);
-                    builder.setMessage(newLoginPojo.getMessage());
+                    builder.setMessage(registrationPojo.getMessage());
                     builder.setPositiveButton(R.string.ok, (dialog, which) -> {
                         dialog.dismiss();
                         Intent intent = new Intent(SignupActivity.this, LoginActivity.class);
@@ -201,7 +202,7 @@ public class SignupActivity extends AppCompatActivity {
                     });
                     builder.create().show();
                 } else {
-                    String msg = newLoginPojo != null ? newLoginPojo.getMessage() : getString(R.string.server_error);
+                    String msg = registrationPojo != null ? registrationPojo.getMessage() : getString(R.string.server_error);
                     Toast.makeText(mContext, msg, Toast.LENGTH_SHORT).show();
                 }
             });

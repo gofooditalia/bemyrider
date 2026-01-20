@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
@@ -56,7 +55,7 @@ public class Partner_ServiceRequestDetail_Tablayout_Activity extends AppCompatAc
             R.drawable.tabicon_servicedetail_style,
             R.drawable.tabicon_costsummary_style
     };
-    private WebServiceCall downloadInvoiceAsync, serviceDetailAsync; // MODIFICA QUI: Da AsyncTask a WebServiceCall
+    private WebServiceCall downloadInvoiceAsync, serviceDetailAsync;
     private ConnectionManager connectionManager;
     private String serviceRequestId = "";
 
@@ -111,7 +110,7 @@ public class Partner_ServiceRequestDetail_Tablayout_Activity extends AppCompatAc
                     }
                 }
             }
-            @Override public void onAsync(AsyncTask asyncTask) { downloadInvoiceAsync = null; }
+            @Override public void onAsync(Object asyncTask) { downloadInvoiceAsync = null; }
             @Override public void onCancelled() { downloadInvoiceAsync = null; }
         });
     }
@@ -143,7 +142,7 @@ public class Partner_ServiceRequestDetail_Tablayout_Activity extends AppCompatAc
                             Toast.makeText(Partner_ServiceRequestDetail_Tablayout_Activity.this, Objects.toString(obj, getString(R.string.server_error)), Toast.LENGTH_SHORT).show();
                         }
                     }
-                    @Override public void onAsync(AsyncTask asyncTask) { serviceDetailAsync = null; }
+                    @Override public void onAsync(Object asyncTask) { serviceDetailAsync = null; }
                     @Override public void onCancelled() { serviceDetailAsync = null; }
                 });
     }

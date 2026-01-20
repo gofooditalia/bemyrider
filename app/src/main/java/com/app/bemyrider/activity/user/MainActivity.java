@@ -9,10 +9,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
-import android.text.Html;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
@@ -41,8 +38,15 @@ import com.app.bemyrider.activity.AccountSettingActivity;
 import com.app.bemyrider.activity.ContactUsActivity;
 import com.app.bemyrider.activity.FeedbackActivity;
 import com.app.bemyrider.activity.InfoPageActivity;
-import com.app.bemyrider.activity.LoginActivity;
 import com.app.bemyrider.activity.NotificationListingActivity;
+import com.app.bemyrider.activity.LoginActivity;
+import com.app.bemyrider.activity.user.SearchServiceActivity;
+import com.app.bemyrider.activity.user.FavouriteServicesActivity;
+import com.app.bemyrider.activity.user.MessagesActivity;
+import com.app.bemyrider.activity.user.PaymentHistoryActivity;
+import com.app.bemyrider.activity.user.ServiceHistoryActivity;
+import com.app.bemyrider.activity.user.UserProfileActivity;
+import com.app.bemyrider.activity.user.WalletActivity;
 import com.app.bemyrider.databinding.ActivityMainBinding;
 import com.app.bemyrider.model.CommonPojo;
 import com.app.bemyrider.model.MessageEvent;
@@ -62,10 +66,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
-/**
- * Modified by Hardik Talaviya on 9/12/19.
- */
-
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
@@ -78,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
     private int selectedPos = 0;
     private ArrayList<CategoryDataItem> categoryDataItems = new ArrayList<>();
     private SelectCategoryAdapter categoryAdapter;
-    private AsyncTask userLogoutAsync, categoryListAsync;
+    private WebServiceCall userLogoutAsync, categoryListAsync;
     private Context context;
     private Activity activity;
     private ConnectionManager connectionManager;
@@ -90,7 +90,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_ACTION_BAR_OVERLAY);
-        binding = DataBindingUtil.setContentView(MainActivity.this, R.layout.activity_main, null);
+        binding = DataBindingUtil.setContentView(MainActivity.this, R.layout.activity_main);
 
         if (getIntent().hasExtra(PROVIDER_ID)) {
             if (getIntent().getStringExtra(PROVIDER_ID) != null
@@ -126,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean checkOS() {
-        return (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1);
+        return (android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.LOLLIPOP_MR1);
     }
 
 
@@ -136,7 +136,6 @@ public class MainActivity extends AppCompatActivity {
 
         setUpToolBar();
 
-        /*Init Internet Connection Class For No Internet Banner*/
         connectionManager = new ConnectionManager(context);
         connectionManager.registerInternetCheckReceiver();
         connectionManager.checkConnection(context);
@@ -195,25 +194,6 @@ public class MainActivity extends AppCompatActivity {
         adapter = new DrawerItemCustomAdapter(this, R.layout.drawerlist_rowitem, drawerItem, selectedPos);
         binding.leftDrawer.setAdapter(adapter);
         binding.leftDrawer.setOnItemClickListener(new DrawerItemClickListener());
-
-        /*mDrawerToggle = new ActionBarDrawerToggle(this, binding.drawerLayout, toolbar, R.string.app_name, R.string.app_name) {
-            public void onDrawerClosed(View view) {
-                supportInvalidateOptionsMenu();
-            }
-
-            public void onDrawerOpened(View drawerView) {
-                supportInvalidateOptionsMenu();
-            }
-
-            @Override
-            public void onDrawerSlide(View drawerView, float slideOffset) {
-                super.onDrawerSlide(drawerView, slideOffset);
-                binding.contentFrame.setTranslationX(slideOffset * drawerView.getWidth());
-                binding.drawerLayout.bringChildToFront(drawerView);
-                binding.drawerLayout.setScrimColor(Color.TRANSPARENT);
-                binding.drawerLayout.requestLayout();
-            }
-        };*/
 
         binding.drawerLayout.addDrawerListener(mDrawerToggle);
     }
@@ -311,10 +291,6 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
         return false;
-        /*if (mDrawerToggle.onOptionsItemSelected(item)) {
-            return true;
-        }
-        return super.onOptionsItemSelected(item);*/
     }
 
     @Override
@@ -324,7 +300,6 @@ public class MainActivity extends AppCompatActivity {
             mDrawerToggle.syncState();
     }
 
-    /*----------------- Get Category Api Call -------------------*/
     private void getCategory() {
         binding.rvCategories.setVisibility(View.GONE);
         binding.progress.setVisibility(View.VISIBLE);
@@ -347,27 +322,17 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(context, obj.toString(), Toast.LENGTH_SHORT).show();
                 }
             }
-
-            @Override
-            public void onAsync(AsyncTask asyncTask) {
-                categoryListAsync = asyncTask;
-            }
-
-            @Override
-            public void onCancelled() {
-                categoryListAsync = null;
-            }
+            @Override public void onAsync(Object obj) { categoryListAsync = null; }
+            @Override public void onCancelled() { categoryListAsync = null; }
         });
     }
 
-    /*--------------------- Log Out Api Call ----------------------*/
     private void serviceCallLogout() {
         LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
 
         SecurePrefsUtil securePrefs = SecurePrefsUtil.with(MainActivity.this);
         PrefsUtil prefsUtil = PrefsUtil.with(MainActivity.this);
         
-        // Fallback a PrefsUtil se SecurePrefsUtil non ha UserId
         String userId = securePrefs.readString("UserId");
         if (userId == null || userId.isEmpty()) {
             userId = prefsUtil.readString("UserId");
@@ -386,33 +351,27 @@ public class MainActivity extends AppCompatActivity {
                 CommonPojo.class, true, new WebServiceCall.OnResultListener() {
             @Override
             public void onResult(boolean status, Object obj) {
-                // Anche se l'API fallisce, procediamo con il logout locale
                 File offlineFile = new File(getFilesDir().getPath(), "/offline.json");
                 if (offlineFile.exists()) {
                     Log.e(TAG, "Delete Offline File :: ");
                     offlineFile.delete();
                 }
                 
-                // Pulisci sia SecurePrefsUtil che PrefsUtil per sicurezza
                 SecurePrefsUtil.with(MainActivity.this).clearPrefs();
                 PrefsUtil.with(MainActivity.this).clearPrefs();
                 
-                // Vai a LoginActivity con flag per pulire lo stack
                 Intent intent = new Intent(MainActivity.this, LoginActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
                 finish();
                 
                 if (!status) {
-                    // Mostra messaggio solo se necessario, ma procedi comunque
                     Toast.makeText(MainActivity.this, getString(R.string.logout), Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
-            public void onAsync(AsyncTask asyncTask) {
-                userLogoutAsync = asyncTask;
-            }
+            public void onAsync(Object obj) { userLogoutAsync = null; }
 
             @Override
             public void onCancelled() {
@@ -426,24 +385,6 @@ public class MainActivity extends AppCompatActivity {
         super.onBackPressed();
     }
 
-    /*@Override
-    public void onBackPressed() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-        builder.setMessage(R.string.sure_exit_app)
-                .setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        finish();
-                    }
-                })
-                .setNegativeButton(getString(R.string.no), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        dialogInterface.cancel();
-                    }
-                }).show();
-    }*/
-
     @Override
     protected void onResume() {
         adapter.selectedItem(0);
@@ -453,7 +394,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onDestroy() {
+    protected void onDestroy() {
         try {
             connectionManager.unregisterReceiver();
         } catch (Exception e) {
@@ -470,7 +411,7 @@ public class MainActivity extends AppCompatActivity {
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             selectItem(position);
             adapter.selectedItem(position);
-            binding.drawerLayout.closeDrawers();
+            binding.drawerLayout.closeDrawer(binding.leftDrawer);
         }
     }
 

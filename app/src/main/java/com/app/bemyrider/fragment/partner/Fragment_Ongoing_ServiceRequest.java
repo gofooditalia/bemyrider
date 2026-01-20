@@ -1,6 +1,5 @@
 package com.app.bemyrider.fragment.partner;
 
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -49,7 +48,7 @@ public class Fragment_Ongoing_ServiceRequest extends Fragment {
     private int pastVisibleItems, visibleItemCount, totalItemCount;
     private int page = 1, total_page = 1;
     private String keyWord = "";
-    private AsyncTask ongoingServiceAsync;
+    private WebServiceCall ongoingServiceAsync;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -166,8 +165,8 @@ public class Fragment_Ongoing_ServiceRequest extends Fragment {
             }
 
             @Override
-            public void onAsync(AsyncTask asyncTask) {
-                ongoingServiceAsync = asyncTask;
+            public void onAsync(Object asyncTask) {
+                ongoingServiceAsync = null;
             }
 
             @Override

@@ -2,7 +2,6 @@ package com.app.bemyrider.fragment.user;
 
 import android.app.Activity;
 import android.content.Context;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -16,6 +15,7 @@ import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.bemyrider.Adapter.User.PopularServiceAdapter;
 import com.app.bemyrider.AsyncTask.WebServiceCall;
@@ -43,7 +43,7 @@ public class ServiceListFragment extends Fragment {
     private FragmentServiceListBinding binding;
     private PopularServiceAdapter populerServiceAdapter;
     private ArrayList<ServiceDataItem> serviceDataItems = new ArrayList<>();
-    private AsyncTask categoryListAsync, subCategoryAsync, popularServiceAsync;
+    private WebServiceCall categoryListAsync, subCategoryAsync, popularServiceAsync;
     private String categoryId = "";
     private String subCategoryId = "";
     private String providerId = "";
@@ -110,8 +110,8 @@ public class ServiceListFragment extends Fragment {
             }
 
             @Override
-            public void onAsync(AsyncTask asyncTask) {
-                categoryListAsync = asyncTask;
+            public void onAsync(Object asyncTask) {
+                categoryListAsync = null;
             }
 
             @Override
@@ -164,8 +164,8 @@ public class ServiceListFragment extends Fragment {
             }
 
             @Override
-            public void onAsync(AsyncTask asyncTask) {
-                subCategoryAsync = asyncTask;
+            public void onAsync(Object asyncTask) {
+                subCategoryAsync = null;
             }
 
             @Override
@@ -203,8 +203,8 @@ public class ServiceListFragment extends Fragment {
             }
 
             @Override
-            public void onAsync(AsyncTask asyncTask) {
-                popularServiceAsync = asyncTask;
+            public void onAsync(Object asyncTask) {
+                popularServiceAsync = null;
             }
 
             @Override

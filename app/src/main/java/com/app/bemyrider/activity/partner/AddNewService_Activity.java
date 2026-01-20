@@ -3,7 +3,6 @@ package com.app.bemyrider.activity.partner;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -13,11 +12,9 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.media.ExifInterface;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.text.Editable;
-import android.text.Html;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.MenuItem;
@@ -28,10 +25,9 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.Spinner;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -88,13 +84,11 @@ public class AddNewService_Activity extends AppCompatActivity implements GridVie
     private Activity mActivity;
     private PermissionUtils permissionUtils;
 
-    private static final int SELECT_PHOTO = 100;
     private PartnerActivityAddNewServiceBinding binding;
-    //To add new service
     private ArrayList<ImageItem> imageItems;
     private ProviderServiceDetailsItem editServiceData;
     private String strselectedCategoryId, strselectedSubCategoryId, strselectedServiceId,
-            selectedHours = "", imageEncoded;
+            selectedHours = "";
     private GridViewAdapter gridAdapter;
     private ConnectionManager connectionManager;
 
@@ -106,14 +100,12 @@ public class AddNewService_Activity extends AppCompatActivity implements GridVie
     private ArrayList<ProviderServiceMediaDataItem> mediadata = new ArrayList<>();
     private ArrayList<File> filearrayList = new ArrayList<>();
 
-    private ArrayList<String> imagesEncodedList;
-
     private ArrayAdapter hoursAdapter;
     private String[] hours_array = {"Select Hours To Complete*", "1 Hour", "2 Hours", "3 Hours", "4 Hours", "5 Hours", "6 Hours",
             "7 Hours", "8 Hours", "9 Hours", "10 Hours", "11 Hours", "12 Hours", "13 Hours", "14 Hours", "15 Hours", "16 Hours", "17 Hours",
             "18 Hours", "19 Hours", "20 Hours", "21 Hours", "22 Hours", "23 Hours", "24 Hours"};
 
-    private AsyncTask addServiceAsync, serviceListAsync, subCatListAsync, catListAsync,
+    private WebServiceCall addServiceAsync, serviceListAsync, subCatListAsync, catListAsync,
             deleteMediaAsync;
 
     private ActivityResultLauncher<Uri> actResCamera;
@@ -159,12 +151,8 @@ public class AddNewService_Activity extends AppCompatActivity implements GridVie
                 if (position != 0) {
                     if (serviceListItems.get(position).getServiceType().equals("hourly")) {
                         binding.spinnerSelectProposalHours.setVisibility(View.GONE);
-                        //binding.viewSpHour.setVisibility(View.GONE);
-//                        binding.txtPerHours.setText(R.string.per_hours);
                     } else {
                         binding.spinnerSelectProposalHours.setVisibility(View.VISIBLE);
-                        //binding.viewSpHour.setVisibility(View.VISIBLE);
-//                        binding.txtPerHours.setText(R.string.fixed);
                     }
                 }
             }
@@ -264,9 +252,7 @@ public class AddNewService_Activity extends AppCompatActivity implements GridVie
             }
         });
 
-        binding.TxtUpload.setOnClickListener(view -> {
-            openCameraGalleryDialog();
-        });
+        binding.TxtUpload.setOnClickListener(view -> openCameraGalleryDialog());
 
         binding.btnaddservice.setOnClickListener(v -> {
             if (checkValidation()) {
@@ -306,7 +292,6 @@ public class AddNewService_Activity extends AppCompatActivity implements GridVie
         }
     }
 
-    /*------------- Validation ---------------*/
     private boolean checkValidation() {
 
         if (!(binding.spinnerCatergory.getSelectedItemPosition() > 0)) {
@@ -321,14 +306,7 @@ public class AddNewService_Activity extends AppCompatActivity implements GridVie
             Toast.makeText(mContext, R.string.please_select_services, Toast.LENGTH_SHORT).show();
             return false;
         }
-        /*if (binding.spinnerSelectProposalHours.getSelectedItemPosition() == 0) {
-            if (binding.spinnerSelectProposalHours.getVisibility() == View.VISIBLE) {
-                Toast.makeText(context, R.string.hours_to_complete, Toast.LENGTH_SHORT).show();
-                return false;
-            } else {
-                return true;
-            }
-        }*/
+
         String strPricePerHour = binding.etAddPrice.getText().toString().trim();
         if (strPricePerHour.isEmpty()) {
             binding.tillAddPrices.setErrorEnabled(true);
@@ -356,7 +334,6 @@ public class AddNewService_Activity extends AppCompatActivity implements GridVie
         return true;
     }
 
-    /*------------------- Add/Edit Service Api Call ---------------------*/
     private void serviceCall() {
         binding.pgSubmit.setVisibility(View.VISIBLE);
 
@@ -406,8 +383,8 @@ public class AddNewService_Activity extends AppCompatActivity implements GridVie
             }
 
             @Override
-            public void onAsync(AsyncTask asyncTask) {
-                addServiceAsync = asyncTask;
+            public void onAsync(Object asyncTask) {
+                addServiceAsync = null;
             }
 
             @Override
@@ -417,7 +394,6 @@ public class AddNewService_Activity extends AppCompatActivity implements GridVie
         });
     }
 
-    /*-------------- Service Api Call -------------------*/
     private void serviceCallServiceList(String strselectedSubCategoryId) {
         binding.spinnerService.setVisibility(View.GONE);
         binding.pgService.setVisibility(View.VISIBLE);
@@ -460,8 +436,8 @@ public class AddNewService_Activity extends AppCompatActivity implements GridVie
             }
 
             @Override
-            public void onAsync(AsyncTask asyncTask) {
-                serviceListAsync = asyncTask;
+            public void onAsync(Object asyncTask) {
+                serviceListAsync = null;
             }
 
             @Override
@@ -472,7 +448,6 @@ public class AddNewService_Activity extends AppCompatActivity implements GridVie
 
     }
 
-    /*------------------ Sub Category Api Call -----------------------*/
     private void serviceCallSubCategory(String strselectedCategoryId) {
         binding.spinnerSubcatergory.setVisibility(View.GONE);
         binding.pgSubCat.setVisibility(View.VISIBLE);
@@ -512,8 +487,8 @@ public class AddNewService_Activity extends AppCompatActivity implements GridVie
             }
 
             @Override
-            public void onAsync(AsyncTask asyncTask) {
-                subCatListAsync = asyncTask;
+            public void onAsync(Object asyncTask) {
+                subCatListAsync = null;
             }
 
             @Override
@@ -523,7 +498,6 @@ public class AddNewService_Activity extends AppCompatActivity implements GridVie
         });
     }
 
-    /* ----------------- Category Api Call --------------------- */
     private void serviceCategoryCall() {
         binding.spinnerCatergory.setVisibility(View.GONE);
         binding.pgCat.setVisibility(View.VISIBLE);
@@ -553,8 +527,8 @@ public class AddNewService_Activity extends AppCompatActivity implements GridVie
             }
 
             @Override
-            public void onAsync(AsyncTask asyncTask) {
-                catListAsync = asyncTask;
+            public void onAsync(Object asyncTask) {
+                catListAsync = null;
             }
 
             @Override
@@ -565,7 +539,6 @@ public class AddNewService_Activity extends AppCompatActivity implements GridVie
 
     }
 
-    /*------------------ Delete Image Api Call ----------------------*/
     private void serviceCallDeleteImage(String mediaId, final int position, ProgressBar pgDelete, ImageView imgDelete) {
         imgDelete.setVisibility(View.GONE);
         pgDelete.setVisibility(View.VISIBLE);
@@ -599,8 +572,8 @@ public class AddNewService_Activity extends AppCompatActivity implements GridVie
                     }
 
                     @Override
-                    public void onAsync(AsyncTask asyncTask) {
-                        deleteMediaAsync = asyncTask;
+                    public void onAsync(Object asyncTask) {
+                        deleteMediaAsync = null;
                     }
 
                     @Override
@@ -617,11 +590,12 @@ public class AddNewService_Activity extends AppCompatActivity implements GridVie
 
         WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
         Window window = d.getWindow();
-        lp.copyFrom(window.getAttributes());
-        // This makes the dialog take up the full width
-        lp.width = WindowManager.LayoutParams.MATCH_PARENT;
-        lp.height = WindowManager.LayoutParams.WRAP_CONTENT;
-        window.setAttributes(lp);
+        if (window != null) {
+            lp.copyFrom(window.getAttributes());
+            lp.width = WindowManager.LayoutParams.MATCH_PARENT;
+            lp.height = WindowManager.LayoutParams.WRAP_CONTENT;
+            window.setAttributes(lp);
+        }
 
         LinearLayoutCompat linCamera = d.findViewById(R.id.linCamera);
         LinearLayoutCompat linGallery = d.findViewById(R.id.linGallery);
@@ -665,22 +639,16 @@ public class AddNewService_Activity extends AppCompatActivity implements GridVie
 
         BitmapFactory.Options options = new BitmapFactory.Options();
 
-//		by setting this field as true, the actual bitmap pixels are not loaded in the memory. Just the bounds are loaded. If
-//		you try the use the bitmap here, you will get null.
         options.inJustDecodeBounds = true;
-        Bitmap bmp = BitmapFactory.decodeFile(filePath, options);
+        BitmapFactory.decodeFile(filePath, options);
 
         int actualHeight = options.outHeight;
         int actualWidth = options.outWidth;
 
-//		max Height and width values of the compressed image is taken as 816x612
-
         float maxHeight = 816.0f;
         float maxWidth = 612.0f;
-        float imgRatio = actualWidth / actualHeight;
+        float imgRatio = actualWidth / (float) actualHeight;
         float maxRatio = maxWidth / maxHeight;
-
-//		width and height values are set maintaining the aspect ratio of the image
 
         if (actualHeight > maxHeight || actualWidth > maxWidth) {
             if (imgRatio < maxRatio) {
@@ -697,76 +665,36 @@ public class AddNewService_Activity extends AppCompatActivity implements GridVie
             }
         }
 
-//		setting inSampleSize value allows to load a scaled down version of the original image
         options.inSampleSize = calculateInSampleSize(options, actualWidth, actualHeight);
 
-//		inJustDecodeBounds set to false to load the actual bitmap
         options.inJustDecodeBounds = false;
 
-//		this options allow android to claim the bitmap memory if it runs low on memory
-        options.inPurgeable = true;
-        options.inInputShareable = true;
         options.inTempStorage = new byte[16 * 1024];
 
         try {
-//			load the bitmap from its path
-            bmp = BitmapFactory.decodeFile(filePath, options);
-        } catch (OutOfMemoryError exception) {
-            exception.printStackTrace();
-
-        }
-        try {
+            Bitmap bmp = BitmapFactory.decodeFile(filePath, options);
             scaledBitmap = Bitmap.createBitmap(actualWidth, actualHeight, Bitmap.Config.ARGB_8888);
-        } catch (OutOfMemoryError exception) {
-            exception.printStackTrace();
-        }
+            Canvas canvas = new Canvas(scaledBitmap);
+            Matrix scaleMatrix = new Matrix();
+            scaleMatrix.setScale(actualWidth / (float) options.outWidth, actualHeight / (float) options.outHeight, actualWidth / 2.0f, actualHeight / 2.0f);
+            canvas.setMatrix(scaleMatrix);
+            canvas.drawBitmap(bmp, (actualWidth / 2.0f) - (bmp.getWidth() / 2.0f), (actualHeight / 2.0f) - (bmp.getHeight() / 2.0f), new Paint(Paint.FILTER_BITMAP_FLAG));
 
-        float ratioX = actualWidth / (float) options.outWidth;
-        float ratioY = actualHeight / (float) options.outHeight;
-        float middleX = actualWidth / 2.0f;
-        float middleY = actualHeight / 2.0f;
-
-        Matrix scaleMatrix = new Matrix();
-        scaleMatrix.setScale(ratioX, ratioY, middleX, middleY);
-
-        Canvas canvas = new Canvas(scaledBitmap);
-        canvas.setMatrix(scaleMatrix);
-        canvas.drawBitmap(bmp, middleX - bmp.getWidth() / 2, middleY - bmp.getHeight() / 2, new Paint(Paint.FILTER_BITMAP_FLAG));
-
-//		check the rotation of the image and display it properly
-        ExifInterface exif;
-        try {
-            exif = new ExifInterface(filePath);
-
-            int orientation = exif.getAttributeInt(
-                    ExifInterface.TAG_ORIENTATION, 0);
-            android.util.Log.d("EXIF", "Exif: " + orientation);
+            ExifInterface exif = new ExifInterface(filePath);
+            int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, 0);
             Matrix matrix = new Matrix();
-            if (orientation == 6) {
-                matrix.postRotate(90);
-                android.util.Log.d("EXIF", "Exif: " + orientation);
-            } else if (orientation == 3) {
-                matrix.postRotate(180);
-                android.util.Log.d("EXIF", "Exif: " + orientation);
-            } else if (orientation == 8) {
-                matrix.postRotate(270);
-                android.util.Log.d("EXIF", "Exif: " + orientation);
-            }
-            scaledBitmap = Bitmap.createBitmap(scaledBitmap, 0, 0,
-                    scaledBitmap.getWidth(), scaledBitmap.getHeight(), matrix,
-                    true);
-        } catch (IOException e) {
+            if (orientation == 6) matrix.postRotate(90);
+            else if (orientation == 3) matrix.postRotate(180);
+            else if (orientation == 8) matrix.postRotate(270);
+            scaledBitmap = Bitmap.createBitmap(scaledBitmap, 0, 0, scaledBitmap.getWidth(), scaledBitmap.getHeight(), matrix, true);
+        } catch (IOException | OutOfMemoryError e) {
             e.printStackTrace();
         }
 
-        FileOutputStream out = null;
         String filename = getFilename();
-        try {
-            out = new FileOutputStream(filename);
-//			write the compressed bitmap at the destination specified by filename.
-            scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 80, out);
-
-        } catch (FileNotFoundException e) {
+        try (FileOutputStream out = new FileOutputStream(filename)) {
+            if (scaledBitmap != null) scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 80, out);
+        } catch (IOException e) {
             e.printStackTrace();
         }
         return filename;
@@ -780,7 +708,7 @@ public class AddNewService_Activity extends AppCompatActivity implements GridVie
         if (height > reqHeight || width > reqWidth) {
             final int heightRatio = Math.round((float) height / (float) reqHeight);
             final int widthRatio = Math.round((float) width / (float) reqWidth);
-            inSampleSize = heightRatio < widthRatio ? heightRatio : widthRatio;
+            inSampleSize = Math.min(heightRatio, widthRatio);
         }
         final float totalPixels = width * height;
         final float totalReqPixelsCap = reqWidth * reqHeight * 2;
@@ -796,16 +724,17 @@ public class AddNewService_Activity extends AppCompatActivity implements GridVie
         if (!file.exists()) {
             file.mkdirs();
         }
-        String uriSting = (file.getAbsolutePath() + "/" + "JPEG_" + System.currentTimeMillis() + "_" + ".jpg");
-        return uriSting;
+        return (file.getAbsolutePath() + "/" + "JPEG_" + System.currentTimeMillis() + "_" + ".jpg");
     }
 
     public void deleteFiles() {
         File dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath(), getString(R.string.app_name) + "/Images");
         if (dir.isDirectory()) {
             String[] children = dir.list();
-            for (int i = 0; i < children.length; i++) {
-                new File(dir, children[i]).delete();
+            if (children != null) {
+                for (String child : children) {
+                    new File(dir, child).delete();
+                }
             }
         }
     }
@@ -823,16 +752,6 @@ public class AddNewService_Activity extends AppCompatActivity implements GridVie
         super.onBackPressed();
     }
 
-    private void permissionMessageDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
-        builder.setPositiveButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dialogInterface.dismiss();
-            }
-        }).setMessage(getString(R.string.cancelling_granted)).show();
-    }
-
     private void initView() {
         if (editServiceData != null) {
             setTitle(HtmlCompat.fromHtml("<font color=#FFFFFF>" + getString(R.string.edit_service),HtmlCompat.FROM_HTML_MODE_LEGACY));
@@ -846,7 +765,6 @@ public class AddNewService_Activity extends AppCompatActivity implements GridVie
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
-        /*Init Internet Connection Class For No Internet Banner*/
         connectionManager = new ConnectionManager(mContext);
         connectionManager.registerInternetCheckReceiver();
         connectionManager.checkConnection(mContext);
@@ -863,25 +781,21 @@ public class AddNewService_Activity extends AppCompatActivity implements GridVie
         }
         binding.gridView.setAdapter(gridAdapter);
 
-        /*Init Category Spinner*/
         categoryAdapter = new ArrayAdapter<>(mContext, android.R.layout.simple_spinner_item, categoryListItems);
         categoryListItems.add(new CategoryDataItem("0", getString(R.string.select_category)));
         categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         binding.spinnerCatergory.setAdapter(categoryAdapter);
 
-        /*Init Sub Category Spinner*/
         subcategoryAdapter = new ArrayAdapter<>(mContext, android.R.layout.simple_spinner_item, subcategoryListItems);
         subcategoryListItems.add(new SubCategoryItem("0", getString(R.string.select_subcategory)));
         subcategoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         binding.spinnerSubcatergory.setAdapter(subcategoryAdapter);
 
-        /*Init Service Spinner*/
         serviceAdapter = new ArrayAdapter<>(mContext, android.R.layout.simple_spinner_item, serviceListItems);
         serviceListItems.add(new ServiceDataItem("0", getString(R.string.select_service)));
         serviceAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         binding.spinnerService.setAdapter(serviceAdapter);
 
-        /*Init Hour Spinner*/
         hoursAdapter = new ArrayAdapter<>(AddNewService_Activity.this, android.R.layout.simple_spinner_item, hours_array);
         binding.spinnerSelectProposalHours.setAdapter(hoursAdapter);
         hoursAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -903,29 +817,24 @@ public class AddNewService_Activity extends AppCompatActivity implements GridVie
         });
 
         actResGallery = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
-                    @Override
-                    public void onActivityResult(ActivityResult result) {
-                        Intent data = result.getData();
-                        try {
-                            if (result.getResultCode() == AppCompatActivity.RESULT_OK) {
-                                Uri imageUri = data.getData();
-                                FileUtilPOJO fileUtils = FileUtils.getPath(mContext, imageUri);
-                                if (fileUtils.isRequiredDownload()) {
-                                    String[] strArr = fileUtils.getPath().split(",");
-                                    new DownloadAsync(AddNewService_Activity.this, Uri.parse(strArr[2]),
-                                            strArr[0], strArr[1], downloadResult ->
-                                            //addPhotoToList(downloadResult)
-                                            addPhotoToList(compressImage(downloadResult))
-                                    ).execute();
-                                } else {
-                                    addPhotoToList(compressImage(fileUtils.getPath()));
-                                    //  addPhotoToList(fileUtils.getPath());
-                                }
+                new ActivityResultContracts.StartActivityForResult(), result -> {
+                    Intent data = result.getData();
+                    try {
+                        if (result.getResultCode() == AppCompatActivity.RESULT_OK && data != null) {
+                            Uri imageUri = data.getData();
+                            FileUtilPOJO fileUtils = FileUtils.getPath(mContext, imageUri);
+                            if (fileUtils.isRequiredDownload()) {
+                                String[] strArr = fileUtils.getPath().split(",");
+                                new DownloadAsync(AddNewService_Activity.this, Uri.parse(strArr[2]),
+                                        strArr[0], strArr[1], downloadResult ->
+                                        addPhotoToList(compressImage(downloadResult))
+                                ).execute();
+                            } else {
+                                addPhotoToList(compressImage(fileUtils.getPath()));
                             }
-                        } catch (Exception e) {
-                            Log.e(TAG, "onActivityResult: " + e.getMessage());
                         }
+                    } catch (Exception e) {
+                        Log.e(TAG, "onActivityResult: " + e.getMessage());
                     }
                 });
     }
@@ -961,7 +870,6 @@ public class AddNewService_Activity extends AppCompatActivity implements GridVie
         Utils.cancelAsyncTask(catListAsync);
         Utils.cancelAsyncTask(deleteMediaAsync);
 
-        /** clear cache dir of picture which is taken photo from camera */
         Utils.clearCameraCache(mContext);
         super.onDestroy();
     }
@@ -971,5 +879,3 @@ public class AddNewService_Activity extends AppCompatActivity implements GridVie
         super.attachBaseContext(LocaleManager.onAttach(newBase));
     }
 }
-
-
