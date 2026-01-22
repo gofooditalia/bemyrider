@@ -16,6 +16,7 @@ class AppLoginViewModel(application: Application) : AndroidViewModel(application
     fun login(email: String, password: String, deviceToken: String?): LiveData<NewLoginPojo> = liveData(Dispatchers.IO) {
         try {
             val token = deviceToken ?: ""
+            
             val response = appRepository.login(email, password, token)
             emit(response)
         } catch (e: Exception) {

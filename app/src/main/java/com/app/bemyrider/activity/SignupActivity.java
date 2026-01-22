@@ -140,15 +140,7 @@ public class SignupActivity extends AppCompatActivity {
             if (checkValidation()) {
                 if (binding.checkboxTermsAndConditions.isChecked()) {
                     Utils.hideSoftKeyboard(SignupActivity.this);
-                    
-                    if (getIntent().getStringExtra("SocialFlag") != null && getIntent().getStringExtra("SocialFlag").equals("true")) {
-                        performSocialSignup();
-                    } else {
-                        performEmailSignup();
-                    }
-                    
-                    PrefsUtil.with(mContext).write("countrycode", selectedCountryCode);
-                    PrefsUtil.with(mContext).write("countrycodeid", selectedCountryCodePosition);
+                    confirmUserTypeAndProceed(); // Intercetta il flusso qui
                 } else {
                     Toast.makeText(mContext, getString(R.string.msg_terms_and_conditions), Toast.LENGTH_SHORT).show();
                 }
@@ -170,6 +162,46 @@ public class SignupActivity extends AppCompatActivity {
             binding.spinnerCountrycode.setVisibility(View.GONE);
             binding.progressCountryCode.setVisibility(View.GONE);
         }
+    }
+
+    private void confirmUserTypeAndProceed() {
+        String userTypeString;
+
+        // Determina il nome del tipo di utente selezionato
+        if (strUserType.equals("p")) {
+            userTypeString = getString(R.string.user_type_provider);
+        } else { // strUserType.equals("c")
+            userTypeString = getString(R.string.user_type_customer);
+        }
+
+        String confirmationMessage = String.format(getString(R.string.confirm_signup_as), userTypeString);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+        builder.setTitle(getString(R.string.signup));
+        builder.setMessage(confirmationMessage);
+
+        // Pulsante Conferma (Esegue la registrazione)
+        builder.setPositiveButton(getString(R.string.yes), (dialog, which) -> {
+            dialog.dismiss();
+
+            // Logica originale per la registrazione
+            if (getIntent().getStringExtra("SocialFlag") != null && getIntent().getStringExtra("SocialFlag").equals("true")) {
+                performSocialSignup();
+            } else {
+                performEmailSignup();
+            }
+
+            PrefsUtil.with(mContext).write("countrycode", selectedCountryCode);
+            PrefsUtil.with(mContext).write("countrycodeid", selectedCountryCodePosition);
+        });
+
+        // Pulsante Annulla
+        builder.setNegativeButton(getString(R.string.no), (dialog, which) -> {
+            dialog.dismiss();
+            // L'utente può cambiare la selezione
+        });
+
+        builder.create().show();
     }
     
     private void performEmailSignup() {
@@ -193,7 +225,8 @@ public class SignupActivity extends AppCompatActivity {
                 if (registrationPojo != null && registrationPojo.isStatus()) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
                     builder.setCancelable(false);
-                    builder.setMessage(registrationPojo.getMessage());
+                    // Uso la stringa localizzata per il messaggio di successo
+                    builder.setMessage(getString(R.string.registration_success_message));
                     builder.setPositiveButton(R.string.ok, (dialog, which) -> {
                         dialog.dismiss();
                         Intent intent = new Intent(SignupActivity.this, LoginActivity.class);

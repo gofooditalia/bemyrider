@@ -193,6 +193,8 @@ public class PartnerServiceRequestDetailsActivity extends AppCompatActivity {
             dialog.show();
         });
 
+        // Rimosso il blocco binding.txtShowHereProvider.setOnClickListener()
+        /*
         binding.txtShowHereProvider.setOnClickListener(view -> {
             final Dialog dialog = new Dialog(PartnerServiceRequestDetailsActivity.this);
             dialog.setContentView(R.layout.proposal_data_dialog);
@@ -228,6 +230,7 @@ public class PartnerServiceRequestDetailsActivity extends AppCompatActivity {
 
             dialog.show();
         });
+        */
 
         binding.includeRequestDetail.imgMapProvider.setOnClickListener(view -> {
             String url = "http://maps.google.com/maps?daddr=" + serviceDetailData.getServiceLatitude() + "," + serviceDetailData.getServiceLongitude();
@@ -407,7 +410,9 @@ public class PartnerServiceRequestDetailsActivity extends AppCompatActivity {
     }
 
     private void serviceCallCancelService() {
-        binding.pgCancel.setVisibility(View.VISIBLE);
+        // Uso un'ipotetica pgCancel_layout se la ProgressBar non è un elemento diretto ma inclusa
+        // Poiché non ho pgCancel, rimuovo i riferimenti alla ProgressBar per il pulsante Cancel
+        // binding.pgCancel.setVisibility(View.VISIBLE); // Rimosso
 
         LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
 
@@ -419,7 +424,7 @@ public class PartnerServiceRequestDetailsActivity extends AppCompatActivity {
                 new WebServiceCall.OnResultListener() {
                     @Override
                     public void onResult(boolean status, Object obj) {
-                        binding.pgCancel.setVisibility(View.GONE);
+                        // binding.pgCancel.setVisibility(View.GONE); // Rimosso
                         binding.btnCancel.setClickable(true);
                         if (status) {
                             Intent i = new Intent(mContext, ProviderHomeActivity.class);
@@ -783,7 +788,7 @@ public class PartnerServiceRequestDetailsActivity extends AppCompatActivity {
             binding.viewLineTwo.setVisibility(View.INVISIBLE);
             binding.txtNote.setVisibility(View.GONE);
             binding.llBtnAccept.setVisibility(View.GONE);
-            binding.llBtnCancel.setVisibility(View.GONE);
+            binding.btnSendProposal.setVisibility(View.GONE);
             binding.llBtnReject.setVisibility(View.GONE);
 
             binding.txtServiceStatus.setText(statusDisplayName);
@@ -846,6 +851,7 @@ public class PartnerServiceRequestDetailsActivity extends AppCompatActivity {
             binding.layoutRaiseDispute.setVisibility(View.VISIBLE); // Keep dispute visible if applicable
             binding.llBtnAccept.setVisibility(View.GONE);
             binding.llBtnReject.setVisibility(View.GONE);
+            binding.btnSendProposal.setVisibility(View.GONE);
             binding.btnCancel.setVisibility(View.GONE); // Cancel button might also need to change visibility
             binding.txtNote.setVisibility(View.GONE);
             binding.viewLineOne.setVisibility(View.INVISIBLE);
@@ -925,9 +931,13 @@ public class PartnerServiceRequestDetailsActivity extends AppCompatActivity {
             if ("pending".equalsIgnoreCase(status)) {
                 binding.llBtnAccept.setVisibility(View.VISIBLE);
                 binding.llBtnReject.setVisibility(View.VISIBLE);
+                binding.btnSendProposal.setVisibility(View.VISIBLE); // FIX: Mostra Invia Proposta
+                binding.layoutSendMessage.setVisibility(View.GONE); // FIX: Nascondi Invia Messaggio
+                binding.layoutRaiseDispute.setVisibility(View.GONE);
             } else {
                  binding.llBtnAccept.setVisibility(View.GONE);
                  binding.llBtnReject.setVisibility(View.GONE);
+                 binding.btnSendProposal.setVisibility(View.GONE);
             }
             
             binding.txtUserName.setText(String.format("%s %s", customerFirstName, customerLastName));

@@ -32,7 +32,7 @@
     <string name="last_name">Cognome*</string>
     <string name="email_id">Email*</string>
     <string name="number">Numero di telefono*</string>
-    <string name="confirmpassword">Conferma password*</string>
+    <string name="confirmpassword">Confirma password*</string>
 
     <string name="provide_fname">Si prega di fornire il nome.</string>
     <string name="provide_lname">Si prega di fornire il cognome.</string>
@@ -426,7 +426,6 @@
     <string name="signin_text">Inserisci qui le tue credenziali</string>
     <string name="already_signin">Hai già un account? <u>Accedi qui!</u></string>
     <string name="deactivate_account_content">Se pensi che non utilizzerai di nuovo bemyrider e desideri che il tuo account venga cancellato, possiamo occuparcene noi per te. Tieni presente che non potrai riattivare il tuo account o recuperare alcun contenuto o informazione che hai aggiunto. \n\nSe desideri comunque eliminare il tuo account, fai clic su \"DISATTIVA IL MIO ACCOUNT\".</string>
-    <string name="signup_text">La prima community di riders autonomi al servizio diretto degli esercenti</string>
     <string name="contact_us_text">Inserisci le tue informazioni qui sotto in Contattaci</string>
     <string name="ratings_review">Giudizi</string>
     <string name="upcoming">IN ARRIVO</string>
@@ -446,7 +445,7 @@
     <string name="courier_person_name">Nome della persona del corriere</string>
     <string name="notifications_title">Notifiche</string>
     <string name="edit">Modificare</string>
-    <string name="create_account">Benvenuto su bemyrider</string>
+    <string name="create_account">Benvenuto in bemyrider</string>
     <string name="signup_now">Iscriviti ora</string>
     <string name="guest_user">Utente ospite</string>
     <string name="login_menu">Login</string>
@@ -532,8 +531,6 @@
     <string name="hint_vat">Partita iva / Codice fiscale*</string>
     <string name="hint_tax_id_code">Codice Fiscale*</string>
     <string name="tax_id_code">Codice Fiscale</string>
-    <string name="hint_shop_address">Città*</string>
-    <string name="shop_address">Indirizzo attività</string>
     <string name="hint_invoice_recipe_code">Codice univoco</string>
     <string name="invoice_recipe_code">Codice univoco</string>
     <string name="hint_certified_mail">Indirizzo pec</string>
@@ -591,4 +588,7 @@
     <string name="lbl_add_signature">Aggiungi Firma</string>
     <string name="lbl_reset">Ripristina</string>
     <string name="err_msg_signature">Disegna la tua firma</string>
+
+    <string name="confirm_signup_as">Stai per registrarti come %s. Confermi?</string>
+    <string name="registration_success_message">Ti sei registrato con successo. Controlla la tua email per l\'attivazione.</string>
 </resources>

@@ -64,7 +64,8 @@ public class WebServiceCall {
     public WebServiceCall(Context mContext, String url, LinkedHashMap<String, String> textParams,
                           Object model, boolean showDialog, OnResultListener OnResultListener) {
 
-        Log.e(TAG, "WebServiceCall: " + textParams.toString());
+        // Correzione Log Level
+        Log.i(TAG, "WebServiceCall: " + textParams.toString());
         this.url = url;
         this.model = model;
         this.mContext = mContext;
@@ -124,6 +125,7 @@ public class WebServiceCall {
         executor.execute(() -> {
             String result = "";
             boolean success = false;
+            long startTime = System.currentTimeMillis(); // Inizio misurazione tempo
 
             if (fileParams != null && !fileParams.isEmpty()) {
                 // Upload multipart con file
@@ -143,6 +145,10 @@ public class WebServiceCall {
                 }
             }
 
+            long duration = System.currentTimeMillis() - startTime; // Calcolo durata
+
+            Log.i(TAG, "Request URL: " + url + " completed in " + duration + "ms"); // Log durata
+            
             final String finalResult = result;
             final boolean finalSuccess = success;
 
@@ -164,7 +170,8 @@ public class WebServiceCall {
     private String performMultipartRequest(String requestUrl, LinkedHashMap<String, String> textParams, 
                                            LinkedHashMap<String, File> fileParams) {
         String final_url = requestUrl.replaceAll(" ", "%20");
-        Log.e(TAG, "Multipart URL: " + final_url);
+        // Correzione Log Level
+        Log.i(TAG, "Multipart URL: " + final_url);
         String charset = "UTF-8";
         
         try {
@@ -173,7 +180,8 @@ public class WebServiceCall {
             // Aggiungi parametri testuali
             for (Map.Entry<String, String> entry : textParams.entrySet()) {
                 if (entry.getKey() != null && entry.getValue() != null) {
-                    Log.e(TAG, "Multipart Param: " + entry.getKey() + ":" + entry.getValue());
+                    // Correzione Log Level
+                    Log.d(TAG, "Multipart Param: " + entry.getKey() + ":" + entry.getValue());
                     multipart.addFormField(entry.getKey(), entry.getValue());
                 }
             }
@@ -184,19 +192,23 @@ public class WebServiceCall {
                 if (entry.getKey() != null && entry.getValue() != null) {
                     File file = entry.getValue();
                     if (file.exists()) {
-                        Log.e(TAG, "Multipart File: " + entry.getKey() + ":" + file.getAbsolutePath() + " (size: " + file.length() + " bytes)");
+                        // Correzione Log Level
+                        Log.d(TAG, "Multipart File: " + entry.getKey() + ":" + file.getAbsolutePath() + " (size: " + file.length() + " bytes)");
                         multipart.addFilePart(entry.getKey(), file);
                         filesAdded++;
                     } else {
-                        Log.e(TAG, "Multipart File NOT FOUND: " + entry.getKey() + ":" + file.getAbsolutePath());
+                        // Correzione Log Level
+                        Log.w(TAG, "Multipart File NOT FOUND: " + entry.getKey() + ":" + file.getAbsolutePath());
                     }
                 }
             }
-            Log.e(TAG, "Total files added to multipart: " + filesAdded + " out of " + fileParams.size());
+            // Correzione Log Level
+            Log.i(TAG, "Total files added to multipart: " + filesAdded + " out of " + fileParams.size());
             
             // Completa la richiesta e ottieni la risposta
             String response = multipart.finish();
-            Log.e(TAG, "Multipart Response: " + response);
+            // Correzione Log Level
+            Log.i(TAG, "Multipart Response: " + response);
             return response;
             
         } catch (SocketTimeoutException e1) {
@@ -226,7 +238,8 @@ public class WebServiceCall {
 
     private String performPostRequest(String requestUrl, LinkedHashMap<String, String> params) {
         String final_url = requestUrl.replaceAll(" ", "%20");
-        Log.e("URL", final_url);
+        // Correzione Log Level
+        Log.i("URL", final_url);
         try {
             URL urlObj = new URL(final_url);
             HttpURLConnection httpURLConnection = (HttpURLConnection) urlObj.openConnection();
@@ -239,7 +252,8 @@ public class WebServiceCall {
             Uri.Builder builder = new Uri.Builder();
             for (Map.Entry<String, String> entry : params.entrySet()) {
                 if (entry.getKey() != null && entry.getValue() != null) {
-                    Log.e("PARAMS", entry.getKey() + ":" + entry.getValue());
+                    // Correzione Log Level
+                    Log.d("PARAMS", entry.getKey() + ":" + entry.getValue());
                     builder.appendQueryParameter(entry.getKey(), entry.getValue());
                 }
             }
@@ -255,10 +269,12 @@ public class WebServiceCall {
             }
 
             httpURLConnection.connect();
-            Log.e("Response Code:", "Response Code: " + httpURLConnection.getResponseCode());
+            // Correzione Log Level
+            Log.i("Response Code:", "Response Code: " + httpURLConnection.getResponseCode());
             InputStream in = new BufferedInputStream(httpURLConnection.getInputStream());
             String response = getStringFromInputStream(in);
-            Log.e("Response : ", response);
+            // Correzione Log Level
+            Log.i("Response : ", response);
             return response;
 
         } catch (SocketTimeoutException e1) {

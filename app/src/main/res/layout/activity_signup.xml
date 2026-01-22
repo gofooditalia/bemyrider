@@ -16,8 +16,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="@dimen/_12sdp"
-                android:paddingTop="@dimen/_40sdp"
-                android:paddingBottom="@dimen/_40sdp">
+                android:paddingTop="@dimen/_20sdp"
+                android:paddingBottom="@dimen/_10sdp">
 
                 <androidx.appcompat.widget.LinearLayoutCompat
                     android:layout_width="match_parent"
@@ -29,11 +29,12 @@
                         style="@style/font_medium"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/_20sdp"
+                        android:layout_marginTop="@dimen/_5sdp"
                         android:layout_marginBottom="@dimen/_10sdp"
                         android:text="@string/create_account"
                         android:textColor="@color/text"
-                        android:textSize="@dimen/_22ssp" />
+                        android:textSize="@dimen/_22ssp"
+                        android:gravity="center_horizontal" />
 
                     <RadioGroup
                         android:id="@+id/rgUserType"
@@ -67,21 +68,13 @@
 
                     </RadioGroup>
 
-                    <androidx.appcompat.widget.AppCompatTextView
-                        style="@style/font_light"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/_8sdp"
-                        android:layout_marginBottom="@dimen/_15sdp"
-                        android:text="@string/signup_text"
-                        android:textColor="@color/text_light"
-                        android:textSize="@dimen/_13ssp" />
+                    <!-- RIMOZIONE DEL SOTTOTITOLO CON @string/signup_text -->
 
                     <androidx.appcompat.widget.AppCompatTextView
                         style="@style/font_medium"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/_15sdp"
+                        android:layout_marginTop="@dimen/_5sdp"
                         android:layout_marginBottom="@dimen/_10sdp"
                         android:gravity="center_horizontal"
                         android:text="@string/signup_as"
@@ -91,15 +84,15 @@
                     <RelativeLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/_10sdp"
-                        android:layout_marginBottom="@dimen/_20sdp">
+                        android:layout_marginTop="@dimen/_5sdp"
+                        android:layout_marginBottom="@dimen/_10sdp">
 
                         <androidx.appcompat.widget.LinearLayoutCompat
                             android:id="@+id/linlayProvider"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_alignParentStart="true"
-                            android:layout_marginStart="@dimen/_18sdp"
+                            android:layout_marginStart="@dimen/_30sdp"
                             android:background="@drawable/border_user_type_select"
                             android:clickable="true"
                             android:gravity="center_horizontal"
@@ -108,8 +101,8 @@
 
                             <ImageView
                                 android:id="@+id/imgProvider"
-                                android:layout_width="@dimen/_90sdp"
-                                android:layout_height="@dimen/_90sdp"
+                                android:layout_width="@dimen/_70sdp"
+                                android:layout_height="@dimen/_70sdp"
                                 android:src="@drawable/ic_user_type_provider"
                                 android:contentDescription="@null" />
 
@@ -128,7 +121,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_alignParentEnd="true"
-                            android:layout_marginEnd="@dimen/_18sdp"
+                            android:layout_marginEnd="@dimen/_30sdp"
                             android:clickable="true"
                             android:gravity="center_horizontal"
                             android:orientation="vertical"
@@ -136,8 +129,8 @@
 
                             <ImageView
                                 android:id="@+id/imgCustomer"
-                                android:layout_width="@dimen/_90sdp"
-                                android:layout_height="@dimen/_90sdp"
+                                android:layout_width="@dimen/_70sdp"
+                                android:layout_height="@dimen/_70sdp"
                                 android:src="@drawable/ic_user_type_customer"
                                 android:contentDescription="@null" />
 
@@ -349,7 +342,7 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
                         android:layout_marginTop="@dimen/_20sdp"
-                        android:layout_marginBottom="@dimen/_20sdp"
+                        android:layout_marginBottom="@dimen/_10sdp"
                         android:background="@drawable/button_style_filltype_two"
                         android:orientation="horizontal">
 
@@ -383,7 +376,7 @@
                     <androidx.appcompat.widget.LinearLayoutCompat
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="@dimen/_20sdp"
+                        android:layout_marginBottom="@dimen/_5sdp"
                         android:orientation="vertical">
 
                         <androidx.appcompat.widget.AppCompatTextView

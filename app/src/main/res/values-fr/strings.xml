@@ -181,7 +181,7 @@
     <string name="payment_gateway">Paiement en ligne via la passerelle de paiement</string>
     <string name="payment_id">Identifiant de la passerelle de paiement</string>
     <string name="change_lang">Changer de langue</string>
-    <string name="email_noti1">M\'avertir lorsque le marchand accepte/rejette le service demandé</string>
+    <string name="email_noti1">M\'avertir lorsque le commerçant accepte/rejette le service demandé</string>
     <string name="email_noti2">M\'avertir lorsque le service demandé est annulé par le commerçant/propriétaire du salon</string>
     <string name="email_noti3">Prévenez-moi de mon prochain service réservé</string>
     <string name="partial_book">Dates réservées partielles</string>
@@ -410,15 +410,7 @@
     <string name="service_detail">Détail du service</string>
     <string name="confirm_account_deactivate">Êtes-vous sûr de vouloir désactiver votre compte ?</string>
     <string name="please_enter_proper_deposit_amount">Veuillez entrer le montant du dépôt approprié.</string>
-    <string name="please_enter_valid_password">Le mot de passe doit comporter au moins 6 caractères</string>
     <string name="vali_contact_num">Le numéro de contact doit être compris entre 10 et 15 chiffres uniquement</string>
-    <string name="received_amount">Montant reçu</string>
-    <string name="date_of_completion">Date d\'achèvement</string>
-    <string name="per_hour_rate">Tarif horaire</string>
-    <string name="total_working_hours">Heures de travail totales</string>
-    <string name="currency">€</string>
-    <string name="message_no_connection">Pas de connexion Internet</string>
-    <string name="message_internet_connected">Connecté à Internet</string>
     <string name="enable_permission_from_setting">Autorisation refusée, activez-la à partir des paramètres</string>
     <string name="cancel_permissions">Les autorisations requises ne sont pas accordées</string>
     <string name="info">Info</string>
@@ -433,17 +425,16 @@
     <string name="signin_text">Entrez vos identifiants ici</string>
     <string name="already_signin">Avez-vous déjà un compte? <u>Connexion ici !</u></string>
     <string name="deactivate_account_content">Si vous pensez que vous n\'utiliserez plus bemyrider et que vous souhaitez supprimer votre compte, nous pouvons nous en occuper pour vous. Gardez à l\'esprit que vous ne pourrez pas réactiver votre compte ni récupérer le contenu ou les informations que vous avez ajoutés. \n\nSi vous souhaitez toujours que votre compte soit supprimé, cliquez sur \"DÉSACTIVER MON COMPTE\".</string>
-    <string name="signup_text">Entrez vos informations ci-dessous dans le compte</string>
-    <string name="contact_us_text">Entrez vos informations ci-dessous dans Contactez-nous</string>
-    <string name="ratings_review">Notes</string>
+    <string name="contact_us_text">Inserisci le tue informazioni qui sotto in Contattaci</string>
+    <string name="ratings_review"><![CDATA[Ratings &amp; Reviews]]></string>
     <string name="upcoming">A VENIR</string>
     <string name="ongoing">EN COURS</string>
     <string name="past">PASSÉ</string>
-    <string name="deliveries_type">Vehicle</string>
+    <string name="deliveries_type">Véhicule</string>
     <string name="small_deliveries">Livraisons de vélos électriques</string>
     <string name="medium_deliveries">Livraisons de motos</string>
     <string name="large_deliveries">Livraisons automatiques</string>
-    <string name="small">VÉLO ÉLECTRIQUE</string>
+    <string name="small">E-BIKE</string>
     <string name="medium">MOTO</string>
     <string name="large">AUTO</string>
     <string name="sort">You choose</string>
@@ -451,12 +442,12 @@
     <string name="descending">Descendant</string>
     <string name="delivery_type">Type de véhicule</string>
     <string name="courier_person_name">Nom du coursier</string>
-    <string name="notifications_title">Avis</string>
-    <string name="edit">Modifier</string>
+    <string name="notifications_title">Notifiche</string>
+    <string name="edit">Editar</string>
     <string name="create_account">Bienvenue chez bemyrider</string>
     <string name="signup_now">S\'inscrire maintenant</string>
     <string name="guest_user">Utilisateur invité</string>
-    <string name="login_menu">Connexion</string>
+    <string name="login_menu">Login</string>
     <string name="please_select_delivery_type">Veuillez sélectionner le type de livraison...</string>
     <string name="quick">Rapide</string>
     <string name="scheduled">Programmé</string>
@@ -468,83 +459,48 @@
     <string name="past_time_validation">Current/Past time not allowed, please select future time</string>
     <string name="uploaded_images">Uploaded Images</string>
     <string name="cancel_dispute"><u>CANCEL DISPUTE</u></string>
-    <!--<string name="intro_lets_start"><![CDATA[<u>let\'s start</u>]]></string>-->
-    <string name="intro_lets_start">let\'s start</string>
-    <string name="intro_first_page_text"><![CDATA[<b>Welcome</b> to the first <b>community</b> of <b>autonomous riders</b> in <b>your city</b>]]></string>
-    <string name="skip">SKIP</string>
-    <string name="intro_second_page_text">Rider you are looking for, professional you find</string>
-    <string name="intro_third_page_text">Read the reviews, compare the service and choose the rider that best suits your needs</string>
-    <string name="intron_fourth_text">Chat with your rider in real time for timely management of the service</string>
-    <string name="intro_fifth_text"><![CDATA[Right <b>planning</b> is the <b>key</b> to any <b>successful</b> <b>business</b>]]></string>
-    <string name="intro_signin"><![CDATA[<u>Sign up</u>]]></string>
+    <!--<string name="intro_lets_start"><![CDATA[<u>laissons commencer</u>]]></string>-->
+    <string name="intro_lets_start">laissons commencer</string>
+    <string name="intro_first_page_text"><![CDATA[<b>Bienvenue</b> dans la première <b>communauté</b> de <b>riders autonomes</b> de <b>votre ville</b>]]></string>
+    <string name="skip">SAUTER</string>
+    <string name="intro_second_page_text">Rider que vous recherchez, professionnel que vous trouvez</string>
+    <string name="intro_third_page_text">Lisez les avis, comparez le service et choisissez le rider qui vous convient le mieux</string>
+    <string name="intron_fourth_text">Discutez avec votre rider en temps réel pour une gestion ponctuelle du service</string>
+    <string name="intro_fifth_text"><![CDATA[Une bonne <b>programmation</b> est la <b>clé</b> pour tout <b>business</b> de <b>succès</b>]]></string>
+    <string name="intro_signin"><![CDATA[<u>S\'inscrire</u>]]></string>
 
-    <string-array name="PayMethod">
-        <item>Porte monnaie</item>
-        <item>Espèces</item>
-    </string-array>
     <string-array name="deliveryType_item">
-        <item>Sélectionnez le type de livraison</item>
-        <item>Rapide</item>
-        <item>Programmé</item>
-    </string-array>
-    <string-array name="userType_item">
-        <item>Sélectionnez le type d\'utilisateur</item>
-        <item>Proprietaire d\'un restaurant</item>
-        <item>Courrier</item>
-    </string-array>
-    <string-array name="navigation_drawer_items_array">
-        <item>Relier</item>
-        <item>Agencements</item>
-        <item>Table</item>
-    </string-array>
-    <string-array name="spinnerItems">
-        <item>Choisir une catégorie</item>
-        <item>Coupe de cheveux</item>
-        <item>La Coupe de cheveux</item>
-        <item>Pourquoi couper les cheveux</item>
-    </string-array>
-    <string-array name="spinnerItems1">
-        <item>Sélectionnez le service</item>
-        <item>Coupe de cheveux</item>
-        <item>La Coupe de cheveux</item>
-        <item>Pourquoi couper les cheveux</item>
-    </string-array>
-    <string-array name="spinnerTime">
-        <item>Sélectionnez l\'heure</item>
-    </string-array>
-    <string-array name="spinnerMobile">
-        <item>91</item>
-        <item>90</item>
-        <item>101</item>
-        <item>80</item>
+        <item>Select Delivery Type</item>
+        <item>Quick</item>
+        <item>Scheduled</item>
     </string-array>
 
     <string-array name="select_hours">
-        <item>Durée du service*</item>
-        <item>1 Heure</item>
-        <item>2 Heures</item>
-<!--        <item>3 Heures</item>-->
-<!--        <item>4 Heures</item>-->
+        <item>Duração do serviço*</item>
+        <item>1 Hora</item>
+        <item>2 Horas</item>
+<!--        <item>3 Horas</item>-->
+<!--        <item>4 Horas</item>-->
     </string-array>
 
 
     <!-- Added by Keval-->
-    <string name="user_type_provider">Cavalière</string>
-    <string name="user_type_customer">Agence</string>
-    <string name="signup_as">Inscrivez-vous en tant que</string>
-    <string name="owner_profile_data">Données du profil du propriétaire</string>
-    <string name="tax_data">Données fiscales</string>
-    <string name="hint_company_name">Nom de l\'entreprise*</string>
+    <string name="user_type_provider">Cavaleiro</string>
+    <string name="user_type_customer">Agência</string>
+    <string name="signup_as">Inscrivez-vous comme</string>
+    <string name="owner_profile_data">Dados do perfil do proprietário</string>
+    <string name="tax_data">Dados fiscais</string>
+    <string name="hint_company_name">Nome da empresa*</string>
     <string name="vat">VAT</string>
     <string name="hint_vat">VAT*</string>
-    <string name="hint_tax_id_code">Code d\'identification fiscale*</string>
-    <string name="tax_id_code">Code d\'identification fiscale</string>
-    <string name="hint_shop_address">Adresse du magasin*</string>
-    <string name="shop_address">Adresse du magasin</string>
-    <string name="hint_invoice_recipe_code">Code destinataire facture électronique</string>
-    <string name="invoice_recipe_code">Code du destinataire de la facture électronique</string>
-    <string name="hint_certified_mail">Adresse postale certifiée</string>
-    <string name="certified_mail">Adresse postale certifiée</string>
+    <string name="hint_tax_id_code">Código de identificação fiscal*</string>
+    <string name="tax_id_code">Código de identificação fiscal</string>
+    <string name="hint_shop_address">Endereço da loja*</string>
+    <string name="shop_address">Endereço da loja</string>
+    <string name="hint_invoice_recipe_code">Código do destinatário da fatura eletrônica</string>
+    <string name="invoice_recipe_code">Código do destinatário da fatura eletrônica</string>
+    <string name="hint_certified_mail">Endereço de correio certificado</string>
+    <string name="certified_mail">Endereço de correio certificado</string>
     <string name="err_msg_company">Veuillez indiquer le nom de l\'entreprise</string>
     <string name="err_msg_vat">Veuillez donner VAT</string>
     <string name="err_msg_tax_id_code">Veuillez fournir le code d\'identification fiscale</string>
@@ -592,4 +548,5 @@
     <string name="err_permission_camera">Camera Permission Deny</string>
     <string name="err_permission_storage">Storage Permission Deny</string>
     <string name="err_no_camera_in_device">There is not camera option on your device</string>
+    <string name="confirm_signup_as">Vous êtes sur le point de vous inscrire en tant que %s. Confirmer?</string>
 </resources>

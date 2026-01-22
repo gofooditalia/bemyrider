@@ -5,12 +5,12 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.liveData
 import com.app.bemyrider.model.NewLoginPojo
-import com.app.bemyrider.repository.AppRepository
+import com.app.bemyrider.repository.AppRepository // Ritorno a AppRepository
 import kotlinx.coroutines.Dispatchers
 
 class AppSignupViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val appRepository = AppRepository()
+    private val appRepository = AppRepository() // Ritorno a AppRepository
 
     // Note: Returns NewLoginPojo to match the type emitted in the try block (and assumed to be returned by appRepository.signup).
     fun signup(

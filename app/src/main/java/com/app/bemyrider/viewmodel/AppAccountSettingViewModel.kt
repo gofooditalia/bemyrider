@@ -5,12 +5,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.liveData
 import com.app.bemyrider.model.CommonPojo
 import com.app.bemyrider.model.LanguagePojo
-import com.app.bemyrider.repository.AppRepository
+import com.app.bemyrider.repository.AppRepository // Ritorno a AppRepository
 import kotlinx.coroutines.Dispatchers
 
 class AppAccountSettingViewModel : ViewModel() {
 
-    private val appRepository = AppRepository()
+    private val appRepository = AppRepository() // Ritorno a AppRepository
 
     fun getLanguages(): LiveData<LanguagePojo?> = liveData(Dispatchers.IO) {
         try {
@@ -40,9 +40,9 @@ class AppAccountSettingViewModel : ViewModel() {
             val error = CommonPojo()
             error.setStatus(false)
             error.setMessage(e.localizedMessage ?: "Errore sconosciuto")
-            emit(error)
+                emit(error)
+            }
         }
-    }
 
     fun deactivateAccount(userId: String, userType: String): LiveData<CommonPojo> = liveData(Dispatchers.IO) {
         try {

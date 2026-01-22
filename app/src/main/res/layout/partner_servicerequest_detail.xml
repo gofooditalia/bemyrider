@@ -420,7 +420,7 @@
 
                     <androidx.appcompat.widget.AppCompatTextView
                         style="@style/font_regular"
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:text="@string/service_address"
@@ -730,7 +730,7 @@
 
                     <androidx.appcompat.widget.AppCompatTextView
                         style="@style/font_light"
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:gravity="center"
@@ -740,7 +740,7 @@
 
                     <androidx.appcompat.widget.AppCompatTextView
                         style="@style/font_light"
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:gravity="center"
@@ -750,7 +750,7 @@
 
                     <androidx.appcompat.widget.AppCompatTextView
                         style="@style/font_light"
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:gravity="center"
@@ -760,7 +760,7 @@
 
                     <androidx.appcompat.widget.AppCompatTextView
                         style="@style/font_light"
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:gravity="center"
@@ -781,7 +781,7 @@
                     <androidx.appcompat.widget.AppCompatTextView
                         android:id="@+id/txt_extend_duration_p"
                         style="@style/font_light"
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:gravity="center"
@@ -793,7 +793,7 @@
                     <androidx.appcompat.widget.AppCompatTextView
                         android:id="@+id/txt_extend_hours_p"
                         style="@style/font_light"
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:gravity="center"
@@ -804,7 +804,7 @@
                     <androidx.appcompat.widget.AppCompatTextView
                         android:id="@+id/txt_extend_cost_p"
                         style="@style/font_light"
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:gravity="center"
@@ -815,7 +815,7 @@
                     <androidx.appcompat.widget.AppCompatTextView
                         android:id="@+id/txt_extend_status_p"
                         style="@style/font_light"
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:gravity="center"

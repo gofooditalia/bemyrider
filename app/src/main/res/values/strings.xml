@@ -317,7 +317,6 @@
     <string name="provider_profile">Provider Profile</string>
     <string name="credits">Credits</string>
     <string name="hold">Hold</string>
-    <string name="per_hours">/hour</string>
     <string name="fixed">fixed</string>
     <string name="expand_service">Extend Service</string>
     <string name="download_invoice">Download Receipts</string>
@@ -354,8 +353,6 @@
     <string name="start_timea">Start*</string>
     <string name="end_timea">End of service*</string>
     <string name="completed_services">Services completed</string>
-
-
     <string name="addressa">Address*</string>
     <string name="raise_by_me">Raised by me</string>
     <string name="paypal_email">Paypal Email*</string>
@@ -417,15 +414,7 @@
     <string name="service_detail">Service Detail</string>
     <string name="confirm_account_deactivate">Are you sure you want to deactivate your account?</string>
     <string name="please_enter_proper_deposit_amount">Please enter proper deposit amount.</string>
-    <string name="please_enter_valid_password">Password should be minimum 6 character long</string>
     <string name="vali_contact_num">Contact Number should be between 10 to 15 digits only</string>
-    <string name="received_amount">Received Amount</string>
-    <string name="date_of_completion">Date of Completion</string>
-    <string name="per_hour_rate">Per hour rate</string>
-    <string name="total_working_hours">Total Working Hours</string>
-    <string name="currency">€</string>
-    <string name="message_no_connection">No Internet Connection</string>
-    <string name="message_internet_connected">Internet Connected</string>
     <string name="enable_permission_from_setting">Permission Denied, Enable it from settings</string>
     <string name="cancel_permissions">Required permissions are not granted</string>
     <string name="info">Info</string>
@@ -438,13 +427,10 @@
     <string name="signin">Log in</string>
     <string name="signup_login">Don\'t have account? <u>Sign up</u></string>
     <string name="signin_text">Enter your credentials here</string>
-    <!--<string name="already_signin">Already Registered Sign In</string>-->
     <string name="already_signin">Do you already have an account? <u>Login here!</u></string>
     <string name="deactivate_account_content">If you do not think you will use bemyrider again and would like your account deleted, we can take  care of  this for you. Keep in mind that  you will not be able to reactivate  your account or retrieve any of the content or information you have  added. \n\n If you would still like your account deleted, click \"DEACTIVE MY ACCOUNT\".</string>
-    <!--<string name="signup_text">Enter your informations below in account</string>-->
-    <string name="signup_text">The first community of autonomous riders at the direct service of exhibitors</string>
     <string name="contact_us_text">Enter your informations below in Contact us</string>
-    <string name="ratings_review">Ratings &amp; Reviews</string>
+    <string name="ratings_review"><![CDATA[Ratings &amp; Reviews]]></string>
     <string name="upcoming">UPCOMING</string>
     <string name="ongoing">ON GOING</string>
     <string name="past">PAST</string>
@@ -452,9 +438,9 @@
     <string name="small_deliveries">E-Bike Deliveries</string>
     <string name="medium_deliveries">Moto Deliveries</string>
     <string name="large_deliveries">Auto Deliveries</string>
-    <string name="small">Small</string>
-    <string name="medium">Medium</string>
-    <string name="large">Large</string>
+    <string name="small">E-BIKE</string>
+    <string name="medium">MOTO</string>
+    <string name="large">AUTO</string>
     <string name="sort">You choose</string>
     <string name="ascending">Ascending</string>
     <string name="descending">Descending</string>
@@ -616,4 +602,15 @@
     <string name="time_separator"> to </string>
     <string name="reviews_suffix"> Reviews)</string>
     <string name="comma_separator">, </string>
+    <string name="confirm_signup_as">You are about to register as %s. Confirm?</string>
+
+    <string name="currency">€</string>
+    <string name="per_hours">/hour</string>
+    <string name="message_internet_connected">Internet Connected</string>
+    <string name="message_no_connection">No Internet Connection</string>
+    <string name="registration_success_message">Registration Successful! Please check your email for activation link.</string>
+    <string name="please_enter_valid_password">Please enter a valid password</string>
+    <string name="date_of_completion">Date of Completion</string>
+    <string name="received_amount">Received Amount</string>
+    <string name="total_working_hours">Total Working Hours</string>
 </resources>
