@@ -93,13 +93,7 @@ public class CustomerHomeActivity extends AppCompatActivity implements BottomNav
         mMessageReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                if (new ConnectionCheck().isNetworkConnected(context)) {
-                    Log.e("HomeActivity", "connected");
-                    EventBus.getDefault().post(new MessageEvent("connection", "connected"));
-                } else {
-                    Log.e("HomeActivity", "disconnected");
-                    EventBus.getDefault().post(new MessageEvent("connection", "disconnected"));
-                }
+                // Non inviare eventi EventBus da qui per evitare race condition
             }
         };
 

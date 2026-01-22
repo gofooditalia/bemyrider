@@ -649,6 +649,7 @@
                             android:paddingStart="@dimen/_8sdp"
                             android:paddingEnd="0dp"
                             android:theme="@style/WhiteAccent"
+                            android:indeterminateDrawable="@drawable/custom_progress_bar"
                             android:visibility="gone" />
 
                         <androidx.appcompat.widget.AppCompatButton
@@ -686,6 +687,7 @@
                             android:padding="@dimen/_2sdp"
                             android:paddingStart="@dimen/_8sdp"
                             android:paddingEnd="0dp"
+                            android:indeterminateDrawable="@drawable/custom_progress_bar"
                             android:visibility="gone" />
 
                         <androidx.appcompat.widget.AppCompatButton
@@ -735,7 +737,7 @@
                         android:layout_weight="1"
                         android:gravity="center"
                         android:text="@string/duration"
-                        android:textColor="@color/text_light"
+                        android.textColor="@color/text_light"
                         android:textSize="@dimen/_11ssp" />
 
                     <androidx.appcompat.widget.AppCompatTextView
@@ -857,6 +859,7 @@
                             android:paddingStart="@dimen/_8sdp"
                             android:paddingEnd="0dp"
                             android:theme="@style/WhiteAccent"
+                            android:indeterminateDrawable="@drawable/custom_progress_bar"
                             android:visibility="gone" />
 
                         <androidx.appcompat.widget.AppCompatButton
@@ -894,6 +897,7 @@
                             android:padding="@dimen/_2sdp"
                             android:paddingStart="@dimen/_8sdp"
                             android:paddingEnd="0dp"
+                            android:indeterminateDrawable="@drawable/custom_progress_bar"
                             android:visibility="gone" />
 
                         <androidx.appcompat.widget.AppCompatButton

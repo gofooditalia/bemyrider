@@ -7,8 +7,7 @@
         android:id="@+id/activity_service_detail_"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/white"
-        android:fitsSystemWindows="true"> <!-- Aggiunto fitsSystemWindows -->
+        android:background="@color/white">
 
         <RelativeLayout
             android:id="@+id/rlMain"
@@ -23,7 +22,8 @@
                 android:paddingStart="@dimen/_14sdp"
                 android:paddingTop="@dimen/_14sdp"
                 android:paddingEnd="@dimen/_14sdp"
-                android:paddingBottom="@dimen/_14sdp">
+                android:paddingBottom="@dimen/_14sdp"
+                android:layout_marginTop="@dimen/_80sdp"> <!-- Margine rigido per compensare Action Bar e Status Bar -->
 
                 <com.app.bemyrider.utils.CircleImageView
                     android:id="@+id/img_user__profile"
@@ -176,7 +176,7 @@
                 android:layout_marginStart="@dimen/_13sdp"
                 android:layout_marginTop="@dimen/_13sdp"
                 android:layout_marginEnd="@dimen/_13sdp"
-                android:layout_marginBottom="@dimen/_13sdp"
+                android:layout_marginBottom="@dimen/_45sdp"
                 android:orientation="horizontal">
 
                 <!-- Layout pulsante ACCETTA (per il codice Java) -->
@@ -198,7 +198,7 @@
                         android:padding="@dimen/_2sdp"
                         android:paddingStart="@dimen/_8sdp"
                         android:paddingEnd="0dp"
-                        android:theme="@style/WhiteAccent"
+                        android:indeterminateDrawable="@drawable/custom_progress_bar"
                         android:visibility="gone" />
 
                     <androidx.appcompat.widget.AppCompatButton
@@ -235,6 +235,7 @@
                         android:padding="@dimen/_2sdp"
                         android:paddingStart="@dimen/_8sdp"
                         android:paddingEnd="0dp"
+                        android:indeterminateDrawable="@drawable/custom_progress_bar"
                         android:visibility="gone" />
 
                     <androidx.appcompat.widget.AppCompatButton
@@ -265,14 +266,14 @@
 
                     <ProgressBar
                         android:id="@+id/pgDownloadInvoice"
-                        android:layout_width="@dimen/_28sdp"
-                        android:layout_height="@dimen/_28sdp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
                         android:layout_centerVertical="true"
                         android:layout_gravity="end"
                         android:padding="@dimen/_2sdp"
                         android:paddingStart="@dimen/_8sdp"
                         android:paddingEnd="0dp"
-                        android:theme="@style/WhiteAccent"
+                        android:indeterminateDrawable="@drawable/custom_progress_bar"
                         android:visibility="gone" />
 
                     <androidx.appcompat.widget.AppCompatButton
@@ -341,6 +342,7 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/_30sdp"
             android:layout_centerInParent="true"
+            android:indeterminateDrawable="@drawable/custom_progress_bar"
             android:visibility="gone" />
 
     </RelativeLayout>

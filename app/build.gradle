@@ -22,8 +22,8 @@ android {
         applicationId "com.app.bemyrider"
         minSdk 29
         targetSdk 36
-        versionCode 22
-        versionName "1.2.6"
+        versionCode 23
+        versionName "1.2.7"
         // multiDexEnabled true <-- Rimosso: minSdk 29 non richiede più Multidex.
         
         resValue "string", "google_maps_api_key", getLocalProperty('GOOGLE_MAPS_API_KEY') ?: ""
@@ -52,6 +52,13 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
+    }
+
+    packagingOptions {
+        jniLibs {
+            // Abilita l'inclusione dei simboli di debug per la simbolizzazione dei crash nativi su Play Console
+            keepDebugSymbols += '**/lib/**.so'
+        }
     }
 
     // Rimosso: java { ... }

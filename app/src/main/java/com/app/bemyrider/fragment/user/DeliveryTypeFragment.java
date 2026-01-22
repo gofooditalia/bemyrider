@@ -92,18 +92,6 @@ public class DeliveryTypeFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         initView();
 
-        ((CustomerHomeActivity) getActivity()).setOnHomePositionData(position -> {
-            currentIndex = position;
-            if (currentIndex == 2) {
-                PrefsUtil.with(activity).write("delivery_type", "large");
-            } else if (currentIndex == 1) {
-                PrefsUtil.with(activity).write("delivery_type", "medium");
-            } else {
-                PrefsUtil.with(activity).write("delivery_type", "small");
-            }
-            Log.e(TAG, "onPageChanged: " + currentIndex + " " + position);
-        });
-
         getAllProviders(true);
 
         binding.rvDeliveryList.addOnScrollListener(new RecyclerView.OnScrollListener() {
