@@ -1,19 +1,12 @@
 package com.app.bemyrider.fragment.user;
 
-import static android.app.Activity.RESULT_OK;
-
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -26,7 +19,6 @@ import com.app.bemyrider.WebServices.WebServiceUrl;
 import com.app.bemyrider.databinding.FragmentServiceListingBinding;
 import com.app.bemyrider.model.CustomerHistoryPojo;
 import com.app.bemyrider.model.CustomerHistoryPojoItem;
-import com.app.bemyrider.utils.Log;
 import com.app.bemyrider.utils.PrefsUtil;
 import com.app.bemyrider.utils.Utils;
 
@@ -39,8 +31,6 @@ import java.util.LinkedHashMap;
 
 public class UpcomingServiceFragment extends Fragment {
 
-    //upcoming service history tab --> ServiceHistoryActivity
-
     private FragmentServiceListingBinding binding;
     private int pastVisibleItems, visibleItemCount, totalItemCount;
     private int page = 1, total_page = 1;
@@ -50,8 +40,6 @@ public class UpcomingServiceFragment extends Fragment {
     private boolean isLoading = false;
     private WebServiceCall upcomingServiceAsync;
     private Context context;
-    ActivityResultLauncher<Intent> myActivityResultLauncher;
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -60,7 +48,8 @@ public class UpcomingServiceFragment extends Fragment {
 
         initView();
 
-        serviceCallGetUpcomingService(true);
+        // Chiamiamo il metodo di refresh per avviare la API call
+        refreshData();
 
         binding.rvServiceList.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -69,7 +58,6 @@ public class UpcomingServiceFragment extends Fragment {
                     visibleItemCount = layoutManager.getChildCount();
                     totalItemCount = layoutManager.getItemCount();
                     pastVisibleItems = layoutManager.findFirstVisibleItemPosition();
-                    Log.e("Item As Per", "visibleItemCount " + layoutManager.getChildCount() + "&& totalItemCount " + layoutManager.getItemCount() + "&& pastVisibleItems " + layoutManager.findFirstVisibleItemPosition());
 
                     if ((!isLoading) && page < total_page) {
                         if ((visibleItemCount + pastVisibleItems) >= totalItemCount) {
@@ -84,19 +72,14 @@ public class UpcomingServiceFragment extends Fragment {
         return binding.getRoot();
     }
 
-    private void myActivityResult() {
-        myActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
-            @Override
-            public void onActivityResult(ActivityResult result) {
-                if (result.getResultCode() == RESULT_OK) {
-                    binding.rvServiceList.setVisibility(View.GONE);
-                    serviceCallGetUpcomingService(true);
-                }
-            }
-        });
+    /*------------- Metodo pubblico per forzare l'aggiornamento dei dati ---------------*/
+    public void refreshData() {
+        if (context != null) {
+            serviceCallGetUpcomingService(true);
+        }
     }
 
-    /*-------------- Get Upcoming Service Api Call ----------------*/
+    /*------------- Get Upcoming Service Api Call ---------------*/
     private void serviceCallGetUpcomingService(boolean isClear) {
         if (isClear) {
             page = 1;
@@ -111,7 +94,7 @@ public class UpcomingServiceFragment extends Fragment {
         LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
 
         textParams.put("user_id", PrefsUtil.with(context).readString("UserId"));
-        textParams.put("tab", "history");
+        textParams.put("tab", "upcoming");
         textParams.put("page", String.valueOf(page));
 
         new WebServiceCall(getActivity(), WebServiceUrl.URL_GETSERVICEHISTORY, textParams,
@@ -164,19 +147,17 @@ public class UpcomingServiceFragment extends Fragment {
     private void initView() {
         context = getActivity();
 
-        myActivityResult();
-
         historyPojoItems = new ArrayList<>();
         layoutManager = new LinearLayoutManager(getActivity(), RecyclerView.VERTICAL, false);
         binding.rvServiceList.setLayoutManager(layoutManager);
-        adapter = new ServiceListUpcomingAdapter(getActivity(), historyPojoItems,myActivityResultLauncher);
+        // CORREZIONE: rimosso il terzo argomento dal costruttore
+        adapter = new ServiceListUpcomingAdapter(getActivity(), historyPojoItems);
         binding.rvServiceList.setAdapter(adapter);
 
         binding.swipeRefresh.setOnRefreshListener(() -> {
             binding.swipeRefresh.setRefreshing(true);
             serviceCallGetUpcomingService(true);
         });
-
     }
 
     @Override

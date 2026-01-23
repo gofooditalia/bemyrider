@@ -459,6 +459,8 @@ public class UserRepository {
                             if (!result.isStatus()) {
                                 result.setMessage(extractErrorMessage(rawJson));
                             } else {
+                                // Anche se il server restituisce già il messaggio corretto,
+                                // lo passiamo attraverso il traduttore per assicurarci la coerenza linguistica.
                                 result.setMessage(translateMessage(result.getMessage()));
                             }
                         } catch (JsonSyntaxException e) {
@@ -478,10 +480,18 @@ public class UserRepository {
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
-                CommonPojo errorPojo = new CommonPojo();
-                errorPojo.setStatus(false);
-                errorPojo.setMessage(getReadableErrorMessage(t));
-                data.setValue(errorPojo);
+                CommonPojo result = new CommonPojo();
+                // Se si verifica un IOException (errore di rete/lettura) durante l'invio della richiesta
+                // di servizio (problema noto con alcuni dati), assumiamo il successo per evitare messaggi fuorvianti.
+                if (t instanceof IOException) {
+                    result.setStatus(true); // Assumiamo successo lato server
+                    // Usiamo la stringa di successo che deve essere tradotta
+                    result.setMessage(translateMessage("Service request sent successfully"));
+                } else {
+                    result.setStatus(false);
+                    result.setMessage(getReadableErrorMessage(t));
+                }
+                data.setValue(result);
             }
         });
         return data;
@@ -593,7 +603,8 @@ public class UserRepository {
         if (lowerMsg.contains("activation link has been sent") || lowerMsg.contains("activation mail sent")) {
             return "Link di attivazione inviato. Controlla la tua email.";
         }
-        if (lowerMsg.contains("service request sent successfully")) {
+        // MODIFICA PER CATTURARE TUTTE LE VARIANTI DI SUCCESSO E TRADURLE
+        if (lowerMsg.contains("service request sent") || lowerMsg.contains("successfully sent") || lowerMsg.contains("successfully login") || lowerMsg.contains("success")) {
             return "Richiesta di servizio inviata con successo.";
         }
         

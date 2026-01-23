@@ -9,7 +9,8 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import androidx.activity.result.ActivityResultLauncher;
+// Rimosso l'import di ActivityResultLauncher
+// import androidx.activity.result.ActivityResultLauncher;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.bemyrider.activity.user.BookedServiceDetailActivity;
@@ -27,13 +28,15 @@ public class ServiceListUpcomingAdapter extends RecyclerView.Adapter<ServiceList
 
     private List<CustomerHistoryPojoItem> historyList;
     private Activity act;
-    private ActivityResultLauncher<Intent> myActivityResultLauncher;
+    // Rimosso il membro myActivityResultLauncher
+    // private ActivityResultLauncher<Intent> myActivityResultLauncher;
 
 
-    public ServiceListUpcomingAdapter(Activity act, List<CustomerHistoryPojoItem> historyList, ActivityResultLauncher<Intent> myActivityResultLauncher) {
+    // Modificato il costruttore per accettare solo 2 argomenti
+    public ServiceListUpcomingAdapter(Activity act, List<CustomerHistoryPojoItem> historyList) {
         this.act = act;
         this.historyList = historyList;
-        this.myActivityResultLauncher = myActivityResultLauncher;
+        // this.myActivityResultLauncher = myActivityResultLauncher; // Rimosso
     }
 
     @Override
@@ -131,7 +134,8 @@ public class ServiceListUpcomingAdapter extends RecyclerView.Adapter<ServiceList
             i.putExtra("providerServiceId", item.getProviderServiceId());
             i.putExtra("serviceRequestId", item.getServiceRequestId());
             i.putExtra("serviceName", item.getServiceName());
-            myActivityResultLauncher.launch(i);
+            // Utilizzo startActivity standard
+            act.startActivity(i);
         });
     }
 

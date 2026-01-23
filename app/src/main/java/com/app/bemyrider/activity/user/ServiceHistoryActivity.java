@@ -120,8 +120,9 @@ public class ServiceHistoryActivity extends AppCompatActivity implements TabLayo
     @Override
     public void onTabSelected(TabLayout.Tab tab) {
         viewPager.setCurrentItem(tab.getPosition());
-        int tabIconColor = ContextCompat.getColor(this, R.color.button);
-        tab.getIcon().setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
+        // La logica di coloring non ha senso se non ci sono icone, la lascio commentata come nell'originale.
+        /*int tabIconColor = ContextCompat.getColor(this, R.color.button);
+        tab.getIcon().setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);*/
     }
 
     @Override
@@ -159,10 +160,13 @@ public class ServiceHistoryActivity extends AppCompatActivity implements TabLayo
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMessageEvent(EventBusMessage event) {
         try {
+            // Se l'Activity è l'ascoltatore attivo per l'evento di servizio,
+            // aggiorna i dati dei fragment esistenti invece di ricreare tutto.
             if (event.getType().equalsIgnoreCase("s")) {
-                setupViewPager(viewPager);
-                tabLayout.setupWithViewPager(viewPager);
-                setupTabString();
+                // Notifica a ciascun fragment di ricaricare i propri dati
+                upcomingServiceFragment.refreshData();
+                ongoingServiceFragment.refreshData();
+                previousServiceFragment.refreshData();
             }
         } catch (Exception e) {
             e.printStackTrace();

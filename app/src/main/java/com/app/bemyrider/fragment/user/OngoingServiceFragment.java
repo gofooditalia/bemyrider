@@ -48,7 +48,8 @@ public class OngoingServiceFragment extends Fragment {
 
         initView();
 
-        serviceCallGetOnGoingService(true);
+        // Chiamiamo il metodo di refresh per avviare la API call
+        refreshData();
 
         binding.rvServiceList.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -69,6 +70,13 @@ public class OngoingServiceFragment extends Fragment {
         });
 
         return binding.getRoot();
+    }
+
+    /*------------- Metodo pubblico per forzare l'aggiornamento dei dati ---------------*/
+    public void refreshData() {
+        if (context != null) {
+            serviceCallGetOnGoingService(true);
+        }
     }
 
     /*------------- Get On Going Service Api Call ---------------*/

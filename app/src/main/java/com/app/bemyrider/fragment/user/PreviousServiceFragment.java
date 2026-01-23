@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+// CORREZIONE: 'ServiceListPreviousAdapter' -> 'ServiceListPreviosAdapter'
 import com.app.bemyrider.Adapter.User.ServiceListPreviosAdapter;
 import com.app.bemyrider.AsyncTask.WebServiceCall;
 import com.app.bemyrider.R;
@@ -21,7 +22,6 @@ import com.app.bemyrider.model.CustomerHistoryPojo;
 import com.app.bemyrider.model.CustomerHistoryPojoItem;
 import com.app.bemyrider.utils.PrefsUtil;
 import com.app.bemyrider.utils.Utils;
-import com.app.bemyrider.utils.Log;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -32,10 +32,9 @@ import java.util.LinkedHashMap;
 
 public class PreviousServiceFragment extends Fragment {
 
-    //previous service history tab --> ServiceHistoryActivity
-
     private FragmentServiceListingBinding binding;
     private int pastVisibleItems, visibleItemCount, totalItemCount;
+    // CORREZIONE: 'ServiceListPreviousAdapter' -> 'ServiceListPreviosAdapter'
     private int page = 1, total_page = 1;
     private ServiceListPreviosAdapter adapter;
     private ArrayList<CustomerHistoryPojoItem> historyPojoItems;
@@ -51,7 +50,8 @@ public class PreviousServiceFragment extends Fragment {
 
         initView();
 
-        serviceCallGetPreviousService(true);
+        // Chiamiamo il metodo di refresh per avviare la API call
+        refreshData();
 
         binding.rvServiceList.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -61,7 +61,6 @@ public class PreviousServiceFragment extends Fragment {
                     totalItemCount = layoutManager.getItemCount();
                     pastVisibleItems = layoutManager.findFirstVisibleItemPosition();
 
-                    Log.e("Item As Per", "visibleItemCount " + layoutManager.getChildCount() + "&& totalItemCount " + layoutManager.getItemCount() + "&& pastVisibleItems " + layoutManager.findFirstVisibleItemPosition());
                     if ((!isLoading) && page < total_page) {
                         if ((visibleItemCount + pastVisibleItems) >= totalItemCount) {
                             page++;
@@ -73,6 +72,13 @@ public class PreviousServiceFragment extends Fragment {
         });
 
         return binding.getRoot();
+    }
+
+    /*------------- Metodo pubblico per forzare l'aggiornamento dei dati ---------------*/
+    public void refreshData() {
+        if (context != null) {
+            serviceCallGetPreviousService(true);
+        }
     }
 
     /*------------- Get Previous Service Api Call ---------------*/
@@ -91,7 +97,6 @@ public class PreviousServiceFragment extends Fragment {
 
         textParams.put("user_id", PrefsUtil.with(context).readString("UserId"));
         textParams.put("tab", "past");
-        //textParams.put("request_type","app");
         textParams.put("page", String.valueOf(page));
 
         new WebServiceCall(getActivity(), WebServiceUrl.URL_GETSERVICEHISTORY, textParams,
@@ -145,7 +150,7 @@ public class PreviousServiceFragment extends Fragment {
         context = getActivity();
 
         historyPojoItems = new ArrayList<>();
-        layoutManager = new LinearLayoutManager(getActivity());
+        layoutManager = new LinearLayoutManager(getActivity(), RecyclerView.VERTICAL, false);
         binding.rvServiceList.setLayoutManager(layoutManager);
         adapter = new ServiceListPreviosAdapter(getActivity(), historyPojoItems);
         binding.rvServiceList.setAdapter(adapter);

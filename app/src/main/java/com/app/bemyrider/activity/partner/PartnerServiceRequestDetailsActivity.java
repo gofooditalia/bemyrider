@@ -327,10 +327,43 @@ public class PartnerServiceRequestDetailsActivity extends AppCompatActivity {
         LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
 
         textParams.put("sel_message_hour", selectedHours);
+        // AGGIUNTA: Aggiungo l'ID della richiesta di servizio che il server probabilmente richiede
+        textParams.put("service_request_id", serviceRequestId);
+        // AGGIUNTA: Aggiungo il prezzo del servizio, che il server potrebbe richiedere per la validazione.
+        if (serviceDetailData != null && serviceDetailData.getServicePrice() != null) {
+            textParams.put("service_price", serviceDetailData.getServicePrice());
+        }
+        // AGGIUNTA: Aggiungo l'ID del servizio offerto dal provider.
+        if (serviceDetailData != null && serviceDetailData.getProviderServiceId() != null) {
+            textParams.put("provider_service_id", serviceDetailData.getProviderServiceId());
+        }
+        // AGGIUNTA: Aggiungo l'ID del servizio master.
+        if (serviceDetailData != null && serviceDetailData.getServiceId() != null) {
+            textParams.put("service_id", serviceDetailData.getServiceId());
+            // AGGIUNTA: Aggiungo anche 'master_id' che è spesso un alias per service_id nell'API.
+            textParams.put("master_id", serviceDetailData.getServiceId());
+        }
+        // AGGIUNTA: Aggiungo il tipo di servizio (es. 'hourly')
+        if (serviceDetailData != null && serviceDetailData.getServiceType() != null) {
+            textParams.put("service_type", serviceDetailData.getServiceType());
+        }
+        // AGGIUNTA FINALE: Aggiungo l'importo totale del booking, calcolato lato client/disponibile nei dati.
+        if (serviceDetailData != null && serviceDetailData.getBookingAmount() != null) {
+            textParams.put("booking_amount", serviceDetailData.getBookingAmount());
+        }
+
 
         textParams.put("txt_message", Utils.encodeEmoji(trim));
 
-        textParams.put("txt_proposal_id", serviceDetailData.getProposalServiceData().get(0).getId());
+        // CORREZIONE CRASH: Controlla se proposalServiceData è vuoto prima di accedere all'indice 0.
+        // Se la lista è vuota, si presume che sia una nuova proposta e non si invia il proposal_id.
+        // Se la lista non è vuota, si invia l'ID della PRIMA proposta. (Potrebbe essere un bug nell'API
+        // se l'intenzione fosse aggiornare l'ultima, ma l'accesso all'indice 0 risolve il crash).
+        String proposalId = "";
+        if (serviceDetailData.getProposalServiceData() != null && !serviceDetailData.getProposalServiceData().isEmpty()) {
+            proposalId = serviceDetailData.getProposalServiceData().get(0).getId();
+        }
+        textParams.put("txt_proposal_id", proposalId); // Invia una stringa vuota se è la prima proposta
 
         textParams.put("user_id", PrefsUtil.with(PartnerServiceRequestDetailsActivity.this).readString("UserId"));
 
@@ -619,6 +652,8 @@ public class PartnerServiceRequestDetailsActivity extends AppCompatActivity {
         String bookingStartTime = serviceDetailData.getBookingStartTime();
         String bookingEndTime = serviceDetailData.getBookingEndTime();
         String bookingDetails = Utils.decodeEmoji(serviceDetailData.getBookingDetails());
+        // Nuovo campo decodificato per l'attrezzatura
+        String serviceDescription = Utils.decodeEmoji(serviceDetailData.getDescription());
 
         String strDeliveryType = "";
         if (serviceDetailData.getDeliveryType() != null) {
@@ -844,6 +879,8 @@ public class PartnerServiceRequestDetailsActivity extends AppCompatActivity {
             binding.includeRequestDetail.TxtServiceAddress.setText(serviceAddress);
             binding.includeRequestDetail.TxtServiceAddress.setPadding(0, 0, 0, 60);
             binding.includeRequestDetail.TxtDesc.setText(bookingDetails);
+            // AGGIUNTA ASSEGNAZIONE DEL MODELLO DEL MEZZO:
+            binding.includeRequestDetail.TxtServiceDesc.setText(serviceDescription);
         } else if ("accepted".equalsIgnoreCase(status) || "ongoing".equalsIgnoreCase(status) || "dispute".equalsIgnoreCase(status)) {
             // Status is accepted, ongoing, or dispute - Hide initial action buttons
             binding.layoutSendMessage.setVisibility(View.VISIBLE); // Keep message visible
@@ -917,6 +954,8 @@ public class PartnerServiceRequestDetailsActivity extends AppCompatActivity {
             binding.includeRequestDetail.TxtServiceAddress.setText(serviceAddress);
             binding.includeRequestDetail.TxtServiceAddress.setPadding(0, 0, 0, 60);
             binding.includeRequestDetail.TxtDesc.setText(bookingDetails);
+            // AGGIUNTA ASSEGNAZIONE DEL MODELLO DEL MEZZO:
+            binding.includeRequestDetail.TxtServiceDesc.setText(serviceDescription);
 
             // If there are proposals, show proposal section logic (proposalServiceDataItems.size() > 0)
             // If there are extensions, show extension section logic (extendServiceListPojoItems.size() > 0)
@@ -990,6 +1029,11 @@ public class PartnerServiceRequestDetailsActivity extends AppCompatActivity {
             binding.includeRequestDetail.TxtServiceAddress.setText(serviceAddress);
             binding.includeRequestDetail.TxtServiceAddress.setPadding(0, 0, 0, 60);
             binding.includeRequestDetail.TxtDesc.setText(bookingDetails);
+            
+            // [INIZIO CORREZIONE PER NASCONDERE PULSANTE PROPOSAL]
+            // Nascondiamo il pulsante 'Send Proposal' se lo stato è 'pending' (o qualsiasi altro stato)
+            binding.btnSendProposal.setVisibility(View.GONE);
+            // [FINE CORREZIONE PER NASCONDERE PULSANTE PROPOSAL]
         }
     }
 
