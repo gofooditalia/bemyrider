@@ -654,6 +654,11 @@ public class PartnerServiceRequestDetailsActivity extends AppCompatActivity {
         String bookingDetails = Utils.decodeEmoji(serviceDetailData.getBookingDetails());
         // Nuovo campo decodificato per l'attrezzatura
         String serviceDescription = Utils.decodeEmoji(serviceDetailData.getDescription());
+        
+        // DEBUG: LOG VALORI DEI CAMPI RELEVANTI
+        Log.d(TAG, "Dati Attrezzatura/Modello (descrizione): " + serviceDetailData.getDescription());
+        Log.d(TAG, "Dati Istruzioni/Comunicazioni (bookingDetails): " + serviceDetailData.getBookingDetails());
+
 
         String strDeliveryType = "";
         if (serviceDetailData.getDeliveryType() != null) {
@@ -1029,6 +1034,9 @@ public class PartnerServiceRequestDetailsActivity extends AppCompatActivity {
             binding.includeRequestDetail.TxtServiceAddress.setText(serviceAddress);
             binding.includeRequestDetail.TxtServiceAddress.setPadding(0, 0, 0, 60);
             binding.includeRequestDetail.TxtDesc.setText(bookingDetails);
+            
+            // AGGIUNTA ASSEGNAZIONE DEL MODELLO DEL MEZZO (mancante in questo blocco!):
+            binding.includeRequestDetail.TxtServiceDesc.setText(serviceDescription);
             
             // [INIZIO CORREZIONE PER NASCONDERE PULSANTE PROPOSAL]
             // Nascondiamo il pulsante 'Send Proposal' se lo stato è 'pending' (o qualsiasi altro stato)
