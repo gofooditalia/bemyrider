@@ -65,6 +65,10 @@ public class ServiceDetailActivity extends AppCompatActivity {
     private boolean isFavRefresh = false;
     private String providerServiceId = "";
 
+    // Variabili per la traduzione dei messaggi lato client
+    private static final String MSG_ADDED_EN = "Service has been added in favourite services successfully";
+    private static final String MSG_REMOVED_EN = "Service has been removed from favorite services successfully.";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -74,6 +78,9 @@ public class ServiceDetailActivity extends AppCompatActivity {
         init();
 
         providerServiceId = getIntent().getStringExtra("providerServiceId");
+        if (providerServiceId == null) {
+            providerServiceId = "";
+        }
         boolean isCallApiHome = "y".equals(getIntent().getStringExtra("isCallApi"));
 
         getDetails(isCallApiHome);
@@ -177,8 +184,11 @@ public class ServiceDetailActivity extends AppCompatActivity {
             getSupportActionBar().setTitle(HtmlCompat.fromHtml("<font color=#FFFFFF>" + serviceDetailData.getServiceName(), HtmlCompat.FROM_HTML_MODE_LEGACY));
         }
 
-        boolean isFavorite = Integer.parseInt(serviceDetailData.getTotalFavorite()) > 0;
+        // Recuperiamo lo stato del preferito. isFavorite "y" = Sì, "n" = No.
+        boolean isFavorite = "y".equalsIgnoreCase(serviceDetailData.getIsFavorite());
         binding.imgFav.setImageResource(isFavorite ? R.mipmap.ic_heart_fill : R.mipmap.ic_heart_empty);
+        
+        // LOGICA TAG: 0 = È già preferito, 1 = NON è preferito
         binding.imgFav.setTag(isFavorite ? "0" : "1");
 
         binding.txtRatingShow.setText(String.valueOf(serviceDetailData.getAvgRating()));
@@ -197,16 +207,47 @@ public class ServiceDetailActivity extends AppCompatActivity {
         binding.layoutProfile.setOnClickListener(profileClickListener);
     }
 
+    // Metodo per tradurre il messaggio dal server
+    private String getTranslatedMessage(String message) {
+        if (message == null) {
+            return getString(R.string.server_error);
+        }
+        
+        switch (message) {
+            case MSG_ADDED_EN:
+                return getString(R.string.favorite_added_success);
+            case MSG_REMOVED_EN:
+                return getString(R.string.favorite_removed_success);
+            default:
+                return message;
+        }
+    }
+
+
     protected void favouriteToggle() {
+        if (serviceDetailData == null || serviceDetailData.getProviderId() == null || serviceDetailData.getId() == null) {
+            Toast.makeText(this, getString(R.string.server_error), Toast.LENGTH_SHORT).show();
+            return; 
+        }
+
         binding.llFavourite.setClickable(false);
         binding.imgFav.setVisibility(View.GONE);
         binding.pgFavourite.setVisibility(View.VISIBLE);
 
         LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-        textParams.put("service_id", !providerServiceId.isEmpty() ? providerServiceId : serviceDetailData.getId());
+        
+        // CORREZIONE FONDAMENTALE: Usiamo l'ID specifico del servizio (es. 855 o 782) invece della categoria (67)
+        textParams.put("service_id", serviceDetailData.getId());
+        
         textParams.put("provider_id", serviceDetailData.getProviderId());
         textParams.put("user_id", PrefsUtil.with(this).readString("UserId"));
-        textParams.put("fvrt_val", "1".equals(binding.imgFav.getTag()) ? "0" : "1");
+        
+        textParams.put("delivery_type", PrefsUtil.with(this).readString("delivery_type"));
+        textParams.put("request_type", PrefsUtil.with(this).readString("request_type"));
+        
+        // RIPRISTINO LOGICA SERVER: 0 = AGGIUNGI, 1 = RIMUOVI
+        // Se il tag è "1" (non preferito), inviamo "0" per aggiungere.
+        textParams.put("fvrt_val", binding.imgFav.getTag().equals("1") ? "0" : "1");
 
         actionFavouriteAsync = new WebServiceCall(this, WebServiceUrl.URL_FAVOURITETOGGLE, textParams, EditProfilePojo.class, false, new WebServiceCall.OnResultListener() {
             @Override
@@ -214,15 +255,22 @@ public class ServiceDetailActivity extends AppCompatActivity {
                 binding.pgFavourite.setVisibility(View.GONE);
                 binding.imgFav.setVisibility(View.VISIBLE);
                 binding.llFavourite.setClickable(true);
+                
                 if (status) {
                     isFavRefresh = true;
-                    Toast.makeText(ServiceDetailActivity.this, ((EditProfilePojo) obj).getMessage(), Toast.LENGTH_SHORT).show();
+                    String messageToShow = getTranslatedMessage(((EditProfilePojo) obj).getMessage());
+                    Toast.makeText(ServiceDetailActivity.this, messageToShow, Toast.LENGTH_SHORT).show();
                     
-                    boolean isNowFavorite = "1".equals(binding.imgFav.getTag());
+                    // Invertiamo il tag locale per riflettere il nuovo stato
+                    boolean wasFavorite = "0".equals(binding.imgFav.getTag());
+                    boolean isNowFavorite = !wasFavorite;
+                    
                     binding.imgFav.setImageResource(isNowFavorite ? R.mipmap.ic_heart_fill : R.mipmap.ic_heart_empty);
                     binding.imgFav.setTag(isNowFavorite ? "0" : "1");
+
                 } else {
-                    Toast.makeText(ServiceDetailActivity.this, Objects.toString(obj, getString(R.string.server_error)), Toast.LENGTH_LONG).show();
+                    String messageToShow = (String) obj;
+                    Toast.makeText(ServiceDetailActivity.this, Objects.toString(messageToShow, getString(R.string.server_error)), Toast.LENGTH_LONG).show();
                 }
             }
             @Override public void onAsync(Object asyncTask) { actionFavouriteAsync = null; }

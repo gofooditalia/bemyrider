@@ -613,4 +613,7 @@
     <string name="date_of_completion">Date of Completion</string>
     <string name="received_amount">Received Amount</string>
     <string name="total_working_hours">Total Working Hours</string>
+
+    <string name="favorite_added_success">Service has been added in favourite services successfully</string>
+    <string name="favorite_removed_success">Service has been removed from favorite services successfully.</string>
 </resources>

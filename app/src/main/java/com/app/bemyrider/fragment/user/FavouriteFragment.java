@@ -82,11 +82,8 @@ public class FavouriteFragment extends Fragment {
 
         init();
 
-        if (new ConnectionCheck().isNetworkConnected(context)) {
-            serviceCallGetFavoriteList(true);
-        } else {
-            getOfflineDetails();
-        }
+        // Rimuoviamo la chiamata qui per spostarla in onResume. 
+        // In questo modo, il fragment si aggiorna ogni volta che torna in primo piano.
 
         binding.rvFavouriteServices.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -143,6 +140,18 @@ public class FavouriteFragment extends Fragment {
 
         return binding.getRoot();
     }
+    
+    // CORREZIONE: Aggiungiamo onResume per garantire l'aggiornamento quando il fragment torna in primo piano
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (new ConnectionCheck().isNetworkConnected(context)) {
+            serviceCallGetFavoriteList(true);
+        } else {
+            getOfflineDetails();
+        }
+    }
+
 
     /*-------------- Get Favorite Service Api Call -----------------*/
     private void serviceCallGetFavoriteList(boolean isClear) {
@@ -160,6 +169,8 @@ public class FavouriteFragment extends Fragment {
         textParams.put("user_id", PrefsUtil.with(activity).readString("UserId"));
         textParams.put("txt_search", Utils.encodeEmoji(keyWord));
         textParams.put("page", String.valueOf(page));
+        
+        // Rimosso il filtro service_id perché probabilmente filtrava la lista dei preferiti in modo errato.
 
         new WebServiceCall(context,
                 WebServiceUrl.URL_GET_FAVORITE_LIST, textParams, FavoriteServiceListPojo.class,

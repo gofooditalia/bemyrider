@@ -103,20 +103,25 @@ public class PartnerServiceRequestDetailsActivity extends AppCompatActivity {
             serviceCallAcceptExtendRequest("rejected");
         });
 
+        // MODIFICA: Aggiunto progress bar qui per renderlo visibile immediatamente
         binding.btnAccept.setOnClickListener(view -> {
             binding.btnSendProposal.setClickable(false);
             binding.btnAccept.setClickable(false);
             binding.btnReject.setClickable(false);
             binding.includeRequestDetail.btnRejectProposalP.setClickable(false);
             binding.includeRequestDetail.btnAcceptProposalP.setClickable(false);
+            binding.pgAccept.setVisibility(View.VISIBLE); // AGGIUNTO
             serviceCallAcceptReject("accepted", null);
         });
+        
+        // MODIFICA: Aggiunto progress bar qui per renderlo visibile immediatamente
         binding.btnReject.setOnClickListener(view -> {
             binding.btnSendProposal.setClickable(false);
             binding.btnAccept.setClickable(false);
             binding.btnReject.setClickable(false);
             binding.includeRequestDetail.btnRejectProposalP.setClickable(false);
             binding.includeRequestDetail.btnAcceptProposalP.setClickable(false);
+            binding.pgReject.setVisibility(View.VISIBLE); // AGGIUNTO
             serviceCallAcceptReject("rejected", null);
         });
 
@@ -445,12 +450,16 @@ public class PartnerServiceRequestDetailsActivity extends AppCompatActivity {
     }
 
     private void serviceCallAcceptReject(String serviceStatus, final Dialog dialog) {
+        // MODIFICA: Rimozione del blocco if/else per la visibilità del progress bar qui. 
+        // L'impostazione a VISIBLE viene gestita in onCreate (negli onClickListener)
         if (dialog == null) {
+            /*
             if (serviceStatus.equalsIgnoreCase("accepted")) {
                 binding.pgAccept.setVisibility(View.VISIBLE);
             } else {
                 binding.pgReject.setVisibility(View.VISIBLE);
             }
+            */
         } else {
             if (serviceStatus.equalsIgnoreCase("accepted")) {
                 (dialog.findViewById(R.id.pgProposalDialogAccept)).setVisibility(View.VISIBLE);

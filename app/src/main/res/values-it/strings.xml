@@ -591,4 +591,7 @@
 
     <string name="confirm_signup_as">Stai per registrarti come %s. Confermi?</string>
     <string name="registration_success_message">Ti sei registrato con successo. Controlla la tua email per l\'attivazione.</string>
+
+    <string name="favorite_added_success">Servizio aggiunto con successo ai preferiti</string>
+    <string name="favorite_removed_success">Servizio rimosso con successo dai preferiti.</string>
 </resources>
