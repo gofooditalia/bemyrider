@@ -24,7 +24,7 @@
     <string name="no">No</string>
     <string name="ok">OK</string>
     <string name="connect_account">Collegare l\'account?</string>
-    <string name="loading">Caricamento in corso...</string>
+    <string name="loading">Caricamento in corso…</string>
     <string name="wait_while_loading">Si prega di attendere durante il caricamento</string>
     <string name="no_internet">Nessuna connessione internet.</string>
 
@@ -158,7 +158,7 @@
     <string name="net_earned">Guadagno netto</string>
     <string name="no_of_book">N. di Prenotazioni</string>
     <string name="rating_me">Valutazioni per me</string>
-    <string name="searh_service">Servizi di ricerca...</string>
+    <string name="searh_service">Servizi di ricerca…</string>
     <string name="accept">Accetta</string>
     <string name="reject">Rifiuta</string>
     <string name="end_service">Fine servizio</string>
@@ -259,7 +259,7 @@
     <string name="please_enter_start_time">Si prega di selezionare l\'ora di inizio*</string>
     <string name="user_profile">Profilo utente</string>
     <string name="my_wallet">Il mio portafoglio</string>
-    <string name="please_select_user_type">Seleziona il tipo di utente...</string>
+    <string name="please_select_user_type">Seleziona il tipo di utente…</string>
     <string name="status_expired">È scaduto</string>
     <string name="no_reviews">Nessuna recensione</string>
     <string name="paypal">PAYPAL</string>
@@ -407,7 +407,6 @@
     <string name="vali_contact_num">Il numero di contatto deve essere compreso tra 10 e 15 cifre</string>
     <string name="received_amount">Importo ricevuto</string>
     <string name="date_of_completion">Data di completamento</string>
-    <string name="per_hour_rate">Tariffa oraria</string>
     <string name="total_working_hours">Ore di lavoro totali</string>
     <string name="currency">€</string>
     <string name="message_no_connection">Nessuna connessione internet</string>
@@ -449,7 +448,7 @@
     <string name="signup_now">Iscriviti ora</string>
     <string name="guest_user">Utente ospite</string>
     <string name="login_menu">Login</string>
-    <string name="please_select_delivery_type">Si prega di selezionare il tipo di consegna...</string>
+    <string name="please_select_delivery_type">Si prega di selezionare il tipo di consegna…</string>
     <string name="quick">Presto</string>
     <string name="scheduled">Programmato</string>
     <string name="request_type">Tipo di richiesta</string>
@@ -516,8 +515,8 @@
         <item>Durata del servizio*</item>
         <item>1 Ora</item>
         <item>2 Ore</item>
-<!--        <item>3 Ore</item>-->
-<!--        <item>4 Ore</item>-->
+        <!--        <item>3 Ore</item>-->
+        <!--        <item>4 Ore</item>-->
     </string-array>
 
     <!-- Added by Keval-->
@@ -595,4 +594,9 @@
     <string name="favorite_added_success">Servizio aggiunto con successo ai preferiti</string>
     <string name="favorite_removed_success">Servizio rimosso con successo dai preferiti.</string>
     <string name="hint_shop_address">Città in cui ti trovi*</string>
+
+    <string name="share">Condividi</string>
+    <string name="share_profile_body">Ciao! Prenota il mio servizio su Bemyrider: https://bemyrider.it/rider?id=</string>
+    <string name="share_profile_subject">Il mio profilo Bemyrider</string>
+    <string name="profile_not_loaded_share_error">Profilo non caricato, impossibile condividere.</string>
 </resources>

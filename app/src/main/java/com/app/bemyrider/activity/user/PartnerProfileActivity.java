@@ -33,7 +33,6 @@ import coil.Coil;
 import coil.request.ImageRequest;
 
 import java.util.LinkedHashMap;
-import java.util.Objects;
 
 public class PartnerProfileActivity extends AppCompatActivity {
 
@@ -145,7 +144,7 @@ public class PartnerProfileActivity extends AppCompatActivity {
         binding.ppaTxtAboutUser.setText(pItem.getDescription() != null && !pItem.getDescription().isEmpty() ?
                 Utils.decodeEmoji(pItem.getDescription()) : "-");
 
-        binding.ppaTxtAvailableDays.setText(!pItem.getAvailableDays().isEmpty() ? pItem.getAvailableDaysList() : "-");
+        binding.ppaTxtAvailableDays.setText(pItem.getAvailableDays().length() > 0 ? pItem.getAvailableDaysList() : "-");
 
         if (pItem.getAvailableTimeStart() != null && !pItem.getAvailableTimeStart().isEmpty() &&
                 pItem.getAvailableTimeEnd() != null && !pItem.getAvailableTimeEnd().isEmpty()) {
@@ -215,7 +214,7 @@ public class PartnerProfileActivity extends AppCompatActivity {
         binding.appBarLayout.addOnOffsetChangedListener((appBarLayout, verticalOffset) -> {
             if (Math.abs(verticalOffset) == appBarLayout.getTotalScrollRange()) {
                 CharSequence username = binding.ppaTxtUsername.getText();
-                binding.txtHeaderName.setText(!username.toString().isEmpty() ? username : getString(R.string.provider_profile));
+                binding.txtHeaderName.setText(username.length() > 0 ? username : getString(R.string.provider_profile));
                 binding.toolbar.setBackgroundColor(ContextCompat.getColor(this, R.color.toolbar_bg_color));
                 binding.txtHeaderName.setTextColor(ContextCompat.getColor(this, R.color.white));
                 binding.llMain.setPadding(0, 50, 0, 0);

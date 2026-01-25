@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.os.Bundle;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
@@ -274,10 +275,33 @@ public class ServiceDetailActivity extends AppCompatActivity {
         });
     }
 
+    private void shareProfile() {
+        if (serviceDetailData != null && serviceDetailData.getProviderId() != null) {
+            String shareBody = getString(R.string.share_profile_body) + serviceDetailData.getProviderId();
+            Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
+            sharingIntent.setType("text/plain");
+            sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, getString(R.string.share_profile_subject));
+            sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, shareBody);
+            startActivity(Intent.createChooser(sharingIntent, getString(R.string.share_profile_subject)));
+        } else {
+            Toast.makeText(this, getString(R.string.profile_not_loaded_share_error), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_share, menu);
+        return true;
+    }
+
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
+        int itemId = item.getItemId();
+        if (itemId == android.R.id.home) {
             getOnBackPressedDispatcher().onBackPressed();
+            return true;
+        } else if (itemId == R.id.action_share) {
+            shareProfile();
             return true;
         }
         return super.onOptionsItemSelected(item);

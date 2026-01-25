@@ -6,7 +6,7 @@ package com.app.bemyrider.WebServices;
 
 public class WebServiceUrl {
 
-     private final static String hostname = "https://bemyrider.it/";
+    private final static String hostname = "https://bemyrider.it/";
 //    private final static String hostname = "https://gotasker.ncryptedprojects.com/";
 
     public final static String terms_and_conditions = "https://bemyrider.it/app/termini-e-condizioni-bemyrider/";

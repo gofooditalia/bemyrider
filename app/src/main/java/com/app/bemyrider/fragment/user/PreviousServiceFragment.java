@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -44,7 +45,7 @@ public class PreviousServiceFragment extends Fragment {
     private Context context;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_service_listing, container, false);
 
@@ -55,7 +56,7 @@ public class PreviousServiceFragment extends Fragment {
 
         binding.rvServiceList.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
                 if (dy > 0) {
                     visibleItemCount = layoutManager.getChildCount();
                     totalItemCount = layoutManager.getItemCount();
@@ -116,7 +117,7 @@ public class PreviousServiceFragment extends Fragment {
                     binding.rvServiceList.setVisibility(View.VISIBLE);
 
                     historyPojoItems.addAll(historyPojo.getData().getServiceList());
-                    if (historyPojoItems.size() > 0) {
+                    if (!historyPojoItems.isEmpty()) {
                         binding.txtNoRecord.setVisibility(View.GONE);
                         binding.rvServiceList.setVisibility(View.VISIBLE);
                     } else {

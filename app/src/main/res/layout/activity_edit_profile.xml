@@ -30,7 +30,7 @@
                     app:border_color="#E0E6E4"
                     app:border_width="2dp"
                     tools:ignore="UnusedAttribute"
-                    tools:targetApi="m" />
+                     />
 
                 <androidx.appcompat.widget.AppCompatImageView
                     android:id="@+id/ivOverlay"

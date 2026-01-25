@@ -14,6 +14,8 @@ import android.net.Uri;
 import android.os.Build;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import com.app.bemyrider.activity.SignupActivity;
 import com.app.bemyrider.activity.partner.Partner_DisputeDetail_Activity;
 import com.app.bemyrider.activity.partner.Partner_ServiceRequestDetail_Tablayout_Activity;
@@ -33,6 +35,7 @@ import org.greenrobot.eventbus.EventBus;
 
 import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.Objects;
 
 /**
  * Created by nct33 on 13/9/17.
@@ -43,7 +46,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     private static final String TAG = "MyFirebaseMessaging";
 
     @Override
-    public void onNewToken(String token) {
+    public void onNewToken(@NonNull String token) {
         Log.d(TAG, "New FCM token received: " + token);
         
         // Salva il token usando SecurePrefsUtil per coerenza con il resto dell'app
@@ -71,7 +74,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     private void sendTokenToBackend(String token, SecurePrefsUtil securePrefs) {
         try {
             // Usa SecurePrefsUtil se disponibile, altrimenti PrefsUtil
-            String userId = null;
+            String userId;
             if (securePrefs != null) {
                 userId = securePrefs.readString("UserId");
             } else {
@@ -148,12 +151,12 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         // Log dello stato dell'app (foreground/background)
         Log.d(TAG, "App state: " + (isAppInForeground() ? "FOREGROUND" : "BACKGROUND"));
 
-        Log.e("WithoutBalancePojoItem", remoteMessage.getData().get("notification_type"));
-        Log.e("WithoutBalancePojoItem", "Message Data : " + remoteMessage.getData().toString());
+        Log.e("WithoutBalancePojoItem", Objects.requireNonNull(remoteMessage.getData().get("notification_type")));
+        Log.e("WithoutBalancePojoItem", "Message Data : " + remoteMessage.getData());
 
         //Log.d(TAG, "From: " + remoteMessage.getFrom());
         Log.d(TAG, "Notification Message Body: " + remoteMessage.getData().get("body"));
-        Log.e(TAG, "Notification DATA: " + remoteMessage.getData().toString());
+        Log.e(TAG, "Notification DATA: " + remoteMessage.getData());
         Log.e(TAG, "Notification TITLE: " + remoteMessage.getData().get("title"));
         Log.e(TAG, "Notification SOUND: " + remoteMessage.getData().get("sound"));
 
@@ -218,30 +221,22 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             }
         }
         /*---------- Provider side service notification ----------*/
-        else if (type != null && type.equals("s") && userType != null && userType.equals("p")) {
+        else if (type.equals("s") && userType.equals("p")) {
             Log.d(TAG, "Processing PROVIDER service notification (rider booking request)");
+            Intent intent;
             if (notificationConstant != null && notificationConstant.equalsIgnoreCase("AC_NT_NOTIFY_ME_WHEN_SERVICE_COMPLETED")) {
-                Intent intent = new Intent(this, Partner_ServiceRequestDetail_Tablayout_Activity.class);
-                intent.putExtra("serviceRequestId", remoteMessage.getData().get("service_request_id"));
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    pendingIntent = PendingIntent.getActivity(this, (int) System.currentTimeMillis(), intent,
-                            PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
-                } else {
-                    pendingIntent = PendingIntent.getActivity(this, (int) System.currentTimeMillis(), intent,
-                            PendingIntent.FLAG_UPDATE_CURRENT);
-                }
+                intent = new Intent(this, Partner_ServiceRequestDetail_Tablayout_Activity.class);
             } else {
-                Intent intent = new Intent(this, PartnerServiceRequestDetailsActivity.class);
-                intent.putExtra("serviceRequestId", remoteMessage.getData().get("service_request_id"));
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    pendingIntent = PendingIntent.getActivity(this, (int) System.currentTimeMillis(), intent,
-                            PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
-                } else {
-                    pendingIntent = PendingIntent.getActivity(this, (int) System.currentTimeMillis(), intent,
-                            PendingIntent.FLAG_UPDATE_CURRENT);
-                }
+                intent = new Intent(this, PartnerServiceRequestDetailsActivity.class);
+            }
+            intent.putExtra("serviceRequestId", remoteMessage.getData().get("service_request_id"));
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                pendingIntent = PendingIntent.getActivity(this, (int) System.currentTimeMillis(), intent,
+                        PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
+            } else {
+                pendingIntent = PendingIntent.getActivity(this, (int) System.currentTimeMillis(), intent,
+                        PendingIntent.FLAG_UPDATE_CURRENT);
             }
             EventBus.getDefault().post(new EventBusMessage("s", remoteMessage.getData()));
             Log.d(TAG, "EventBus message posted for provider service notification");
@@ -300,102 +295,88 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             NotificationManager notificationManager =
                     (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-            //Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-            //Uri defaultSoundUri =  Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + getApplicationContext().getPackageName() + "/" + R.raw.notify); //Here is FILE_NAME is the name of file that you want to play
             Uri defaultSoundUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + getApplicationContext().getPackageName() + "/" + R.raw.notify);
             Log.e("defaultSoundUri",defaultSoundUri.toString());
 
             Notification notification;
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                // The id of the channel.
-                String Ch_id = "gorider_01";
+            // The id of the channel.
+            String Ch_id = "gorider_01";
 
-                // The user-visible name of the channel.
-                CharSequence name = getString(R.string.channel_name);
+            // The user-visible name of the channel.
+            CharSequence name = getString(R.string.channel_name);
 
-                // The user-visible description of the channel.
-                //String description = getString(R.string.channel_description);
+            // The user-visible description of the channel.
+            //String description = getString(R.string.channel_description);
 
-                int importance = NotificationManager.IMPORTANCE_HIGH;
+            int importance = NotificationManager.IMPORTANCE_HIGH;
 
-                NotificationChannel mChannel = notificationManager.getNotificationChannel(Ch_id);
-                
-                // IMPORTANTE: Se il canale esiste ma non ha suono, eliminalo e ricrealo
-                // Android non permette di modificare il suono di un canale esistente
-                if (mChannel != null && mChannel.getSound() == null) {
-                    Log.w(TAG, "Channel exists but has no sound. Deleting and recreating...");
-                    notificationManager.deleteNotificationChannel(Ch_id);
-                    mChannel = null;
-                }
-                
-                if (mChannel == null) {
-                    mChannel = new NotificationChannel(Ch_id, name, importance);
-                    AudioAttributes audioAttributes = new AudioAttributes.Builder()
-                            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                            .setUsage(AudioAttributes.USAGE_NOTIFICATION_RINGTONE)
-                            .build();
-                    mChannel.setSound(defaultSoundUri, audioAttributes);
-                    mChannel.enableVibration(true);
-                    mChannel.setVibrationPattern(new long[]{100, 200, 300, 400, 500, 400, 300, 200, 400});
-                    mChannel.setShowBadge(true);
-                    mChannel.setDescription("Canale per le notifiche push di BeMyRider");
-                    notificationManager.createNotificationChannel(mChannel);
-                    Log.d(TAG, "Notification channel created/recreated with sound: " + defaultSoundUri);
-                } else {
-                    // Verifica che il canale abbia il suono configurato
-                    if (mChannel.getSound() != null) {
-                        Log.d(TAG, "Notification channel exists with sound: " + mChannel.getSound());
-                        // Verifica che il suono sia quello corretto
-                        if (!mChannel.getSound().equals(defaultSoundUri)) {
-                            Log.w(TAG, "Channel sound mismatch! Expected: " + defaultSoundUri + ", Got: " + mChannel.getSound());
-                            // Elimina e ricrea il canale con il suono corretto
-                            notificationManager.deleteNotificationChannel(Ch_id);
-                            mChannel = new NotificationChannel(Ch_id, name, importance);
-                            AudioAttributes audioAttributes = new AudioAttributes.Builder()
-                                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                                    .setUsage(AudioAttributes.USAGE_NOTIFICATION_RINGTONE)
-                                    .build();
-                            mChannel.setSound(defaultSoundUri, audioAttributes);
-                            mChannel.enableVibration(true);
-                            mChannel.setVibrationPattern(new long[]{100, 200, 300, 400, 500, 400, 300, 200, 400});
-                            mChannel.setShowBadge(true);
-                            mChannel.setDescription("Canale per le notifiche push di BeMyRider");
-                            notificationManager.createNotificationChannel(mChannel);
-                            Log.d(TAG, "Notification channel recreated with correct sound");
-                        }
-                    } else {
-                        Log.w(TAG, "Notification channel exists but has no sound configured!");
-                    }
-                }
-
-                // Create a notification and set the notification channel.
-                /*.setSmallIcon(R.drawable.notify)*/
-                // IMPORTANTE: Per Android O+, il suono viene gestito dal canale di notifica
-                // Assicuriamoci che il canale abbia il suono configurato correttamente
-                notification = new Notification.Builder(this, Ch_id)
-                        .setSmallIcon(R.mipmap.ic_launcher)
-                        .setContentTitle(getResources().getString(R.string.app_name))
-                        /*.setContentText(remoteMessage.getData().get("title"))*/
-                        .setAutoCancel(true)
-                        .setContentIntent(pendingIntent)
-                        .setStyle(new Notification.BigTextStyle().bigText(remoteMessage.getData().get("title")))
-                        .setChannelId(Ch_id)
-                        .setDefaults(Notification.DEFAULT_ALL) // Aggiunge suono, vibrazione, LED
-                        .setPriority(Notification.PRIORITY_HIGH) // Priorità alta per garantire il suono
-                        .build();
-            } else {
-                // Create a notification
-                notification = new Notification.Builder(this)
-                        .setSmallIcon(R.mipmap.ic_launcher)
-                        .setContentTitle(getResources().getString(R.string.app_name))
-                        /*.setContentText(remoteMessage.getData().get("title"))*/
-                        .setStyle(new Notification.BigTextStyle().bigText(remoteMessage.getData().get("title")))
-                        .setAutoCancel(true)
-                        .setSound(defaultSoundUri)
-                        .setContentIntent(pendingIntent)
-                        .build();
+            NotificationChannel mChannel = notificationManager.getNotificationChannel(Ch_id);
+            
+            // IMPORTANTE: Se il canale esiste ma non ha suono, eliminalo e ricrealo
+            // Android non permette di modificare il suono di un canale esistente
+            if (mChannel != null && mChannel.getSound() == null) {
+                Log.w(TAG, "Channel exists but has no sound. Deleting and recreating...");
+                notificationManager.deleteNotificationChannel(Ch_id);
+                mChannel = null;
             }
+            
+            if (mChannel == null) {
+                mChannel = new NotificationChannel(Ch_id, name, importance);
+                AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .setUsage(AudioAttributes.USAGE_NOTIFICATION_RINGTONE)
+                        .build();
+                mChannel.setSound(defaultSoundUri, audioAttributes);
+                mChannel.enableVibration(true);
+                mChannel.setVibrationPattern(new long[]{100, 200, 300, 400, 500, 400, 300, 200, 400});
+                mChannel.setShowBadge(true);
+                mChannel.setDescription("Canale per le notifiche push di BeMyRider");
+                notificationManager.createNotificationChannel(mChannel);
+                Log.d(TAG, "Notification channel created/recreated with sound: " + defaultSoundUri);
+            } else {
+                // Verifica che il canale abbia il suono configurato
+                if (mChannel.getSound() != null) {
+                    Log.d(TAG, "Notification channel exists with sound: " + mChannel.getSound());
+                    // Verifica che il suono sia quello corretto
+                    if (!mChannel.getSound().equals(defaultSoundUri)) {
+                        Log.w(TAG, "Channel sound mismatch! Expected: " + defaultSoundUri + ", Got: " + mChannel.getSound());
+                        // Elimina e ricrea il canale con il suono corretto
+                        notificationManager.deleteNotificationChannel(Ch_id);
+                        mChannel = new NotificationChannel(Ch_id, name, importance);
+                        AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                                .setUsage(AudioAttributes.USAGE_NOTIFICATION_RINGTONE)
+                                .build();
+                        mChannel.setSound(defaultSoundUri, audioAttributes);
+                        mChannel.enableVibration(true);
+                        mChannel.setVibrationPattern(new long[]{100, 200, 300, 400, 500, 400, 300, 200, 400});
+                        mChannel.setShowBadge(true);
+                        mChannel.setDescription("Canale per le notifiche push di BeMyRider");
+                        notificationManager.createNotificationChannel(mChannel);
+                        Log.d(TAG, "Notification channel recreated with correct sound");
+                    }
+                } else {
+                    Log.w(TAG, "Notification channel exists but has no sound configured!");
+                }
+            }
+
+            // Create a notification and set the notification channel.
+            /*.setSmallIcon(R.drawable.notify)*/
+            // IMPORTANTE: Per Android O+, il suono viene gestito dal canale di notifica
+            // Assicuriamoci che il canale abbia il suono configurato correttamente
+            notification = new Notification.Builder(this, Ch_id)
+                    .setSmallIcon(R.mipmap.ic_launcher)
+                    .setContentTitle(getResources().getString(R.string.app_name))
+                    /*.setContentText(remoteMessage.getData().get("title"))*/
+                    .setAutoCancel(true)
+                    .setContentIntent(pendingIntent)
+                    .setStyle(new Notification.BigTextStyle().bigText(remoteMessage.getData().get("title")))
+                    .setChannelId(Ch_id)
+                    // .setDefaults(Notification.DEFAULT_ALL) // Aggiunge suono, vibrazione, LED - Rimosso perché deprecato in O+ e gestito dal canale
+                    // .setPriority(Notification.PRIORITY_HIGH) // Priorità alta per garantire il suono - Rimosso perché deprecato in O+ e gestito dal canale
+                    .build();
+
             //Generate Diff Notification
             int m = (int) ((new Date().getTime() / 1000L) % Integer.MAX_VALUE);
 
@@ -426,13 +407,13 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), defaultSoundUri);
             if (r != null) {
                 // Imposta il tipo di stream per le notifiche
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                // if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) { // Redundant with minSdk 29
                     r.setAudioAttributes(new AudioAttributes.Builder()
                             .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
                             .setUsage(AudioAttributes.USAGE_NOTIFICATION_RINGTONE)
                             .setFlags(AudioAttributes.FLAG_AUDIBILITY_ENFORCED) // Forza la riproduzione anche in background
                             .build());
-                }
+                // }
                 r.play();
                 Log.d(TAG, "Notification sound played successfully via Ringtone");
                 
@@ -451,13 +432,13 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                     Log.d(TAG, "Trying fallback sound: " + defaultRingtone);
                     Ringtone fallbackRingtone = RingtoneManager.getRingtone(getApplicationContext(), defaultRingtone);
                     if (fallbackRingtone != null) {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                        // if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) { // Redundant with minSdk 29
                             fallbackRingtone.setAudioAttributes(new AudioAttributes.Builder()
                                     .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
                                     .setUsage(AudioAttributes.USAGE_NOTIFICATION_RINGTONE)
                                     .setFlags(AudioAttributes.FLAG_AUDIBILITY_ENFORCED)
                                     .build());
-                        }
+                        // }
                         fallbackRingtone.play();
                         Log.d(TAG, "Notification sound played via fallback (system default)");
                     } else {
@@ -465,12 +446,12 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                     }
                 } catch (Exception fallbackException) {
                     Log.e(TAG, "Error playing fallback notification sound", fallbackException);
-                    fallbackException.printStackTrace();
+                    // fallbackException.printStackTrace(); // Replaced with Log.e which includes stack trace
                 }
             }
         } catch (Exception e) {
             Log.e(TAG, "Error playing notification sound", e);
-            e.printStackTrace();
+            // e.printStackTrace(); // Replaced with Log.e which includes stack trace
         }
     }
     

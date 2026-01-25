@@ -5,11 +5,7 @@ import static com.app.bemyrider.utils.Utils.EMOJI_FILTER;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
@@ -23,11 +19,7 @@ import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.LinearLayoutCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.text.HtmlCompat;
 import androidx.databinding.DataBindingUtil;
@@ -40,7 +32,6 @@ import com.app.bemyrider.activity.user.CustomerHomeActivity;
 import com.app.bemyrider.databinding.ActivityFeedbackBinding;
 import com.app.bemyrider.helper.LogMaster;
 import com.app.bemyrider.helper.PermissionUtils;
-import com.app.bemyrider.helper.ToastMaster;
 import com.app.bemyrider.model.CommonPojo;
 import com.app.bemyrider.model.FileUtilPOJO;
 import com.app.bemyrider.utils.ConnectionManager;
@@ -52,9 +43,8 @@ import com.app.bemyrider.utils.Utils;
 import com.yalantis.ucrop.UCrop;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
 import java.util.LinkedHashMap;
+import java.util.Objects;
 
 /**
  * Modified by Hardik Talaviya on 7/12/19.
@@ -147,10 +137,10 @@ public class FeedbackActivity extends AppCompatActivity {
         LinkedHashMap<String, File> fileParams = new LinkedHashMap<>();
 
         textParams.put("user_id", PrefsUtil.with(FeedbackActivity.this).readString("UserId"));
-        textParams.put("email", binding.edtEmailFeedback.getText().toString().trim());
-        textParams.put("message", Utils.encodeEmoji(binding.edtFeedback.getText().toString().trim()));
-        textParams.put("firstName", binding.edtFnameFeedback.getText().toString().trim());
-        textParams.put("lastName", binding.edtLnameFeedback.getText().toString().trim());
+        textParams.put("email", Objects.requireNonNull(binding.edtEmailFeedback.getText()).toString().trim());
+        textParams.put("message", Utils.encodeEmoji(Objects.requireNonNull(binding.edtFeedback.getText()).toString().trim()));
+        textParams.put("firstName", Objects.requireNonNull(binding.edtFnameFeedback.getText()).toString().trim());
+        textParams.put("lastName", Objects.requireNonNull(binding.edtLnameFeedback.getText()).toString().trim());
         if (!selectedImagePath.isEmpty()) {
             fileParams.put("user_img", new File(selectedImagePath));
         }
@@ -191,15 +181,15 @@ public class FeedbackActivity extends AppCompatActivity {
     }
 
     private boolean checkValidation() {
-        if (binding.edtFnameFeedback.getText().toString().trim().equals("")) {
+        if (Objects.requireNonNull(binding.edtFnameFeedback.getText()).toString().trim().isEmpty()) {
             binding.tilFnameFeedback.setError(getString(R.string.error_required));
             binding.edtFnameFeedback.requestFocus();
             return false;
-        } else if (binding.edtLnameFeedback.getText().toString().trim().equals("")) {
+        } else if (Objects.requireNonNull(binding.edtLnameFeedback.getText()).toString().trim().isEmpty()) {
             binding.tilLnameFeedback.setError(getString(R.string.error_required));
             binding.edtLnameFeedback.requestFocus();
             return false;
-        } else if (binding.edtEmailFeedback.getText().toString().trim().equals("")) {
+        } else if (Objects.requireNonNull(binding.edtEmailFeedback.getText()).toString().trim().isEmpty()) {
             binding.tilEmailFeedback.setError(getString(R.string.error_required));
             binding.edtEmailFeedback.requestFocus();
             return false;
@@ -207,10 +197,10 @@ public class FeedbackActivity extends AppCompatActivity {
             binding.tilEmailFeedback.setError(getString(R.string.error_valid_email));
             binding.edtEmailFeedback.requestFocus();
             return false;
-        } else if (selectedImagePath.equals("")) {
+        } else if (selectedImagePath.isEmpty()) {
             Toast.makeText(this, R.string.please_upload_your_photo, Toast.LENGTH_SHORT).show();
             return false;
-        } else if (binding.edtFeedback.getText().toString().trim().equals("")) {
+        } else if (Objects.requireNonNull(binding.edtFeedback.getText()).toString().trim().isEmpty()) {
             binding.tilFeedback.setError(getString(R.string.error_required));
             binding.edtFeedback.requestFocus();
             return false;

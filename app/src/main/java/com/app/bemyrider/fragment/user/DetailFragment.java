@@ -16,6 +16,7 @@ import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
@@ -41,6 +42,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 import static android.app.Activity.RESULT_CANCELED;
 import static android.app.Activity.RESULT_OK;
@@ -50,7 +52,6 @@ import static android.app.Activity.RESULT_OK;
  */
 public class DetailFragment extends Fragment {
 
-    private static final String TAG = "DetailFragment";
     private FragmentDetailBinding binding;
     private ProviderServiceDetailsItem serviceDetailData;
     private Context context;
@@ -60,7 +61,7 @@ public class DetailFragment extends Fragment {
     long enterTime = 0;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_detail, container, false);
         viewModel = new ViewModelProvider(this).get(DetailViewModel.class);
 
@@ -99,7 +100,7 @@ public class DetailFragment extends Fragment {
 
         binding.btnSendRequest.setOnClickListener(v -> {
             if (checkBookServiceValidation(binding.edtServiceAddress.getText().toString().trim(),
-                    binding.edtStarttime.getText().toString().trim(), binding.edtServiceDescription.getText().toString().trim(),
+                    Objects.requireNonNull(binding.edtStarttime.getText()).toString().trim(), Objects.requireNonNull(binding.edtServiceDescription.getText()).toString().trim(),
                     binding.spnSelectHours.getSelectedItemPosition())) {
                 Utils.hideSoftKeyboard((Activity) context);
                 binding.btnSendRequest.setClickable(false);
@@ -257,7 +258,7 @@ public class DetailFragment extends Fragment {
         
         String userId = PrefsUtil.with(context).readString("UserId");
         String serviceAddress = PrefsUtil.with(context).readString("search_address");
-        String serviceDetails = Utils.encodeEmoji(binding.edtServiceDescription.getText().toString());
+        String serviceDetails = Utils.encodeEmoji(Objects.requireNonNull(binding.edtServiceDescription.getText()).toString());
         String bookingLat = PrefsUtil.with(context).readString("bookingLat");
         String bookingLong = PrefsUtil.with(context).readString("bookingLong");
         String deliveryType = PrefsUtil.with(context).readString("delivery_type");
@@ -296,7 +297,7 @@ public class DetailFragment extends Fragment {
         }
 
         if (serviceDetailData.getServiceMasterType().equals("fixed")) {
-            if (startTime != null && startTime.length() > 0) {
+            if (startTime != null && !startTime.isEmpty()) {
                 if (address != null && address.length() > 0) {
                     if (description != null && description.length() > 0) {
                         if (enterTime > System.currentTimeMillis()) {

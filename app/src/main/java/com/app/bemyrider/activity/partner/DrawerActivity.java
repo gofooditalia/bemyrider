@@ -23,14 +23,13 @@ import androidx.core.content.ContextCompat;
 import androidx.databinding.DataBindingUtil;
 
 import com.app.bemyrider.Adapter.Partner.DrawerItemCustomAdapter;
-import com.app.bemyrider.AsyncTask.ConnectionCheck;
 import com.app.bemyrider.R;
 import com.app.bemyrider.databinding.PartnerActivityProfileBinding;
 import com.app.bemyrider.model.MessageEvent;
 import com.app.bemyrider.model.ModelForDrawer;
 import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.LocaleManager; // ✅ Import Aggiunto
-import com.app.bemyrider.utils.Log;
+// import com.app.bemyrider.utils.Log; // This is the unused import
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -161,9 +160,7 @@ public class DrawerActivity extends AppCompatActivity {
             @Override
             public void onDrawerSlide(View drawerView, float slideOffset) {
                 super.onDrawerSlide(drawerView, slideOffset);
-                if (binding.contentFramePartner != null) {
-                    binding.contentFramePartner.setTranslationX(slideOffset * drawerView.getWidth());
-                }
+                binding.contentFramePartner.setTranslationX(slideOffset * drawerView.getWidth());
                 binding.drawerLayout.bringChildToFront(drawerView);
                 binding.drawerLayout.setScrimColor(Color.TRANSPARENT);
                 binding.drawerLayout.requestLayout();
@@ -229,7 +226,7 @@ public class DrawerActivity extends AppCompatActivity {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onMessageEvent(MessageEvent event) {
+    public void onMessageEvent(MessageEvent ignoredEvent) {
         // Handle message event if needed
     }
 

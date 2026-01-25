@@ -207,7 +207,28 @@ public class ProviderProfileFragment extends Fragment {
             performUpdateAvailability(isChecked ? "y" : "n");
         });
 
-        binding.txtAvailableDays.setText(data.getAvailableDaysList());
+        String availableDays = data.getAvailableDaysList();
+        if (availableDays != null && !availableDays.isEmpty()) {
+            String[] days = availableDays.split(",");
+            StringBuilder localizedDays = new StringBuilder();
+            for (String day : days) {
+                String trimmedDay = day.trim();
+                int resId = getResources().getIdentifier(trimmedDay.toLowerCase(), "string", context.getPackageName());
+                if (resId != 0) {
+                    localizedDays.append(getString(resId)).append(", ");
+                } else {
+                    localizedDays.append(trimmedDay).append(", ");
+                }
+            }
+            if (localizedDays.length() > 2) {
+                binding.txtAvailableDays.setText(localizedDays.substring(0, localizedDays.length() - 2));
+            } else {
+                binding.txtAvailableDays.setText(availableDays);
+            }
+        } else {
+            binding.txtAvailableDays.setText(getString(R.string.none));
+        }
+        
         binding.txtAddressPro.setText(data.getAddress());
         binding.txtWorkedOn.setText(data.getTotalService());
         binding.txtCompany.setText(data.getCompanyName());

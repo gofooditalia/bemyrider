@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -24,6 +25,7 @@ import com.app.bemyrider.utils.Utils;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 /**
  * Modified by Hardik Talaviya on 10/12/19.
@@ -42,7 +44,7 @@ public class UpcomingServiceFragment extends Fragment {
     private Context context;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_service_listing, container, false);
 
@@ -53,7 +55,7 @@ public class UpcomingServiceFragment extends Fragment {
 
         binding.rvServiceList.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
                 if (dy > 0) {
                     visibleItemCount = layoutManager.getChildCount();
                     totalItemCount = layoutManager.getItemCount();
@@ -106,22 +108,28 @@ public class UpcomingServiceFragment extends Fragment {
                 }
                 if (status) {
                     CustomerHistoryPojo historyPojo = (CustomerHistoryPojo) obj;
+                    List<CustomerHistoryPojoItem> newItems = historyPojo.getData().getServiceList();
 
-                    if (isClear) {
-                        historyPojoItems.clear();
-                    }
                     binding.progress.setVisibility(View.GONE);
                     binding.rvServiceList.setVisibility(View.VISIBLE);
 
-                    historyPojoItems.addAll(historyPojo.getData().getServiceList());
-                    if (historyPojoItems.size() > 0) {
+                    if (isClear) {
+                        historyPojoItems.clear();
+                        historyPojoItems.addAll(newItems);
+                        adapter.notifyDataSetChanged();
+                    } else {
+                        int oldSize = historyPojoItems.size();
+                        historyPojoItems.addAll(newItems);
+                        adapter.notifyItemRangeInserted(oldSize, newItems.size());
+                    }
+
+                    if (!historyPojoItems.isEmpty()) {
                         binding.txtNoRecord.setVisibility(View.GONE);
                         binding.rvServiceList.setVisibility(View.VISIBLE);
                     } else {
                         binding.rvServiceList.setVisibility(View.GONE);
                         binding.txtNoRecord.setVisibility(View.VISIBLE);
                     }
-                    adapter.notifyDataSetChanged();
 
                     total_page = historyPojo.getData().getPagination().getTotalPages();
                     page = historyPojo.getData().getPagination().getCurrentPage();
