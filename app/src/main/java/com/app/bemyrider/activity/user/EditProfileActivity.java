@@ -159,7 +159,7 @@ public class EditProfileActivity extends AppCompatActivity {
 
     private void setupListeners() {
         binding.txtAddress.setOnClickListener(v -> {
-            List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.DISPLAY_NAME, Place.Field.LOCATION, Place.Field.FORMATTED_ADDRESS);
+            List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG, Place.Field.ADDRESS);
             Intent intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.FULLSCREEN, fields).build(this);
             actResLocation.launch(intent);
         });
@@ -361,11 +361,11 @@ public class EditProfileActivity extends AppCompatActivity {
             if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                 Place place = Autocomplete.getPlaceFromIntent(result.getData());
                 try {
-                    if (place.getLocation() != null) {
-                        lat = String.valueOf(place.getLocation().latitude);
-                        lng = String.valueOf(place.getLocation().longitude);
+                    if (place.getLatLng() != null) {
+                        lat = String.valueOf(place.getLatLng().latitude);
+                        lng = String.valueOf(place.getLatLng().longitude);
                     }
-                    binding.txtAddress.setText(place.getFormattedAddress());
+                    binding.txtAddress.setText(place.getAddress());
                 } catch (NullPointerException npe) {
                     npe.printStackTrace();
                 }

@@ -511,8 +511,8 @@
             android:name="com.google.android.libraries.places.widget.AutocompleteActivity"
             android:exported="false"
             android:screenOrientation="portrait"
-            android:windowSoftInputMode="stateHidden"
-            tools:replace="android:windowSoftInputMode" />
+            android:theme="@style/PlacesAutocompleteCustomTheme"
+            tools:replace="android:theme" />
 
         <!-- <activity
             android:name="com.app.bemyrider.activity.LinkedInLoginWebViewActivity"

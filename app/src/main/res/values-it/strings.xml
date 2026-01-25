@@ -336,7 +336,7 @@
     <string name="descr">Descrizione*</string>
     <string name="enter_message">Inserisci messaggio*</string>
     <string name="subjecta">Soggetto*</string>
-    <string name="about_mea">Su di me*</string>
+    <string name="about_mea">Mi presento: 2 parole su di me*</string>
     <string name="start_timea">Inizio*</string>
     <string name="end_timea">Fine servizio*</string>
     <string name="completed_services">Servizi completati</string>
@@ -526,7 +526,7 @@
     <string name="signup_as">Iscriviti come</string>
     <string name="owner_profile_data">Dati del profilo del proprietario</string>
     <string name="tax_data">Dati fiscali</string>
-    <string name="hint_company_name">Nome della ditta*</string>
+    <string name="hint_company_name">Nome completo*</string>
     <string name="vat">Codice fiscale/partita iva</string>
     <string name="hint_vat">Partita iva / Codice fiscale*</string>
     <string name="hint_tax_id_code">Codice Fiscale*</string>
@@ -594,4 +594,5 @@
 
     <string name="favorite_added_success">Servizio aggiunto con successo ai preferiti</string>
     <string name="favorite_removed_success">Servizio rimosso con successo dai preferiti.</string>
+    <string name="hint_shop_address">Città in cui ti trovi*</string>
 </resources>

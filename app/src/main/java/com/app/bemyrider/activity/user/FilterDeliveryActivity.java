@@ -93,7 +93,7 @@ public class FilterDeliveryActivity extends AppCompatActivity {
             binding.txtLocation.setText("");
             latitude = "";
             longitude = "";
-            List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.DISPLAY_NAME, Place.Field.LOCATION, Place.Field.FORMATTED_ADDRESS);
+            List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG, Place.Field.ADDRESS);
             Intent intent = new Autocomplete.IntentBuilder(
                     AutocompleteActivityMode.FULLSCREEN, fields)
                     .build(this);
@@ -179,11 +179,11 @@ public class FilterDeliveryActivity extends AppCompatActivity {
             try {
                 if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                     Place place = Autocomplete.getPlaceFromIntent(result.getData());
-                    Log.i("AUTO COMPLETE", "Place: " + place.getDisplayName() + ", " + place.getId());
-                    if (place.getLocation() != null) {
-                        latitude = String.valueOf(place.getLocation().latitude);
-                        longitude = String.valueOf(place.getLocation().longitude);
-                        binding.txtLocation.setText(place.getDisplayName());
+                    Log.i("AUTO COMPLETE", "Place: " + place.getName() + ", " + place.getId());
+                    if (place.getLatLng() != null) {
+                        latitude = String.valueOf(place.getLatLng().latitude);
+                        longitude = String.valueOf(place.getLatLng().longitude);
+                        binding.txtLocation.setText(place.getName());
                     } else {
                         Log.e("FilterDeliveryActivity", "Place location is null");
                     }

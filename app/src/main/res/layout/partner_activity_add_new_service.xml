@@ -121,7 +121,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/_7sdp">
 
-                    <androidx.appcompat.widget.AppCompatEditText
+                    <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etAddPrice"
                         style="@style/StyledTilEditText"
                         android:layout_width="match_parent"
@@ -150,7 +150,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/_7sdp">
 
-                    <androidx.appcompat.widget.AppCompatEditText
+                    <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/et_add_discription"
                         style="@style/StyledTilEditText"
                         android:layout_width="match_parent"

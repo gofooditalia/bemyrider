@@ -49,7 +49,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
-                    <androidx.appcompat.widget.AppCompatEditText
+                    <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/et_login_username"
                         style="@style/StyledTilEditText"
                         android:layout_width="match_parent"
@@ -71,7 +71,7 @@
                     app:passwordToggleDrawable="@drawable/show_password_selector"
                     app:passwordToggleEnabled="true">
 
-                    <androidx.appcompat.widget.AppCompatEditText
+                    <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/et_login_password"
                         style="@style/StyledTilEditText"
                         android:layout_width="match_parent"

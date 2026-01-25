@@ -125,7 +125,7 @@ public class FilterProviderActivity extends AppCompatActivity {
         binding.txtLocation.setOnClickListener(v -> {
             Intent intent = new Autocomplete.IntentBuilder(
                     AutocompleteActivityMode.FULLSCREEN, Arrays.asList(Place.Field.ID,
-                    Place.Field.DISPLAY_NAME, Place.Field.LOCATION, Place.Field.FORMATTED_ADDRESS))
+                    Place.Field.NAME, Place.Field.LAT_LNG, Place.Field.ADDRESS))
                     .build(FilterProviderActivity.this);
             locationActivityResultLauncher.launch(intent);
 
@@ -287,11 +287,11 @@ public class FilterProviderActivity extends AppCompatActivity {
             try {
                 if (result.getResultCode() == RESULT_OK) {
                     Place place = Autocomplete.getPlaceFromIntent(result.getData());
-                    Log.i("AUTO COMPLETE", "Place: " + place.getDisplayName() + ", " + place.getId());
+                    Log.i("AUTO COMPLETE", "Place: " + place.getName() + ", " + place.getId());
                     try {
-                        latitude = String.valueOf(place.getLocation().latitude);
-                        longitude = String.valueOf(place.getLocation().longitude);
-                        binding.txtLocation.setText(place.getDisplayName());
+                        latitude = String.valueOf(place.getLatLng().latitude);
+                        longitude = String.valueOf(place.getLatLng().longitude);
+                        binding.txtLocation.setText(place.getName());
                     } catch (NullPointerException npe) {
                         npe.printStackTrace();
                     }
@@ -474,8 +474,8 @@ public class FilterProviderActivity extends AppCompatActivity {
 
                     for (int i = 0; i < filterDataPOJO.getFilterData().getServicesList().size(); i++) {
                         if (filterDataPOJO.getFilterData().getServicesList().get(i).getSelected().equalsIgnoreCase("y")) {
-                            selectedServiceId = filterDataPOJO.getFilterData().getServicesList().get(i).getServiceId();
-                            selectedServiceName = filterDataPOJO.getFilterData().getServicesList().get(i).getServiceName();
+                            selectedServiceId = serviceDataItems.get(i).getServiceId();
+                            selectedServiceName = serviceDataItems.get(i).getServiceName();
                             binding.spSelectService.setSelection(i + 1, false);
                             break;
                         }

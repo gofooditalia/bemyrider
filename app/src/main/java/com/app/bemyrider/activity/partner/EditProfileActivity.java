@@ -28,9 +28,7 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.LinearLayoutCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.text.HtmlCompat;
 import androidx.databinding.DataBindingUtil;
@@ -54,7 +52,6 @@ import com.app.bemyrider.utils.LocaleManager;
 import com.app.bemyrider.utils.Log;
 import com.app.bemyrider.utils.PrefsUtil;
 import com.app.bemyrider.utils.Utils;
-import com.google.android.gms.common.api.Status;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
@@ -63,6 +60,8 @@ import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 
 import coil.Coil;
 import coil.request.ImageRequest;
+
+import com.google.android.material.textfield.TextInputLayout;
 import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
 import com.yalantis.ucrop.UCrop;
 
@@ -70,13 +69,11 @@ import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.InputStream;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -99,14 +96,19 @@ public class EditProfileActivity extends AppCompatActivity {
     public static String SUN = "0", MON = "1", TUE = "2", WED = "3", THU = "4", FRI = "5", SAT = "6";
     final Calendar mCalendar = Calendar.getInstance();
     private PartnerActivityEditProfileBinding binding;
-    private String strstarttime = "", strendtime = "", countrycode = "", strselectedCountryCodeId = "",
-            strprofileavldays = "", smallDelivery = "", mediumDelivery = "", largeDelivery = "";
+    private String strstarttime = "";
+    private String strendtime = "";
+    private String countrycode = "";
+    private String strselectedCountryCodeId = "";
+    private String smallDelivery = "";
+    private String mediumDelivery = "";
+    private String largeDelivery = "";
 
     private LatLng selectedLatLng = new LatLng(0.0, 0.0);
     private String selectedImagePath = "";
     private List<String> switches;
-    private ArrayList<CountryCodePojoItem> countrycodeArrayList = new ArrayList<>();
-    private ArrayAdapter countrycodeAdapter;
+    private final ArrayList<CountryCodePojoItem> countrycodeArrayList = new ArrayList<>();
+    private ArrayAdapter<CountryCodePojoItem> countrycodeAdapter;
     private WebServiceCall editProfileAsync, countryCodeAsync;
 
     private boolean isFromEdit = false;
@@ -181,7 +183,7 @@ public class EditProfileActivity extends AppCompatActivity {
         });
 
         binding.etEditAddress.setOnClickListener(v -> {
-            List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.DISPLAY_NAME, Place.Field.FORMATTED_ADDRESS, Place.Field.LOCATION);
+            List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.NAME, Place.Field.ADDRESS, Place.Field.LAT_LNG);
             Intent intent = new Autocomplete.IntentBuilder(
                     AutocompleteActivityMode.FULLSCREEN, fields)
                     .build(mContext);
@@ -298,7 +300,7 @@ public class EditProfileActivity extends AppCompatActivity {
 
 
     private void setAvailableDays() {
-        strprofileavldays = PrefsUtil.with(mContext).readString("userAvalDay");
+        String strprofileavldays = PrefsUtil.with(mContext).readString("userAvalDay");
         if (strprofileavldays.contains("0")) { binding.switchSunday.setChecked(true); switches.add(SUN); }
         if (strprofileavldays.contains("1")) { binding.switchMonday.setChecked(true); switches.add(MON); }
         if (strprofileavldays.contains("2")) { binding.switchTuesday.setChecked(true); switches.add(TUE); }
@@ -320,26 +322,26 @@ public class EditProfileActivity extends AppCompatActivity {
         LinkedHashMap<String, File> fileParams = new LinkedHashMap<>();
 
         textParams.put("user_id", PrefsUtil.with(mContext).readString("UserId"));
-        textParams.put("firstName", binding.etEditFname.getText().toString().trim());
-        textParams.put("lastName", binding.etEditLname.getText().toString().trim());
-        textParams.put("contact_number", binding.etEditContactno.getText().toString().trim());
+        textParams.put("firstName", String.valueOf(binding.etEditFname.getText()).trim());
+        textParams.put("lastName", String.valueOf(binding.etEditLname.getText()).trim());
+        textParams.put("contact_number", String.valueOf(binding.etEditContactno.getText()).trim());
         textParams.put("country_code", strselectedCountryCodeId);
-        textParams.put("address", binding.etEditAddress.getText().toString().trim());
-        textParams.put("city_of_birth", binding.edtCityOfBirth.getText().toString().trim());
-        textParams.put("date_of_birth", binding.edtDateOfBirth.getText().toString().trim());
-        textParams.put("city_of_residence", binding.edtCityOfResidence.getText().toString().trim());
-        textParams.put("residential_address", binding.edtResidentialAddress.getText().toString().trim());
-        textParams.put("description", Utils.encodeEmoji(binding.etEditAboutme.getText().toString().trim()));
+        textParams.put("address", String.valueOf(binding.etEditAddress.getText()).trim());
+        textParams.put("city_of_birth", String.valueOf(binding.edtCityOfBirth.getText()).trim());
+        textParams.put("date_of_birth", String.valueOf(binding.edtDateOfBirth.getText()).trim());
+        textParams.put("city_of_residence", String.valueOf(binding.edtCityOfResidence.getText()).trim());
+        textParams.put("residential_address", String.valueOf(binding.edtResidentialAddress.getText()).trim());
+        textParams.put("description", Utils.encodeEmoji(String.valueOf(binding.etEditAboutme.getText()).trim()));
         textParams.put("available_time_start", strstarttime);
         textParams.put("available_time_end", strendtime);
         textParams.put("small_delivery", binding.switchSmall.isChecked() ? "y" : "n");
         textParams.put("medium_delivery", binding.switchMedium.isChecked() ? "y" : "n");
         textParams.put("large_delivery", binding.switchLarge.isChecked() ? "y" : "n");
-        textParams.put("company_name", binding.edtCompany.getText().toString().trim());
-        textParams.put("vat", binding.edtVat.getText().toString().trim());
-        textParams.put("tax_id", binding.edtTaxIdCode.getText().toString().trim());
-        textParams.put("certified_email", binding.edtCertifiedMail.getText().toString().trim());
-        textParams.put("receipt_code", binding.edtInvoiceRecipeCode.getText().toString().trim());
+        textParams.put("company_name", String.valueOf(binding.edtCompany.getText()).trim());
+        textParams.put("vat", String.valueOf(binding.edtVat.getText()).trim());
+        textParams.put("tax_id", String.valueOf(binding.edtTaxIdCode.getText()).trim());
+        textParams.put("certified_email", String.valueOf(binding.edtCertifiedMail.getText()).trim());
+        textParams.put("receipt_code", String.valueOf(binding.edtInvoiceRecipeCode.getText()).trim());
         textParams.put("latitude", lat);
         textParams.put("longitude", lng);
 
@@ -358,12 +360,16 @@ public class EditProfileActivity extends AppCompatActivity {
                 if (status) {
                     ProfilePojo pojo = (ProfilePojo) obj;
                     PrefsUtil.with(mContext).write("isProfileCompleted", true);
-                    PrefsUtil.with(mContext).write("userAddress", binding.etEditAddress.getText().toString().trim());
+                    PrefsUtil.with(mContext).write("userAddress", String.valueOf(binding.etEditAddress.getText()).trim());
                     PrefsUtil.with(mContext).write("countrycodeid", strselectedCountryCodeId);
                     PrefsUtil.with(mContext).write("countrycode", countrycode);
-                    PrefsUtil.with(mActivity).write("UserName", binding.etEditFname.getText().toString().trim() + " " + binding.etEditLname.getText().toString().trim());
-                    PrefsUtil.with(mActivity).write("login_cust_address", binding.etEditAddress.getText().toString().trim());
-                    PrefsUtil.with(mActivity).write("UserImg", pojo.getData().getProfileImg());
+                    PrefsUtil.with(mActivity).write("UserName", String.valueOf(binding.etEditFname.getText()).trim() + " " + String.valueOf(binding.etEditLname.getText()).trim());
+                    PrefsUtil.with(mActivity).write("login_cust_address", String.valueOf(binding.etEditAddress.getText()).trim());
+                    
+                    if (pojo.getData() != null) {
+                        // FIX: Added null check for pojo.getData() to prevent NPE
+                        PrefsUtil.with(mActivity).write("UserImg", pojo.getData().getProfileImg());
+                    }
 
                     if (isFromEdit) {
                         EventBus.getDefault().post(new MessageEvent("provider_edit_profile", "refresh"));
@@ -397,7 +403,10 @@ public class EditProfileActivity extends AppCompatActivity {
                     CountryCodePojo countryCodePojo = (CountryCodePojo) obj;
                     countrycodeArrayList.addAll(countryCodePojo.getData());
                     countrycodeAdapter.notifyDataSetChanged();
-                    if (getIntent().getStringExtra("Edit") != null && getIntent().getStringExtra("Edit").equals("true")) {
+                    
+                    String editExtra = getIntent().getStringExtra("Edit");
+                    // FIX: Replaced complex null/equals check with simple, robust check
+                    if ("true".equals(editExtra)) {
                         for (int i = 0; i < countrycodeArrayList.size(); i++) {
                             if (countrycodeArrayList.get(i).getId().equals(PrefsUtil.with(mContext).readString("countrycodeid"))) {
                                 binding.spCode.setSelection(i);
@@ -415,66 +424,66 @@ public class EditProfileActivity extends AppCompatActivity {
     }
 
     private boolean checkValidation() {
-        if (binding.etEditFname.getText().toString().trim().isEmpty()) {
+        if (String.valueOf(binding.etEditFname.getText()).trim().isEmpty()) {
             binding.tillEditFname.setError(getString(R.string.error_required));
             binding.etEditFname.requestFocus();
             return false;
-        } else if (binding.etEditLname.getText().toString().trim().isEmpty()) {
+        } else if (String.valueOf(binding.etEditLname.getText()).trim().isEmpty()) {
             binding.tillEditLname.setError(getString(R.string.error_required));
             binding.etEditLname.requestFocus();
             return false;
-        } else if (binding.etEditEmail.getText().toString().trim().isEmpty()) {
+        } else if (String.valueOf(binding.etEditEmail.getText()).trim().isEmpty()) {
             binding.tillEditEmail.setError(getString(R.string.error_required));
             binding.etEditEmail.requestFocus();
             return false;
-        } else if (!Utils.isEmailValid(binding.etEditEmail.getText().toString().trim())) {
+        } else if (!Utils.isEmailValid(String.valueOf(binding.etEditEmail.getText()).trim())) {
             binding.tillEditEmail.setError(getString(R.string.error_valid_email));
             binding.etEditEmail.requestFocus();
             return false;
         } else if (!(binding.spCode.getSelectedItemPosition() >= 0)) {
             Toast.makeText(mContext, R.string.please_select_country_code, Toast.LENGTH_SHORT).show();
             return false;
-        } else if (binding.etEditContactno.getText().toString().trim().isEmpty()) {
+        } else if (String.valueOf(binding.etEditContactno.getText()).trim().isEmpty()) {
             binding.etEditContactno.setError(getString(R.string.error_required));
             binding.etEditContactno.requestFocus();
             return false;
-        } else if (binding.etEditContactno.getText().toString().trim().length() < 10 || binding.etEditContactno.getText().toString().trim().length() > 15) {
+        } else if (String.valueOf(binding.etEditContactno.getText()).trim().length() < 10 || String.valueOf(binding.etEditContactno.getText()).trim().length() > 15) {
             binding.etEditContactno.setError(getResources().getString(R.string.vali_contact_num));
             binding.etEditContactno.requestFocus();
             return false;
-        } else if (TextUtils.isEmpty(binding.edtCityOfBirth.getText().toString().trim())) {
+        } else if (TextUtils.isEmpty(String.valueOf(binding.edtCityOfBirth.getText()).trim())) {
             binding.tilCityOfBirth.setError(getString(R.string.error_required));
             binding.tilCityOfBirth.requestFocus();
             return false;
-        } else if (TextUtils.isEmpty(binding.edtDateOfBirth.getText().toString().trim())) {
+        } else if (TextUtils.isEmpty(String.valueOf(binding.edtDateOfBirth.getText()).trim())) {
             binding.tilDataOfBirth.setError(getString(R.string.error_required));
             binding.tilDataOfBirth.requestFocus();
             return false;
-        } else if (TextUtils.isEmpty(binding.edtCityOfResidence.getText().toString().trim())) {
+        } else if (TextUtils.isEmpty(String.valueOf(binding.edtCityOfResidence.getText()).trim())) {
             binding.tilCityOfResidence.setError(getString(R.string.error_required));
             binding.tilCityOfResidence.requestFocus();
             return false;
-        } else if (TextUtils.isEmpty(binding.edtResidentialAddress.getText().toString().trim())) {
+        } else if (TextUtils.isEmpty(String.valueOf(binding.edtResidentialAddress.getText()).trim())) {
             binding.tilResidentialAddress.setError(getString(R.string.error_required));
             binding.tilResidentialAddress.requestFocus();
             return false;
-        } else if (TextUtils.isEmpty(binding.edtTaxIdCode.getText().toString().trim())) {
+        } else if (TextUtils.isEmpty(String.valueOf(binding.edtTaxIdCode.getText()).trim())) {
             binding.tilTaxIdCode.setError(getResources().getString(R.string.err_msg_tax_id_code));
             binding.tilTaxIdCode.requestFocus();
             return false;
-        } else if (binding.etEditAddress.getText().toString().trim().isEmpty() || binding.etEditAddress.getText().toString().equalsIgnoreCase("n/a")) {
+        } else if (String.valueOf(binding.etEditAddress.getText()).trim().isEmpty() || String.valueOf(binding.etEditAddress.getText()).equalsIgnoreCase("n/a")) {
             binding.tillEditAddress.setError(getString(R.string.error_required));
             binding.etEditAddress.requestFocus();
             return false;
-        } else if (binding.etEditAboutme.getText().toString().trim().isEmpty()) {
+        } else if (String.valueOf(binding.etEditAboutme.getText()).trim().isEmpty()) {
             binding.tillEditAboutme.setError(getString(R.string.error_required));
             binding.etEditAboutme.requestFocus();
             return false;
-        } else if (binding.etEditStartTime.getText().toString().trim().isEmpty()) {
+        } else if (String.valueOf(binding.etEditStartTime.getText()).trim().isEmpty()) {
             binding.tillEditStarttime.setError(getString(R.string.error_required));
             binding.etEditStartTime.requestFocus();
             return false;
-        } else if (binding.etEditEndTime.getText().toString().trim().isEmpty()) {
+        } else if (String.valueOf(binding.etEditEndTime.getText()).trim().isEmpty()) {
             binding.tillEditEndtime.setError(getString(R.string.error_required));
             binding.etEditEndTime.requestFocus();
             return false;
@@ -497,7 +506,7 @@ public class EditProfileActivity extends AppCompatActivity {
             binding.etEditStartTime.setText(profilePojoData.getAvailableTimeStart());
             binding.etEditEndTime.setText(profilePojoData.getAvailableTimeEnd());
 
-            if (profilePojoData.getSignature_img() != null && !profilePojoData.getSignature_img().isEmpty()) {
+            if (profilePojoData.getSignature_img() != null && !TextUtils.isEmpty(profilePojoData.getSignature_img())) {
                 binding.imgAddSignature.setVisibility(View.GONE);
                 binding.imgSignaturePreview.setVisibility(View.VISIBLE);
                 ImageRequest requestSignature = new ImageRequest.Builder(mContext).data(profilePojoData.getSignature_img()).placeholder(R.drawable.loading).target(binding.imgSignaturePreview).build();
@@ -517,7 +526,7 @@ public class EditProfileActivity extends AppCompatActivity {
 
             ImageRequest.Builder profileBuilder = new ImageRequest.Builder(mContext).placeholder(R.drawable.loading).error(R.mipmap.user).target(binding.imgUserprofile);
             String profileImg = profilePojoData.getProfileImg();
-            if (profileImg.equals("")) profileBuilder.data(R.mipmap.user);
+            if (TextUtils.isEmpty(profileImg)) profileBuilder.data(R.mipmap.user);
             else profileBuilder.data(profileImg);
             Coil.imageLoader(mContext).enqueue(profileBuilder.build());
 
@@ -537,12 +546,13 @@ public class EditProfileActivity extends AppCompatActivity {
 
             ImageRequest.Builder loginProfileBuilder = new ImageRequest.Builder(mContext).placeholder(R.drawable.loading).error(R.mipmap.user).target(binding.imgUserprofile);
             String loginProfileImg = loginPojoData.getProfileImg();
-            if (loginProfileImg.equals("")) loginProfileBuilder.data(R.mipmap.user);
+            if (TextUtils.isEmpty(loginProfileImg)) loginProfileBuilder.data(R.mipmap.user);
             else loginProfileBuilder.data(loginProfileImg);
             Coil.imageLoader(mContext).enqueue(loginProfileBuilder.build());
         }
     }
 
+    
     private void initView() {
         if (!Places.isInitialized()) {
             Places.initialize(getApplicationContext(), getResources().getString(R.string.google_api_key));
@@ -568,6 +578,7 @@ public class EditProfileActivity extends AppCompatActivity {
         binding.edtInvoiceRecipeCode.setFilters(new InputFilter[]{EMOJI_FILTER});
     }
 
+    
     private void initActivityResult() {
         actResCamera = registerForActivityResult(new ActivityResultContracts.TakePicture(), result -> {
             if (result && !selectedImagePath.isEmpty()) {
@@ -597,8 +608,8 @@ public class EditProfileActivity extends AppCompatActivity {
         actResLocation = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
             if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                 Place place = Autocomplete.getPlaceFromIntent(result.getData());
-                selectedLatLng = place.getLocation();
-                binding.etEditAddress.setText(place.getFormattedAddress());
+                selectedLatLng = place.getLatLng();
+                binding.etEditAddress.setText(place.getAddress());
                 if (selectedLatLng != null) {
                     lat = String.valueOf(selectedLatLng.latitude);
                     lng = String.valueOf(selectedLatLng.longitude);
@@ -609,7 +620,8 @@ public class EditProfileActivity extends AppCompatActivity {
 
     private void openCameraGalleryDialog() {
         final Dialog d = new Dialog(mActivity);
-        d.setContentView(getLayoutInflater().inflate(R.layout.dialog_camera_gallery, null));
+        
+        d.setContentView(getLayoutInflater().inflate(R.layout.dialog_camera_gallery, findViewById(android.R.id.content), false));
         Window window = d.getWindow();
         if (window != null) {
             WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
@@ -669,7 +681,7 @@ public class EditProfileActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
-            onBackPressed();
+            getOnBackPressedDispatcher().onBackPressed();
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -695,22 +707,24 @@ public class EditProfileActivity extends AppCompatActivity {
         binding.etEditEndTime.addTextChangedListener(new GenericTextWatcher(binding.tillEditEndtime));
     }
 
-    private static class GenericTextWatcher implements TextWatcher {
-        private final View view;
-        private GenericTextWatcher(View view) { this.view = view; }
-        public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
-        public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-            if (view instanceof com.google.android.material.textfield.TextInputLayout) {
-                ((com.google.android.material.textfield.TextInputLayout) view).setError(null);
-            }
+    private record GenericTextWatcher(View view) implements TextWatcher {
+        public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
         }
-        public void afterTextChanged(Editable editable) {}
-    }
+
+        public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                if (view instanceof TextInputLayout) {
+                    ((TextInputLayout) view).setError(null);
+                }
+            }
+
+        public void afterTextChanged(Editable editable) {
+        }
+        }
 
     @Override
     protected void onDestroy() {
         isDestroyed = true;
-        try { connectionManager.unregisterReceiver(); } catch (Exception e) { e.printStackTrace(); }
+        try { connectionManager.unregisterReceiver(); } catch (Exception e) { Log.e(TAG, "Error unregistering receiver: " + e.getMessage()); }
         Utils.cancelAsyncTask(editProfileAsync);
         Utils.cancelAsyncTask(countryCodeAsync);
         editProfileAsync = null;

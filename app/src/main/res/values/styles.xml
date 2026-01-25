@@ -312,4 +312,10 @@
         <item name="android:fitsSystemWindows">true</item>
     </style>
 
+    <!-- Tema personalizzato per AutocompleteActivity per risolvere il problema di layout a schermo intero -->
+    <style name="PlacesAutocompleteCustomTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:fitsSystemWindows">true</item>
+        <item name="android:statusBarColor" tools:targetApi="lollipop">@color/colorPrimaryDark</item>
+    </style>
+
 </resources>

@@ -407,7 +407,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/_7sdp">
 
-                    <androidx.appcompat.widget.AppCompatEditText
+                    <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/edt_starttime"
                         style="@style/StyledTilEditText"
                         android:layout_width="match_parent"
@@ -455,7 +455,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/_7sdp">
 
-                    <androidx.appcompat.widget.AppCompatAutoCompleteTextView
+                    <com.google.android.material.textfield.MaterialAutoCompleteTextView
                         android:id="@+id/edt_service_Address"
                         style="@style/StyledTilEditText"
                         android:layout_width="match_parent"
@@ -478,7 +478,7 @@
                     android:layout_marginTop="@dimen/_7sdp"
                     android:layout_marginBottom="@dimen/_13sdp">
 
-                    <androidx.appcompat.widget.AppCompatEditText
+                    <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/edt_service_description"
                         style="@style/StyledTilEditText"
                         android:layout_width="match_parent"

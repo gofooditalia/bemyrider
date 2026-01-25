@@ -65,7 +65,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp">
 
-                    <androidx.appcompat.widget.AppCompatEditText
+                    <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/edt_fname"
                         style="@style/StyledTilEditText"
                         android:layout_width="match_parent"
@@ -85,7 +85,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp">
 
-                    <androidx.appcompat.widget.AppCompatEditText
+                    <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/edt_lname"
                         style="@style/StyledTilEditText"
                         android:layout_width="match_parent"
@@ -105,7 +105,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp">
 
-                    <androidx.appcompat.widget.AppCompatEditText
+                    <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/edt_email"
                         style="@style/StyledTilEditText"
                         android:layout_width="match_parent"
@@ -161,7 +161,7 @@
                     android:layout_toEndOf="@+id/sp_code"
                     android:layout_weight="2">
 
-                    <androidx.appcompat.widget.AppCompatEditText
+                    <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/edt_number"
                         style="@style/StyledTilEditText"
                         android:layout_width="match_parent"
@@ -194,7 +194,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp">
 
-                <androidx.appcompat.widget.AppCompatEditText
+                <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/edtCompany"
                     style="@style/StyledTilEditText"
                     android:layout_width="match_parent"
@@ -214,7 +214,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp">
 
-                <androidx.appcompat.widget.AppCompatEditText
+                <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/edtVat"
                     style="@style/StyledTilEditText"
                     android:layout_width="match_parent"
@@ -255,7 +255,7 @@
                 android:layout_below="@+id/sp_code"
                 android:layout_marginTop="4dp">
 
-                <androidx.appcompat.widget.AppCompatAutoCompleteTextView
+                <com.google.android.material.textfield.MaterialAutoCompleteTextView
                     android:id="@+id/txt_address"
                     style="@style/StyledTilEditText"
                     android:layout_width="match_parent"
@@ -280,7 +280,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp">
 
-                <androidx.appcompat.widget.AppCompatEditText
+                <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/edtInvoiceRecipeCode"
                     style="@style/StyledTilEditText"
                     android:layout_width="match_parent"
@@ -300,7 +300,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp">
 
-                <androidx.appcompat.widget.AppCompatEditText
+                <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/edtCertifiedMail"
                     style="@style/StyledTilEditText"
                     android:layout_width="match_parent"
@@ -320,7 +320,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp">
 
-                <androidx.appcompat.widget.AppCompatEditText
+                <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/edtCityOfCompany"
                     style="@style/StyledTilEditText"
                     android:layout_width="match_parent"
@@ -355,7 +355,7 @@
                 android:layout_marginTop="4dp"
                 android:visibility="gone">
 
-                <androidx.appcompat.widget.AppCompatEditText
+                <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/edt_description"
                     style="@style/StyledTilEditText"
                     android:layout_width="match_parent"
@@ -379,6 +379,8 @@
                     style="@style/font_regular"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_centerVertical="true"
                     android:text="@string/default_method"
                     android:textColor="@color/text"
                     android:textSize="@dimen/_12ssp" />
@@ -476,60 +478,3 @@
     </ScrollView>
 
 </layout>
-
-    <!--<?xml version="1.0" encoding="utf-8"?>
-    <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:layout_width="match_parent"
-        android:layout_height="110dp">
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <com.app.gotaskerdev.utils.CircleImageView
-                android:layout_width="match_parent"
-                android:layout_height="100dp"
-                android:src="@drawable/circle_background"
-                android:padding="3dp"/>
-
-            <com.app.gotaskerdev.utils.CircleImageView
-                android:id="@+id/Img_photos"
-                android:layout_width="match_parent"
-                android:layout_height="100dp"
-                android:background="@drawable/circle_background"
-                app:border_width="3dp"
-                app:border_color="@color/white"
-                android:src="@drawable/dummy_image" />
-
-        </RelativeLayout>
-
-        <RelativeLayout
-            android:id="@+id/relative_imageremove"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="90dp">
-
-            <ProgressBar
-                android:id="@+id/pgDelete"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:visibility="gone" />
-
-            <ImageView
-                android:id="@+id/Img_remove"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerInParent="true"
-                android:background="@drawable/ic_red_remove"
-                android:scaleType="centerCrop"
-                android:visibility="visible" />
-
-        </RelativeLayout>
-
-
-
-
-
-        </FrameLayout>
-        -->

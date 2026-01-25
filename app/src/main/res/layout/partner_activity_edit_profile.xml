@@ -69,7 +69,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp">
 
-                        <androidx.appcompat.widget.AppCompatEditText
+                        <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/et_edit_fname"
                             style="@style/StyledTilEditText"
                             android:layout_width="match_parent"
@@ -89,7 +89,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp">
 
-                        <androidx.appcompat.widget.AppCompatEditText
+                        <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/et_edit_lname"
                             style="@style/StyledTilEditText"
                             android:layout_width="match_parent"
@@ -108,7 +108,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp">
 
-                        <androidx.appcompat.widget.AppCompatEditText
+                        <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/et_edit_email"
                             style="@style/StyledTilEditText"
                             android:layout_width="match_parent"
@@ -119,24 +119,6 @@
                             android:textColor="@color/text"
                             android:textSize="@dimen/_12ssp" />
                     </com.google.android.material.textfield.TextInputLayout>
-
-                    <!--<com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/till_edit_paypal_email"
-                        style="@style/StyledTilInput"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp">
-
-                        <androidx.appcompat.widget.AppCompatEditText
-                            android:id="@+id/et_edit_paypal_email"
-                            style="@style/StyledTilEditText"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:hint="@string/paypal_email"
-                            android:inputType="textEmailAddress"
-                            android:textColor="@color/text"
-                            android:textSize="@dimen/_12ssp" />
-                    </com.google.android.material.textfield.TextInputLayout>-->
 
                 </androidx.appcompat.widget.LinearLayoutCompat>
 
@@ -181,7 +163,7 @@
                         android:layout_marginStart="5dp"
                         android:layout_weight="2">
 
-                        <androidx.appcompat.widget.AppCompatEditText
+                        <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/et_edit_contactno"
                             style="@style/StyledTilEditText"
                             android:layout_width="match_parent"
@@ -195,79 +177,26 @@
                 </androidx.appcompat.widget.LinearLayoutCompat>
 
                 <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/tilCityOfBirth"
+                    android:id="@+id/till_edit_address"
                     style="@style/StyledTilInput"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_below="@+id/view_sp_code"
                     android:layout_marginTop="4dp">
 
-                    <androidx.appcompat.widget.AppCompatEditText
-                        android:id="@+id/edtCityOfBirth"
+                    <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                        android:id="@+id/et_edit_address"
                         style="@style/StyledTilEditText"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="@string/lbl_city_of_birth_with_dot"
-                        android:inputType="text"
-                        android:maxLines="1"
-                        android:textColor="@color/text"
-                        android:textSize="@dimen/_12ssp" />
-                </com.google.android.material.textfield.TextInputLayout>
-
-                <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/tilDataOfBirth"
-                    style="@style/StyledTilInput"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp">
-
-                    <androidx.appcompat.widget.AppCompatEditText
-                        android:id="@+id/edtDateOfBirth"
-                        style="@style/StyledTilEditText"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:drawableEnd="@drawable/ic_calender_resize"
+                        android:drawableEnd="@drawable/ic_location_resize"
+                        android:drawablePadding="@dimen/_4sdp"
                         android:focusable="false"
-                        android:hint="@string/lbl_date_of_birth_with_dot"
-                        android:inputType="text"
-                        android:maxLines="1"
-                        android:textColor="@color/text"
-                        android:textSize="@dimen/_12ssp" />
-                </com.google.android.material.textfield.TextInputLayout>
-
-                <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/tilCityOfResidence"
-                    style="@style/StyledTilInput"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp">
-
-                    <androidx.appcompat.widget.AppCompatEditText
-                        android:id="@+id/edtCityOfResidence"
-                        style="@style/StyledTilEditText"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:hint="@string/lbl_city_of_residence_with_dot"
-                        android:inputType="text"
-                        android:maxLines="1"
-                        android:textColor="@color/text"
-                        android:textSize="@dimen/_12ssp" />
-                </com.google.android.material.textfield.TextInputLayout>
-
-                <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/tilResidentialAddress"
-                    style="@style/StyledTilInput"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp">
-
-                    <androidx.appcompat.widget.AppCompatEditText
-                        android:id="@+id/edtResidentialAddress"
-                        style="@style/StyledTilEditText"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:hint="@string/lbl_residential_address_with_dot"
-                        android:inputType="text"
-                        android:maxLines="1"
+                        android:focusableInTouchMode="false"
+                        android:hint="@string/hint_shop_address"
+                        android:maxLines="3"
+                        android:paddingStart="@dimen/_8sdp"
+                        android:paddingEnd="@dimen/_8sdp"
                         android:textColor="@color/text"
                         android:textSize="@dimen/_12ssp" />
                 </com.google.android.material.textfield.TextInputLayout>
@@ -289,7 +218,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp">
 
-                    <androidx.appcompat.widget.AppCompatEditText
+                    <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/edtCompany"
                         style="@style/StyledTilEditText"
                         android:layout_width="match_parent"
@@ -309,7 +238,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp">
 
-                    <androidx.appcompat.widget.AppCompatEditText
+                    <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/edtVat"
                         style="@style/StyledTilEditText"
                         android:layout_width="match_parent"
@@ -329,7 +258,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp">
 
-                    <androidx.appcompat.widget.AppCompatEditText
+                    <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/edtTaxIdCode"
                         style="@style/StyledTilEditText"
                         android:layout_width="match_parent"
@@ -341,28 +270,80 @@
                         android:textSize="@dimen/_12ssp" />
 
                 </com.google.android.material.textfield.TextInputLayout>
-
                 <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/till_edit_address"
+                    android:id="@+id/tilCityOfBirth"
                     style="@style/StyledTilInput"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_below="@+id/view_sp_code"
                     android:layout_marginTop="4dp">
 
-                    <androidx.appcompat.widget.AppCompatAutoCompleteTextView
-                        android:id="@+id/et_edit_address"
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/edtCityOfBirth"
                         style="@style/StyledTilEditText"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:drawableEnd="@drawable/ic_location_resize"
-                        android:drawablePadding="@dimen/_4sdp"
+                        android:hint="@string/lbl_city_of_birth_with_dot"
+                        android:inputType="text"
+                        android:maxLines="1"
+                        android:textColor="@color/text"
+                        android:textSize="@dimen/_12ssp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilDataOfBirth"
+                    style="@style/StyledTilInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/edtDateOfBirth"
+                        style="@style/StyledTilEditText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:drawableEnd="@drawable/ic_calender_resize"
                         android:focusable="false"
-                        android:focusableInTouchMode="false"
-                        android:hint="@string/hint_shop_address"
-                        android:maxLines="3"
-                        android:paddingStart="@dimen/_8sdp"
-                        android:paddingEnd="@dimen/_8sdp"
+                        android:hint="@string/lbl_date_of_birth_with_dot"
+                        android:inputType="text"
+                        android:maxLines="1"
+                        android:textColor="@color/text"
+                        android:textSize="@dimen/_12ssp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilCityOfResidence"
+                    style="@style/StyledTilInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/edtCityOfResidence"
+                        style="@style/StyledTilEditText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/lbl_city_of_residence_with_dot"
+                        android:inputType="text"
+                        android:maxLines="1"
+                        android:textColor="@color/text"
+                        android:textSize="@dimen/_12ssp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilResidentialAddress"
+                    style="@style/StyledTilInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/edtResidentialAddress"
+                        style="@style/StyledTilEditText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/lbl_residential_address_with_dot"
+                        android:inputType="text"
+                        android:maxLines="1"
                         android:textColor="@color/text"
                         android:textSize="@dimen/_12ssp" />
                 </com.google.android.material.textfield.TextInputLayout>
@@ -374,7 +355,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp">
 
-                    <androidx.appcompat.widget.AppCompatEditText
+                    <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/edtInvoiceRecipeCode"
                         style="@style/StyledTilEditText"
                         android:layout_width="match_parent"
@@ -394,7 +375,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp">
 
-                    <androidx.appcompat.widget.AppCompatEditText
+                    <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/edtCertifiedMail"
                         style="@style/StyledTilEditText"
                         android:layout_width="match_parent"
@@ -407,6 +388,15 @@
 
                 </com.google.android.material.textfield.TextInputLayout>
 
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/font_medium"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/_10sdp"
+                    android:gravity="center_horizontal"
+                    android:text="Informazioni sul servizio"
+                    android:textColor="@color/text"
+                    android:textSize="@dimen/_16ssp" />
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/till_edit_aboutme"
@@ -416,7 +406,7 @@
                     android:layout_below="@+id/till_edit_address"
                     android:layout_marginTop="4dp">
 
-                    <androidx.appcompat.widget.AppCompatEditText
+                    <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/et_edit_aboutme"
                         style="@style/StyledTilEditText"
                         android:layout_width="match_parent"
@@ -426,7 +416,6 @@
                         android:textColor="@color/text"
                         android:textSize="@dimen/_12ssp" />
                 </com.google.android.material.textfield.TextInputLayout>
-
 
                 <androidx.appcompat.widget.LinearLayoutCompat
                     android:layout_width="match_parent"
@@ -443,7 +432,7 @@
                         android:layout_marginEnd="5dp"
                         android:layout_weight="1">
 
-                        <androidx.appcompat.widget.AppCompatEditText
+                        <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/et_edit_start_time"
                             style="@style/StyledTilEditText"
                             android:layout_width="match_parent"
@@ -464,7 +453,7 @@
                         android:layout_marginStart="5dp"
                         android:layout_weight="1">
 
-                        <androidx.appcompat.widget.AppCompatEditText
+                        <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/et_edit_end_time"
                             style="@style/StyledTilEditText"
                             android:layout_width="match_parent"
@@ -479,7 +468,6 @@
                     </com.google.android.material.textfield.TextInputLayout>
 
                 </androidx.appcompat.widget.LinearLayoutCompat>
-
             </androidx.appcompat.widget.LinearLayoutCompat>
 
             <androidx.appcompat.widget.LinearLayoutCompat
@@ -537,7 +525,6 @@
                     app:track="@null" />
 
             </androidx.appcompat.widget.LinearLayoutCompat>
-
 
             <androidx.appcompat.widget.LinearLayoutCompat
                 android:layout_width="match_parent"

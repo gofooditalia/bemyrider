@@ -78,7 +78,7 @@ public class DetailFragment extends Fragment {
         binding.edtServiceAddress.setText(PrefsUtil.with(context).readString("search_address"));
 
         binding.edtServiceAddress.setOnClickListener(v -> {
-            List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.DISPLAY_NAME, Place.Field.LOCATION, Place.Field.FORMATTED_ADDRESS);
+            List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG, Place.Field.ADDRESS);
             Intent intent = new Autocomplete.IntentBuilder(
                     AutocompleteActivityMode.FULLSCREEN, fields)
                     .build(context);
@@ -123,13 +123,13 @@ public class DetailFragment extends Fragment {
             try {
                 if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                     Place place = Autocomplete.getPlaceFromIntent(result.getData());
-                    Log.i("AUTO COMPLETE", "Place: " + place.getDisplayName() + ", " + place.getId());
-                    if (place.getLocation() != null) {
-                        PrefsUtil.with(context).write("bookingLat", String.valueOf(place.getLocation().latitude));
-                        PrefsUtil.with(context).write("bookingLong", String.valueOf(place.getLocation().longitude));
+                    Log.i("AUTO COMPLETE", "Place: " + place.getName() + ", " + place.getId());
+                    if (place.getLatLng() != null) {
+                        PrefsUtil.with(context).write("bookingLat", String.valueOf(place.getLatLng().latitude));
+                        PrefsUtil.with(context).write("bookingLong", String.valueOf(place.getLatLng().longitude));
                     }
-                    PrefsUtil.with(context).write("search_address", place.getFormattedAddress());
-                    binding.edtServiceAddress.setText(place.getFormattedAddress());
+                    PrefsUtil.with(context).write("search_address", place.getAddress());
+                    binding.edtServiceAddress.setText(place.getAddress());
                 } else if (result.getResultCode() != RESULT_CANCELED) {
                     Status status = Autocomplete.getStatusFromIntent(result.getData());
                     Log.i("AUTO COMPLETE", status.getStatusMessage());

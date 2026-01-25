@@ -97,7 +97,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/_7sdp">
 
-                <androidx.appcompat.widget.AppCompatAutoCompleteTextView
+                <com.google.android.material.textfield.MaterialAutoCompleteTextView
                     android:id="@+id/txt_location"
                     style="@style/StyledTilEditText"
                     android:layout_width="match_parent"
@@ -122,7 +122,7 @@
                 android:layout_marginTop="@dimen/_7sdp"
                 android:hint="@string/select_date">
 
-                <androidx.appcompat.widget.AppCompatEditText
+                <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/Edt_date"
                     style="@style/StyledTilEditText"
                     android:layout_width="match_parent"
@@ -144,7 +144,7 @@
                 android:layout_marginTop="@dimen/_7sdp"
                 android:hint="@string/provider_name">
 
-                <androidx.appcompat.widget.AppCompatEditText
+                <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/Edt_provider_name"
                     style="@style/StyledTilEditText"
                     android:layout_width="match_parent"
@@ -163,7 +163,7 @@
                 android:layout_marginTop="@dimen/_7sdp"
                 android:hint="@string/search_keyword">
 
-                <androidx.appcompat.widget.AppCompatEditText
+                <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/Edt_search_keyword"
                     style="@style/StyledTilEditText"
                     android:layout_width="match_parent"

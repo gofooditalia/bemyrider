@@ -29,7 +29,7 @@
             android:layout_height="wrap_content"
             style="@style/StyledTilInput">
 
-            <androidx.appcompat.widget.AppCompatEditText
+            <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/edt_fname_conus"
                 style="@style/StyledTilEditText"
                 android:layout_width="match_parent"
@@ -47,7 +47,7 @@
             android:layout_marginTop="6dp"
             style="@style/StyledTilInput">
 
-            <androidx.appcompat.widget.AppCompatEditText
+            <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/edt_lname_conus"
                 style="@style/StyledTilEditText"
                 android:layout_width="match_parent"
@@ -65,7 +65,7 @@
             android:layout_marginTop="6dp"
             style="@style/StyledTilInput">
 
-            <androidx.appcompat.widget.AppCompatEditText
+            <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/edt_email_conus"
                 style="@style/StyledTilEditText"
                 android:layout_width="match_parent"
@@ -115,7 +115,7 @@
                 android:layout_toEndOf="@+id/spinner_countrycode"
                 android:layout_weight="2">
 
-                <androidx.appcompat.widget.AppCompatEditText
+                <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/et_signup_contactno"
                     style="@style/StyledTilEditText"
                     android:layout_width="match_parent"
@@ -136,7 +136,7 @@
             android:layout_marginTop="6dp"
             style="@style/StyledTilInput">
 
-            <androidx.appcompat.widget.AppCompatEditText
+            <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/edt_conus"
                 style="@style/StyledTilEditText"
                 android:layout_width="match_parent"

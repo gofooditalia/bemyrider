@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
@@ -213,14 +212,11 @@ public class ServiceDetailActivity extends AppCompatActivity {
             return getString(R.string.server_error);
         }
         
-        switch (message) {
-            case MSG_ADDED_EN:
-                return getString(R.string.favorite_added_success);
-            case MSG_REMOVED_EN:
-                return getString(R.string.favorite_removed_success);
-            default:
-                return message;
-        }
+        return switch (message) {
+            case MSG_ADDED_EN -> getString(R.string.favorite_added_success);
+            case MSG_REMOVED_EN -> getString(R.string.favorite_removed_success);
+            default -> message;
+        };
     }
 
 
@@ -304,13 +300,14 @@ public class ServiceDetailActivity extends AppCompatActivity {
         public Fragment createFragment(int position) {
             Bundle dataBundle = new Bundle();
             dataBundle.putSerializable("data", serviceDetailData);
-            Fragment fragment;
-            switch(position) {
-                case 1: fragment = new UserDetailFragment(); break;
-                case 2: fragment = new ReviewFragment(reviewArrayList); break;
-                case 3: fragment = new ImageFragment(); break;
-                default: fragment = new DetailFragment(); break;
-            }
+            
+            Fragment fragment = switch (position) {
+                case 1 -> new UserDetailFragment();
+                case 2 -> new ReviewFragment(reviewArrayList);
+                case 3 -> new ImageFragment();
+                default -> new DetailFragment();
+            };
+
             fragment.setArguments(dataBundle);
             return fragment;
         }

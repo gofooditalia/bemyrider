@@ -88,7 +88,7 @@ public class SearchServiceActivity extends AppCompatActivity {
         }
 
         binding.txtLocation.setOnClickListener(v -> {
-            List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.DISPLAY_NAME, Place.Field.LOCATION, Place.Field.FORMATTED_ADDRESS);
+            List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG, Place.Field.ADDRESS);
             Intent intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.FULLSCREEN, fields).build(this);
             locationActivityResultLauncher.launch(intent);
         });
@@ -166,9 +166,9 @@ public class SearchServiceActivity extends AppCompatActivity {
                 if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                     Place place = Autocomplete.getPlaceFromIntent(result.getData());
                     Utils.hideSoftKeyboard(this);
-                    if (place.getLocation() != null) {
-                        selectedLatLng = place.getLocation();
-                        binding.txtLocation.setText(place.getDisplayName());
+                    if (place.getLatLng() != null) {
+                        selectedLatLng = place.getLatLng();
+                        binding.txtLocation.setText(place.getName());
                     }
                 } else if (result.getResultCode() == AutocompleteActivity.RESULT_ERROR) {
                     Status status = Autocomplete.getStatusFromIntent(result.getData());
