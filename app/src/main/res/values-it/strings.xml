@@ -424,7 +424,7 @@
     <string name="signup_login">Non hai un account? <u>Registrati</u></string>
     <string name="signin_text">Inserisci qui le tue credenziali</string>
     <string name="already_signin">Hai già un account? <u>Accedi qui!</u></string>
-    <string name="deactivate_account_content">Se pensi che non utilizzerai di nuovo bemyrider e desideri che il tuo account venga cancellato, possiamo occuparcene noi per te. Tieni presente che non potrai riattivare il tuo account o recuperare alcun contenuto o informazione che hai aggiunto. \n\nSe desideri comunque eliminare il tuo account, fai clic su \"Elimina definitivamente il tuo profilo\".</string>
+    <string name="deactivate_account_content"><![CDATA[Se pensi che non utilizzerai di nuovo bemyrider e desideri che il tuo account venga cancellato, possiamo occuparcene noi per te. Tieni presente che non potrai riattivare il tuo account o recuperare alcun contenuto o informazione che hai aggiunto. \n\nSe desideri comunque eliminare il tuo account, fai clic su "Elimina definitivamente il tuo profilo".]]></string>
     <string name="contact_us_text">Inserisci le tue informazioni qui sotto in Contattaci</string>
     <string name="ratings_review">Giudizi</string>
     <string name="upcoming">IN ARRIVO</string>
@@ -599,4 +599,6 @@
     <string name="share_profile_body">Ciao! Prenota il mio servizio su Bemyrider: https://bemyrider.it/rider?id=</string>
     <string name="share_profile_subject">Il mio profilo Bemyrider</string>
     <string name="profile_not_loaded_share_error">Profilo non caricato, impossibile condividere.</string>
+    <string name="notification_permission_title">Non perdere nessuna prenotazione!</string>
+    <string name="notification_permission_message">Per assicurarti di ricevere avvisi istantanei per nuove prenotazioni e messaggi, ti preghiamo di concedere l\'autorizzazione alle notifiche nella schermata successiva.</string>
 </resources>

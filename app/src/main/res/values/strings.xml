@@ -66,7 +66,7 @@
     <string name="payment_method">Default Payment Method</string>
     <string name="address">Address</string>
     <string name="cash">Cash</string>
-    <string name="can_not_edit_now">You can not edit profile now, Please try again later.</string>
+    <string name="can_not_edit_now">You can\'t edit profile now, Please try again later.</string>
 
     <!--EDIT PROFILE-->
     <string name="default_method">Default Method</string>
@@ -428,7 +428,7 @@
     <string name="signup_login">Don\'t have account? <u>Sign up</u></string>
     <string name="signin_text">Enter your credentials here</string>
     <string name="already_signin">Do you already have an account? <u>Login here!</u></string>
-    <string name="deactivate_account_content">If you do not think you will use bemyrider again and would like your account deleted, we can take care of this for you. Keep in mind that you will not be able to reactivate your account or retrieve any of the content or information you have added. \n\n If you would still like your account deleted, click \"Permanently delete your profile\".</string>
+    <string name="deactivate_account_content"><![CDATA[If you do not think you will use bemyrider again and would like your account deleted, we can take care of this for you. Keep in mind that you will not be able to reactivate your account or retrieve any of the content or information you have added. \n\n If you would still like your account deleted, click "Permanently delete your profile".]]></string>
     <string name="contact_us_text">Enter your informations below in Contact us</string>
     <string name="ratings_review"><![CDATA[Ratings &amp; Reviews]]></string>
     <string name="upcoming">UPCOMING</string>
@@ -617,4 +617,6 @@
     <string name="favorite_added_success">Service has been added in favourite services successfully</string>
     <string name="favorite_removed_success">Service has been removed from favorite services successfully.</string>
     <string name="share">Share</string>
+    <string name="notification_permission_title">Don\'t miss a booking!</string>
+    <string name="notification_permission_message">To ensure you receive instant alerts for new bookings and messages, please grant notification permission on the next screen.</string>
 </resources>

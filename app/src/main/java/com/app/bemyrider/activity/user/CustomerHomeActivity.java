@@ -95,10 +95,25 @@ public class CustomerHomeActivity extends AppCompatActivity implements BottomNav
     private void checkAndRequestNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+                showNotificationPermissionRationale();
             }
         }
     }
+    
+    private void showNotificationPermissionRationale() {
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.notification_permission_title)
+                .setMessage(R.string.notification_permission_message)
+                .setPositiveButton(R.string.ok, (dialog, which) -> {
+                    // L'utente ha accettato il nostro pre-dialogo, ora mostriamo il popup di sistema
+                    requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+                })
+                .setNegativeButton(R.string.cancel, (dialog, which) -> {
+                    // L'utente ha negato il pre-dialogo, non facciamo nulla.
+                })
+                .show();
+    }
+
 
     private void checkPendingDeepLink() {
         String providerId = securePrefs.readString("pending_deeplink_id");
