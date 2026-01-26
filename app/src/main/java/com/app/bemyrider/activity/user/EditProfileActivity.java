@@ -26,11 +26,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.LinearLayoutCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.text.HtmlCompat;
 import androidx.databinding.DataBindingUtil;
@@ -56,10 +56,9 @@ import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.widget.Autocomplete;
 import com.google.android.libraries.places.widget.AutocompleteActivity;
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
-// Coil Imports
+
 import coil.Coil;
 import coil.request.ImageRequest;
-// import com.squareup.picasso.Picasso;
 import com.yalantis.ucrop.UCrop;
 
 import java.io.File;
@@ -78,9 +77,10 @@ public class EditProfileActivity extends AppCompatActivity {
     private Activity mActivity;
     private PermissionUtils permissionUtils;
     private ActivityResultLauncher<Uri> actResCamera;
-    private ActivityResultLauncher<Intent> actResGallery;
     private ActivityResultLauncher<Intent> actResCropper;
     private ActivityResultLauncher<Intent> actResLocation;
+    private ActivityResultLauncher<PickVisualMediaRequest> actResPhotoPicker;
+
 
     public static ProfileItem profileData = null;
     private ActivityEditProfileBinding binding;
@@ -115,8 +115,7 @@ public class EditProfileActivity extends AppCompatActivity {
             }
             @Override
             public void onStoragePermissionGranted() {
-                selectedImagePath = "";
-                Utils.openImagesDocument(actResGallery);
+                // Questo non è più necessario con il Photo Picker
             }
         });
 
@@ -249,7 +248,6 @@ public class EditProfileActivity extends AppCompatActivity {
                 binding.rbCash.setChecked(true);
             }
 
-            // Coil Migration from Picasso
             ImageRequest.Builder profileBuilder = new ImageRequest.Builder(mContext)
                 .placeholder(R.drawable.loading)
                 .target(binding.ivProfile);
@@ -274,7 +272,6 @@ public class EditProfileActivity extends AppCompatActivity {
             lat = loginPojoData.getLatitude();
             lng = loginPojoData.getLongitude();
 
-            // Coil Migration from Picasso
             ImageRequest.Builder loginBuilder = new ImageRequest.Builder(mContext)
                 .placeholder(R.drawable.loading)
                 .target(binding.ivProfile);
@@ -320,7 +317,7 @@ public class EditProfileActivity extends AppCompatActivity {
         binding.spCode.setAdapter(countrycodeAdapter);
 
         initActivityResult();
-        viewModel.getCountryCodes(); // Chiamata per popolare lo spinner
+        viewModel.getCountryCodes();
     }
 
     private void initActivityResult() {
@@ -331,17 +328,15 @@ public class EditProfileActivity extends AppCompatActivity {
             }
         });
 
-        actResGallery = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-            Intent data = result.getData();
-            try {
-                if (data != null && data.getData() != null) {
-                    Uri sourceUri = data.getData();
+        actResPhotoPicker = registerForActivityResult(new ActivityResultContracts.PickVisualMedia(), uri -> {
+            if (uri != null) {
+                try {
                     File file = Utils.createTempFileInAppPackage(mContext);
                     Uri destinationUri = Uri.fromFile(file);
-                    openCropActivity(sourceUri, destinationUri);
+                    openCropActivity(uri, destinationUri);
+                } catch (Exception e) {
+                    // Log rimosso
                 }
-            } catch (Exception e) {
-                Log.e(TAG, "onActivityResult (Gallery): " + e.getMessage());
             }
         });
 
@@ -393,7 +388,9 @@ public class EditProfileActivity extends AppCompatActivity {
 
         d.findViewById(R.id.linGallery).setOnClickListener(view -> {
             d.dismiss();
-            permissionUtils.checkStoragePermission();
+            actResPhotoPicker.launch(new PickVisualMediaRequest.Builder()
+                    .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
+                    .build());
         });
         d.show();
     }
@@ -435,12 +432,6 @@ public class EditProfileActivity extends AppCompatActivity {
                 permissionUtils.checkCameraPermission();
             } else {
                 ToastMaster.showShort(mContext, R.string.err_permission_camera);
-            }
-        } else if (requestCode == PermissionUtils.REQ_CODE_STORAGE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                permissionUtils.checkStoragePermission();
-            } else {
-                ToastMaster.showShort(mContext, R.string.err_permission_storage);
             }
         }
     }

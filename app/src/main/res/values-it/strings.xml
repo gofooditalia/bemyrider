@@ -276,8 +276,8 @@
     <string name="send_requerst">Verifica disponibilità</string>
     <string name="current_password">Password attuale*</string>
     <string name="re_enter_new_password">Reinserire la nuova password*</string>
-    <string name="deactivate_your_account">Disattiva il tuo account</string>
-    <string name="deactivate">Disattivare</string>
+    <string name="deactivate_your_account">Elimina definitivamente il tuo profilo</string>
+    <string name="deactivate">Elimina</string>
     <string name="send">Invia</string>
     <string name="service_description">Modello del mezzo e attrezzatura</string>
     <string name="service_start_time">Calendario*</string>
@@ -401,7 +401,7 @@
     <string name="confirm_delete_service">Sei sicuro di voler eliminare questo servizio?</string>
     <string name="delete">Eliminare</string>
     <string name="service_detail">Particolare del servizio</string>
-    <string name="confirm_account_deactivate">Sei sicuro di voler disattivare il tuo account?</string>
+    <string name="confirm_account_deactivate">Sei sicuro di voler eliminare definitivamente il tuo account? Questa azione è irreversibile e tutti i tuoi dati andranno persi.</string>
     <string name="please_enter_proper_deposit_amount">Si prega di inserire l\'importo del deposito corretto.</string>
     <string name="please_enter_valid_password">La password deve essere lunga almeno 6 caratteri</string>
     <string name="vali_contact_num">Il numero di contatto deve essere compreso tra 10 e 15 cifre</string>
@@ -424,7 +424,7 @@
     <string name="signup_login">Non hai un account? <u>Registrati</u></string>
     <string name="signin_text">Inserisci qui le tue credenziali</string>
     <string name="already_signin">Hai già un account? <u>Accedi qui!</u></string>
-    <string name="deactivate_account_content">Se pensi che non utilizzerai di nuovo bemyrider e desideri che il tuo account venga cancellato, possiamo occuparcene noi per te. Tieni presente che non potrai riattivare il tuo account o recuperare alcun contenuto o informazione che hai aggiunto. \n\nSe desideri comunque eliminare il tuo account, fai clic su \"DISATTIVA IL MIO ACCOUNT\".</string>
+    <string name="deactivate_account_content">Se pensi che non utilizzerai di nuovo bemyrider e desideri che il tuo account venga cancellato, possiamo occuparcene noi per te. Tieni presente che non potrai riattivare il tuo account o recuperare alcun contenuto o informazione che hai aggiunto. \n\nSe desideri comunque eliminare il tuo account, fai clic su \"Elimina definitivamente il tuo profilo\".</string>
     <string name="contact_us_text">Inserisci le tue informazioni qui sotto in Contattaci</string>
     <string name="ratings_review">Giudizi</string>
     <string name="upcoming">IN ARRIVO</string>

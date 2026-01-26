@@ -7,15 +7,7 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" /> <!-- Android 33 -->
-    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" /> <!--Android 33-->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" /> <!--Android 33-->
-    <uses-permission
-        android:name="android.permission.READ_EXTERNAL_STORAGE"
-        android:maxSdkVersion="32" />
-    <uses-permission
-        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-        android:maxSdkVersion="28" />
 
     <uses-feature
         android:name="android.hardware.camera"
@@ -32,17 +24,6 @@
         <intent>
             <action android:name="android.media.action.IMAGE_CAPTURE" />
         </intent>
-
-        <!--<intent>
-            <action android:name="android.intent.action.VIEW" />
-            <data android:scheme="http" />
-            <category android:name="android.intent.category.DEFAULT" />
-        </intent>
-        <intent>
-            <action android:name="android.intent.action.VIEW" />
-            <data android:scheme="https" />
-            <category android:name="android.intent.category.DEFAULT" />
-        </intent>-->
     </queries>
 
     <application
@@ -61,15 +42,6 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_api_key" />
-
-        <!-- Removed Facebook Metadata -->
-        <!-- <meta-data
-            android:name="com.facebook.sdk.ApplicationId"
-            android:value="@string/facebook_app_id" />
-
-        <meta-data
-            android:name="com.facebook.sdk.ClientToken"
-            android:value="@string/facebook_client_token" /> -->
 
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -102,27 +74,6 @@
                 <data android:scheme="http" android:host="bemyrider.it" android:pathPrefix="/rider" />
             </intent-filter>
         </activity>
-
-        <!-- Removed Facebook Activities -->
-        <!-- <activity
-            android:name="com.facebook.FacebookActivity"
-            android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
-            android:label="@string/app_name"
-            android:screenOrientation="portrait" />
-
-        <activity
-            android:name="com.facebook.CustomTabActivity"
-            android:exported="true"
-            android:screenOrientation="portrait">
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-
-                <data android:scheme="@string/fb_login_protocol_scheme" />
-            </intent-filter>
-        </activity> -->
 
         <service
             android:name=".utils.MyFirebaseMessagingService"
@@ -514,11 +465,6 @@
             android:theme="@style/PlacesAutocompleteCustomTheme"
             tools:replace="android:theme" />
 
-        <!-- <activity
-            android:name="com.app.bemyrider.activity.LinkedInLoginWebViewActivity"
-            android:configChanges="keyboardHidden|screenSize|screenLayout|orientation"
-            android:screenOrientation="portrait"
-            android:windowSoftInputMode="stateHidden" /> -->
     </application>
 
 </manifest>

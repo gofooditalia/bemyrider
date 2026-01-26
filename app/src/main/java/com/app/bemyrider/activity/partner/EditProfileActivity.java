@@ -26,6 +26,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -89,7 +90,7 @@ public class EditProfileActivity extends AppCompatActivity {
     private ConnectionManager connectionManager;
 
     private ActivityResultLauncher<Uri> actResCamera;
-    private ActivityResultLauncher<Intent> actResGallery;
+    private ActivityResultLauncher<PickVisualMediaRequest> actResPhotoPicker;
     private ActivityResultLauncher<Intent> actResCropper;
     private ActivityResultLauncher<Intent> actResLocation;
 
@@ -137,8 +138,7 @@ public class EditProfileActivity extends AppCompatActivity {
 
             @Override
             public void onStoragePermissionGranted() {
-                selectedImagePath = "";
-                Utils.openImagesDocument(actResGallery);
+                // Not needed with Photo Picker
             }
         });
 
@@ -587,17 +587,18 @@ public class EditProfileActivity extends AppCompatActivity {
             }
         });
 
-        actResGallery = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-            if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+        actResPhotoPicker = registerForActivityResult(new ActivityResultContracts.PickVisualMedia(), uri -> {
+            if (uri != null) {
                 try {
-                    Uri sourceUri = result.getData().getData();
                     File file = Utils.createTempFileInAppPackage(mContext);
-                    openCropActivity(sourceUri, Uri.fromFile(file));
+                    Uri destinationUri = Uri.fromFile(file);
+                    openCropActivity(uri, destinationUri);
                 } catch (Exception e) {
-                    Log.e(TAG, "onActivityResult gallery: " + e.getMessage());
+                    // Log rimosso
                 }
             }
         });
+
 
         actResCropper = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
             if (result.getResultCode() == RESULT_OK && result.getData() != null) {
@@ -631,7 +632,12 @@ public class EditProfileActivity extends AppCompatActivity {
             window.setAttributes(lp);
         }
         d.findViewById(R.id.linCamera).setOnClickListener(view -> { d.dismiss(); permissionUtils.checkCameraPermission(); });
-        d.findViewById(R.id.linGallery).setOnClickListener(view -> { d.dismiss(); permissionUtils.checkStoragePermission(); });
+        d.findViewById(R.id.linGallery).setOnClickListener(view -> {
+            d.dismiss();
+            actResPhotoPicker.launch(new PickVisualMediaRequest.Builder()
+                    .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
+                    .build());
+        });
         d.show();
     }
 
@@ -672,9 +678,6 @@ public class EditProfileActivity extends AppCompatActivity {
         if (requestCode == PermissionUtils.REQ_CODE_CAMERA) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) permissionUtils.checkCameraPermission();
             else ToastMaster.showShort(mContext, R.string.err_permission_camera);
-        } else if (requestCode == PermissionUtils.REQ_CODE_STORAGE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) permissionUtils.checkStoragePermission();
-            else ToastMaster.showShort(mContext, R.string.err_permission_storage);
         }
     }
 

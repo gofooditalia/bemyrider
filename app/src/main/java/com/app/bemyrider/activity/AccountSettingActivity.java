@@ -228,7 +228,7 @@ public class AccountSettingActivity extends AppCompatActivity {
                     SecurePrefsUtil.with(AccountSettingActivity.this).clearPrefs();
                     PrefsUtil.with(AccountSettingActivity.this).clearPrefs();
                     finish();
-                    Intent i = new Intent(AccountSettingActivity.this, SignupActivity.class);
+                    Intent i = new Intent(AccountSettingActivity.this, LoginActivity.class);
                     i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(i);
                 } else {

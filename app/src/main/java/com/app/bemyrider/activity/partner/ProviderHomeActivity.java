@@ -1,5 +1,6 @@
 package com.app.bemyrider.activity.partner;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -12,25 +13,24 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
+import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
-import com.app.bemyrider.AsyncTask.ConnectionCheck;
 import com.app.bemyrider.R;
 import com.app.bemyrider.databinding.ActivityProviderHomeBinding;
 import com.app.bemyrider.fragment.partner.ProviderHomeFragment;
 import com.app.bemyrider.fragment.partner.ProviderMenuFragment;
 import com.app.bemyrider.fragment.partner.ProviderMessageFragment;
 import com.app.bemyrider.fragment.partner.ProviderProfileFragment;
-import com.app.bemyrider.helper.PermissionUtils;
 import com.app.bemyrider.helper.ToastMaster;
 import com.app.bemyrider.model.MessageEvent;
 import com.app.bemyrider.utils.ConnectionManager;
@@ -48,16 +48,20 @@ public class ProviderHomeActivity extends AppCompatActivity implements BottomNav
     private Context mContext;
     private Activity mActivity;
 
-    private PermissionUtils permissionUtils;
-
     ActivityProviderHomeBinding binding;
     private BroadcastReceiver mMessageReceiver;
     private ConnectionManager connectionManager;
     private Menu menu;
-    private MenuItem navProfile;
     private boolean isFirst = true;
     boolean doubleBackToExitPressedOnce = false;
-    private int REQ_CODE_NOTIFICATION = 143;
+    
+    private final ActivityResultLauncher<String> requestPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (!isGranted) {
+                    Toast.makeText(this, "Le notifiche sono disabilitate. Puoi attivarle dalle impostazioni.", Toast.LENGTH_LONG).show();
+                }
+            });
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,97 +70,34 @@ public class ProviderHomeActivity extends AppCompatActivity implements BottomNav
         mContext = binding.getRoot().getContext();
         mActivity = ProviderHomeActivity.this;
 
-        permissionUtils = new PermissionUtils(mActivity, mContext, new PermissionUtils.OnPermissionGrantedListener() {
-            @Override
-            public void onStoragePermissionGranted() {
-
-            }
-
-            @Override
-            public void onCameraPermissionGranted() {
-
-            }
-        });
-
         initView();
+        checkAndRequestNotificationPermission();
 
         mMessageReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                if (new ConnectionCheck().isNetworkConnected(context)) {
-                    Log.e("HomeActivity", "connected");
-                    EventBus.getDefault().post(new MessageEvent("connection", "connected"));
-                } else {
-                    Log.e("HomeActivity", "disconnected");
-                    EventBus.getDefault().post(new MessageEvent("connection", "disconnected"));
-                }
+                // EventBus events are handled via @Subscribe methods
             }
         };
-
-        permissionUtils.checkNotificationPermission(REQ_CODE_NOTIFICATION);
+    }
+    
+    private void checkAndRequestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+            }
+        }
     }
 
     private void initView() {
-        /*Init Internet Connection Class For No Internet Banner*/
         connectionManager = new ConnectionManager(mContext);
         connectionManager.registerInternetCheckReceiver();
         connectionManager.checkConnection(mContext);
 
         binding.bottomNavigationView.setOnItemSelectedListener(this);
         menu = binding.bottomNavigationView.getMenu();
-        navProfile = menu.findItem(R.id.nav_profile_p);
-
-        increaseCenterSize();
 
         displaySelectedScreen(R.id.nav_home_p);
-    }
-
-    void increaseCenterSize() {
-       /*BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigationView);
-        BottomNavigationMenuView menuView = (BottomNavigationMenuView) bottomNavigationView.getChildAt(0);
-        for (int i = 0; i < menuView.getChildCount(); i++) {
-            final View iconView = menuView.getChildAt(i).findViewById(com.google.android.material.R.id.icon);
-            final ViewGroup.LayoutParams layoutParams = iconView.getLayoutParams();
-            final DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
-            // set your height here
-            layoutParams.height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32, displayMetrics);
-            // set your width here
-            layoutParams.width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32, displayMetrics);
-            iconView.setLayoutParams(layoutParams);
-        }*/
-        /*BottomNavigationMenuView menuView = (BottomNavigationMenuView) binding.bottomNavigationView.getChildAt(0);
-        for (int i = 0; i < menuView.getChildCount(); i++) {
-            Log.e(TAG,menuView.getChildCount()+"");
-            Log.e(TAG,menuView.getChildAt(i)+"");
-            final View iconView = menuView.getChildAt(i).findViewById(R.id.icon);
-            final ViewGroup.LayoutParams layoutParams = iconView.getLayoutParams();
-            final DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
-            if (i == 2){
-                // set your height here
-                layoutParams.height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 60, displayMetrics);
-                // set your width here
-                layoutParams.width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 60, displayMetrics);
-            }
-            else {
-                // set your height here
-                layoutParams.height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32, displayMetrics);
-                // set your width here
-                layoutParams.width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32, displayMetrics);
-            }
-            iconView.setLayoutParams(layoutParams);
-        }*/
-    }
-
-    private void permissionMessageDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage(R.string.denine_permission);
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                finish();
-            }
-        });
-        builder.show();
     }
 
     @Override
@@ -214,9 +155,7 @@ public class ProviderHomeActivity extends AppCompatActivity implements BottomNav
     }
 
     private void displaySelectedScreen(int itemId) {
-        //creating fragment object
         Fragment fragment = null;
-        //initializing the fragment object which is selected
         if (itemId == R.id.nav_home_p) {
             isFirst = true;
             fragment = new ProviderHomeFragment();
@@ -231,7 +170,6 @@ public class ProviderHomeActivity extends AppCompatActivity implements BottomNav
             fragment = new ProviderMenuFragment();
         }
 
-        //replacing the fragment
         if (fragment != null) {
             FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
             ft.replace(R.id.content_frame, fragment);
@@ -257,16 +195,6 @@ public class ProviderHomeActivity extends AppCompatActivity implements BottomNav
             ft.replace(R.id.content_frame, fragment);
             binding.bottomNavigationView.getMenu().findItem(R.id.nav_home_p).setChecked(true);
             ft.commit();
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == REQ_CODE_NOTIFICATION) {
-            if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                ToastMaster.showShort(mContext, R.string.err_permission);
-            }
         }
     }
 }

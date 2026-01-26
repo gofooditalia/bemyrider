@@ -1,5 +1,6 @@
 package com.app.bemyrider.activity.user;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
@@ -8,20 +9,22 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
-import com.app.bemyrider.AsyncTask.ConnectionCheck;
 import com.app.bemyrider.R;
 import com.app.bemyrider.databinding.ActivityCustomerHomeBinding;
 import com.app.bemyrider.fragment.user.CustomerHomeFragment;
@@ -29,9 +32,7 @@ import com.app.bemyrider.fragment.user.CustomerMenuFragment;
 import com.app.bemyrider.fragment.user.CustomerMessagesFragment;
 import com.app.bemyrider.fragment.user.FavouriteFragment;
 import com.app.bemyrider.fragment.user.ServiceHistoryFragment;
-import com.app.bemyrider.helper.PermissionUtils;
 import com.app.bemyrider.helper.ToastMaster;
-import com.app.bemyrider.model.MessageEvent;
 import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.LocaleManager;
 import com.app.bemyrider.utils.Log;
@@ -40,15 +41,11 @@ import com.app.bemyrider.utils.SecurePrefsUtil;
 import com.app.bemyrider.utils.Utils;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-import org.greenrobot.eventbus.EventBus;
-
 public class CustomerHomeActivity extends AppCompatActivity implements BottomNavigationView.OnItemSelectedListener, CustomerHomeFragment.CustomerHomeFragmentListener {
 
     private static final String TAG = "CustomerHomeActivity";
     private Context mContext;
     private Activity mActivity;
-
-    private PermissionUtils permissionUtils;
 
     private ActivityCustomerHomeBinding binding;
     private Menu menu;
@@ -64,7 +61,14 @@ public class CustomerHomeActivity extends AppCompatActivity implements BottomNav
     CustomerHomePositionData homePositionData;
     private String address = "", latitude = "", longitude = "", strAsc = "", strDesc = "", strSearch = "", strRating = "";
     ActivityResultLauncher<Intent> myIntentActivityResultLauncher;
-    private int REQ_CODE_NOTIFICATION = 143;
+    
+    private final ActivityResultLauncher<String> requestPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (!isGranted) {
+                    Toast.makeText(this, "Le notifiche sono disabilitate. Puoi attivarle dalle impostazioni.", Toast.LENGTH_LONG).show();
+                }
+            });
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,19 +78,9 @@ public class CustomerHomeActivity extends AppCompatActivity implements BottomNav
         mActivity = CustomerHomeActivity.this;
         securePrefs = SecurePrefsUtil.with(mContext);
 
-        permissionUtils = new PermissionUtils(mActivity, mContext, new PermissionUtils.OnPermissionGrantedListener() {
-            @Override
-            public void onStoragePermissionGranted() {
-
-            }
-
-            @Override
-            public void onCameraPermissionGranted() {
-
-            }
-        });
-
         initView();
+        
+        checkAndRequestNotificationPermission();
         
         checkPendingDeepLink();
 
@@ -96,8 +90,14 @@ public class CustomerHomeActivity extends AppCompatActivity implements BottomNav
                 // Non inviare eventi EventBus da qui per evitare race condition
             }
         };
+    }
 
-        permissionUtils.checkNotificationPermission(REQ_CODE_NOTIFICATION);
+    private void checkAndRequestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+            }
+        }
     }
 
     private void checkPendingDeepLink() {
@@ -105,12 +105,11 @@ public class CustomerHomeActivity extends AppCompatActivity implements BottomNav
         if (providerId != null && !providerId.isEmpty()) {
             Log.i(TAG, "Found pending deep link for provider: " + providerId);
             
-            // Clear the preference immediately
             securePrefs.write("pending_deeplink_id", "");
             
             Intent intent = new Intent(mContext, UserServicesActivity.class);
             intent.putExtra(Utils.PROVIDER_ID, providerId);
-            intent.putExtra("providerImage", ""); // Image URL not available here, but activity handles it
+            intent.putExtra("providerImage", ""); 
             startActivity(intent);
         }
     }
@@ -123,46 +122,21 @@ public class CustomerHomeActivity extends AppCompatActivity implements BottomNav
         binding.bottomNavigationView.setOnItemSelectedListener(this);
         menu = binding.bottomNavigationView.getMenu();
 
-        increaseCenterSize();
-
         if (PrefsUtil.with(mContext).readString("service").equals("true")) {
             PrefsUtil.with(mContext).write("service", "false");
             displaySelectedScreen(R.id.nav_service_c);
             binding.bottomNavigationView.getMenu().findItem(R.id.nav_service_c).setChecked(true);
-            Log.e(TAG, PrefsUtil.with(mContext).readString("service") + " _1");
         } else {
-            Log.e(TAG, PrefsUtil.with(mContext).readString("service") + " _2");
             displaySelectedScreen(R.id.nav_home_c);
         }
 
         myActivityResult();
     }
 
-    void increaseCenterSize() {
-        // ... (Commented out code kept as is)
-    }
-
-    private void permissionMessageDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage(R.string.denine_permission);
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                finish();
-            }
-        });
-        builder.show();
-    }
-
     @Override
     protected void onResume() {
         registerReceiver(mMessageReceiver, new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE"));
         super.onResume();
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
     }
 
     @Override
@@ -294,15 +268,5 @@ public class CustomerHomeActivity extends AppCompatActivity implements BottomNav
 
     public interface CustomerHomeApiData {
         void onApiDataPageChanged(int position);
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == REQ_CODE_NOTIFICATION) {
-            if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                ToastMaster.showShort(mContext, R.string.err_permission);
-            }
-        }
     }
 }
