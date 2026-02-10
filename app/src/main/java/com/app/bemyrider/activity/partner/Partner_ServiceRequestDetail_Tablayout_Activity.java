@@ -95,6 +95,21 @@ public class Partner_ServiceRequestDetail_Tablayout_Activity extends AppCompatAc
         String url = WebServiceUrl.URL_DOWNLOAD_INVOICE + "/" + serviceRequestId;
         LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
         textParams.put("user_id", PrefsUtil.with(this).readString("UserId"));
+        textParams.put("user_type", PrefsUtil.with(this).readString("UserType"));
+        textParams.put("request_type", "app");
+        textParams.put("invoice", getString(R.string.invoice));
+        textParams.put("service_start_time", getString(R.string.service_s_time));
+        textParams.put("service_end_time", getString(R.string.service_e_time));
+        textParams.put("booking_id", getString(R.string.booking_id));
+        textParams.put("booking_details", getString(R.string.booking_details));
+        textParams.put("booking_amount", getString(R.string.booking_amount));
+        textParams.put("admin_fees", getString(R.string.admin_feesb));
+        textParams.put("payment_type", getString(R.string.payment_type));
+        textParams.put("total_payable_amount", getString(R.string.total_payable_amount));
+        textParams.put("total_receivable_amount", getString(R.string.total_receivable_amount));
+        textParams.put("wallet", getString(R.string.wallet));
+        textParams.put("cash", getString(R.string.cash));
+        textParams.put("complete", getString(R.string.status_completed));
         
         downloadInvoiceAsync = new WebServiceCall(this, url, textParams, DownloadInvoicePojo.class, false, new WebServiceCall.OnResultListener() {
             @Override
@@ -107,7 +122,11 @@ public class Partner_ServiceRequestDetail_Tablayout_Activity extends AppCompatAc
                         Intent i = new Intent(Intent.ACTION_VIEW);
                         i.setData(Uri.parse(pojo.getData().getFileName()));
                         startActivity(i);
+                    } else {
+                        Toast.makeText(Partner_ServiceRequestDetail_Tablayout_Activity.this, getString(R.string.no_record_founf), Toast.LENGTH_SHORT).show();
                     }
+                } else {
+                    Toast.makeText(Partner_ServiceRequestDetail_Tablayout_Activity.this, Objects.toString(obj, getString(R.string.server_error)), Toast.LENGTH_SHORT).show();
                 }
             }
             @Override public void onAsync(Object asyncTask) { downloadInvoiceAsync = null; }
