@@ -15,6 +15,7 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -78,7 +79,7 @@ public class Partner_DisputeDetail_Activity extends AppCompatActivity {
     private int total_records = 0;
     private int pastVisiblesItems = 0, visibleItemCount, totalItemCount;
 
-    private ActivityResultLauncher<Intent> actResGallery;
+    private ActivityResultLauncher<PickVisualMediaRequest> actResPhotoPicker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,7 +97,7 @@ public class Partner_DisputeDetail_Activity extends AppCompatActivity {
 
             @Override
             public void onStoragePermissionGranted() {
-                openAndPickFile();
+                // Not needed with modern Photo Picker
             }
         });
 
@@ -138,7 +139,9 @@ public class Partner_DisputeDetail_Activity extends AppCompatActivity {
         binding.escalateToAdmin.setOnClickListener(v -> serviceCallEscalateToAdmin());
 
         binding.layoutBottompanel.imgAttachFiles.setOnClickListener(view -> {
-            permissionUtils.checkStoragePermission();
+            actResPhotoPicker.launch(new PickVisualMediaRequest.Builder()
+                    .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
+                    .build());
         });
     }
 
@@ -176,32 +179,30 @@ public class Partner_DisputeDetail_Activity extends AppCompatActivity {
     }
 
     private void initActivityResult() {
-        actResGallery = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(), result -> {
-                    try {
-                        Intent data = result.getData();
-                        if (result.getResultCode() == RESULT_OK && data != null) {
-                            FileUtilPOJO fileUtils = FileUtils.getPath(mContext, data.getData());
-                            if (fileUtils.isRequiredDownload()) {
-                                String[] strArr = fileUtils.getPath().split(",");
-                                new DownloadAsync(mContext, Uri.parse(strArr[2]), strArr[0], strArr[1], downloadResult -> {
-                                    realPath = downloadResult;
-                                    fileName = realPath.substring(realPath.lastIndexOf("/") + 1);
-                                    attachedFile = true;
-                                    binding.layoutBottompanel.edtMessage.setText(fileName);
-                                }).execute();
+        actResPhotoPicker = registerForActivityResult(new ActivityResultContracts.PickVisualMedia(), uri -> {
+            if (uri != null) {
+                try {
+                    FileUtilPOJO fileUtils = FileUtils.getPath(mContext, uri);
+                    if (fileUtils.isRequiredDownload()) {
+                        String[] strArr = fileUtils.getPath().split(",");
+                        new DownloadAsync(mContext, Uri.parse(strArr[2]), strArr[0], strArr[1], downloadResult -> {
+                            realPath = downloadResult;
+                            fileName = realPath.substring(realPath.lastIndexOf("/") + 1);
+                            attachedFile = true;
+                            binding.layoutBottompanel.edtMessage.setText(fileName);
+                        }).execute();
 
-                            } else {
-                                realPath = fileUtils.getPath();
-                                fileName = realPath.substring(realPath.lastIndexOf("/") + 1);
-                                attachedFile = true;
-                                binding.layoutBottompanel.edtMessage.setText(fileName);
-                            }
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                    } else {
+                        realPath = fileUtils.getPath();
+                        fileName = realPath.substring(realPath.lastIndexOf("/") + 1);
+                        attachedFile = true;
+                        binding.layoutBottompanel.edtMessage.setText(fileName);
                     }
-                });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     @Override
@@ -209,18 +210,11 @@ public class Partner_DisputeDetail_Activity extends AppCompatActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == PermissionUtils.REQ_CODE_STORAGE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                permissionUtils.checkStoragePermission();
+                // Not strictly needed with Photo Picker but kept for compatibility
             } else {
                 ToastMaster.showShort(mContext, R.string.err_permission_storage);
             }
         }
-    }
-
-    private void openAndPickFile() {
-        Intent intent = new Intent();
-        intent.setType("*/*");
-        intent.setAction(Intent.ACTION_GET_CONTENT);
-        actResGallery.launch(Intent.createChooser(intent, "select multiple images"));
     }
 
     private void serviceCallEscalateToAdmin() {

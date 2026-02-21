@@ -18,6 +18,7 @@ import android.view.WindowManager;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
@@ -64,7 +65,7 @@ public class FeedbackActivity extends AppCompatActivity {
     private String selectedImagePath = "";
 
     private ActivityResultLauncher<Uri> actResCamera;
-    private ActivityResultLauncher<Intent> actResGallery;
+    private ActivityResultLauncher<PickVisualMediaRequest> actResPhotoPicker;
     private ActivityResultLauncher<Intent> actResCropper;
 
     @Override
@@ -88,8 +89,7 @@ public class FeedbackActivity extends AppCompatActivity {
 
             @Override
             public void onStoragePermissionGranted() {
-                selectedImagePath = "";
-                Utils.openImagesDocument(actResGallery);
+                // Not needed with Photo Picker
             }
         });
 
@@ -232,15 +232,13 @@ public class FeedbackActivity extends AppCompatActivity {
             }
         });
 
-        actResGallery = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-            Intent data = result.getData();
-            if (result.getResultCode() == RESULT_OK && data != null) {
+        actResPhotoPicker = registerForActivityResult(new ActivityResultContracts.PickVisualMedia(), uri -> {
+            if (uri != null) {
                 try {
-                    Uri sourceUri = data.getData();
                     File file = Utils.createTempFileInAppPackage(mContext);
-                    openCropActivity(sourceUri, Uri.fromFile(file));
+                    openCropActivity(uri, Uri.fromFile(file));
                 } catch (Exception e) {
-                    Log.e(TAG, "actResGallery:" + e.getMessage());
+                    Log.e(TAG, "actResPhotoPicker:" + e.getMessage());
                 }
             }
         });
@@ -264,7 +262,12 @@ public class FeedbackActivity extends AppCompatActivity {
             window.setAttributes(lp);
         }
         d.findViewById(R.id.linCamera).setOnClickListener(view -> { d.dismiss(); permissionUtils.checkCameraPermission(); });
-        d.findViewById(R.id.linGallery).setOnClickListener(view -> { d.dismiss(); permissionUtils.checkStoragePermission(); });
+        d.findViewById(R.id.linGallery).setOnClickListener(view -> {
+            d.dismiss();
+            actResPhotoPicker.launch(new PickVisualMediaRequest.Builder()
+                    .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
+                    .build());
+        });
         d.show();
     }
 

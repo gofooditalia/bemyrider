@@ -29,6 +29,7 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -109,7 +110,7 @@ public class AddNewService_Activity extends AppCompatActivity implements GridVie
             deleteMediaAsync;
 
     private ActivityResultLauncher<Uri> actResCamera;
-    private ActivityResultLauncher<Intent> actResGallery;
+    private ActivityResultLauncher<PickVisualMediaRequest> actResPhotoPicker;
 
     private String selectedImagePath = "";
 
@@ -135,8 +136,7 @@ public class AddNewService_Activity extends AppCompatActivity implements GridVie
 
             @Override
             public void onStoragePermissionGranted() {
-                selectedImagePath = "";
-                Utils.openImagesDocument(actResGallery);
+                // Not used anymore as we switched to modern photo picker
             }
         });
 
@@ -608,7 +608,9 @@ public class AddNewService_Activity extends AppCompatActivity implements GridVie
 
         linGallery.setOnClickListener(view -> {
             d.dismiss();
-            permissionUtils.checkStoragePermission();
+            actResPhotoPicker.launch(new PickVisualMediaRequest.Builder()
+                    .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
+                    .build());
         });
         d.show();
     }
@@ -816,27 +818,24 @@ public class AddNewService_Activity extends AppCompatActivity implements GridVie
             }
         });
 
-        actResGallery = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(), result -> {
-                    Intent data = result.getData();
-                    try {
-                        if (result.getResultCode() == AppCompatActivity.RESULT_OK && data != null) {
-                            Uri imageUri = data.getData();
-                            FileUtilPOJO fileUtils = FileUtils.getPath(mContext, imageUri);
-                            if (fileUtils.isRequiredDownload()) {
-                                String[] strArr = fileUtils.getPath().split(",");
-                                new DownloadAsync(AddNewService_Activity.this, Uri.parse(strArr[2]),
-                                        strArr[0], strArr[1], downloadResult ->
-                                        addPhotoToList(compressImage(downloadResult))
-                                ).execute();
-                            } else {
-                                addPhotoToList(compressImage(fileUtils.getPath()));
-                            }
-                        }
-                    } catch (Exception e) {
-                        Log.e(TAG, "onActivityResult: " + e.getMessage());
+        actResPhotoPicker = registerForActivityResult(new ActivityResultContracts.PickVisualMedia(), uri -> {
+            if (uri != null) {
+                try {
+                    FileUtilPOJO fileUtils = FileUtils.getPath(mContext, uri);
+                    if (fileUtils.isRequiredDownload()) {
+                        String[] strArr = fileUtils.getPath().split(",");
+                        new DownloadAsync(AddNewService_Activity.this, Uri.parse(strArr[2]),
+                                strArr[0], strArr[1], downloadResult ->
+                                addPhotoToList(compressImage(downloadResult))
+                        ).execute();
+                    } else {
+                        addPhotoToList(compressImage(fileUtils.getPath()));
                     }
-                });
+                } catch (Exception e) {
+                    Log.e(TAG, "onActivityResult: " + e.getMessage());
+                }
+            }
+        });
     }
 
     @Override
