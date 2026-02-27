@@ -23,6 +23,7 @@ import com.app.bemyrider.WebServices.WebServiceUrl;
 import com.app.bemyrider.databinding.ActivityNotificationBinding;
 import com.app.bemyrider.model.CommonPojo;
 import com.app.bemyrider.model.NotificationListPojo;
+import com.app.bemyrider.model.NotificationListPojoItem;
 import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.LocaleManager;
 import com.app.bemyrider.utils.Log;
@@ -34,11 +35,13 @@ import java.util.LinkedHashMap;
 
 /**
  * Modified by Hardik Talaviya on 7/12/19.
+ * Modernized and fixed by Gemini on 2024.
  */
 
 
 public class NotificationActivity extends AppCompatActivity {
 
+    private static final String TAG = "NotificationActivity";
     private ActivityNotificationBinding binding;
     private ArrayList<String> checked;
     private ArrayList<String> all;
@@ -56,7 +59,7 @@ public class NotificationActivity extends AppCompatActivity {
 
         serviceCallGetNotification();
 
-        binding.btnSaveChange.setOnClickListener(v -> serviceCallUpdateSetting());
+        binding.btnSaveChange.setOnClickListener(v -> serviceCallUpdateSetting(true));
     }
 
     private void initViews() {
@@ -79,12 +82,13 @@ public class NotificationActivity extends AppCompatActivity {
 
     }
 
-    private void serviceCallUpdateSetting() {
-        binding.btnSaveChange.setClickable(false);
-        binding.pgSaveChanges.setVisibility(View.VISIBLE);
+    private void serviceCallUpdateSetting(boolean showToast) {
+        if (showToast) {
+            binding.btnSaveChange.setClickable(false);
+            binding.pgSaveChanges.setVisibility(View.VISIBLE);
+        }
 
         LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-
         textParams.put("user_id", PrefsUtil.with(NotificationActivity.this).readString("UserId"));
 
         for (int i = 0; i < final_size; i++) {
@@ -106,14 +110,23 @@ public class NotificationActivity extends AppCompatActivity {
                 new WebServiceCall.OnResultListener() {
                     @Override
                     public void onResult(boolean status, Object obj) {
-                        binding.pgSaveChanges.setVisibility(View.GONE);
-                        binding.btnSaveChange.setClickable(true);
+                        if (showToast) {
+                            binding.pgSaveChanges.setVisibility(View.GONE);
+                            binding.btnSaveChange.setClickable(true);
+                        }
+                        
                         if (status) {
-                            Toast.makeText(NotificationActivity.this,
-                                    ((CommonPojo) obj).getMessage(), Toast.LENGTH_SHORT).show();
+                            if (showToast) {
+                                Toast.makeText(NotificationActivity.this,
+                                        ((CommonPojo) obj).getMessage(), Toast.LENGTH_SHORT).show();
+                            }
+                            // Segna come configurate con successo
+                            PrefsUtil.with(context).write("isNotificationConfigured_" + PrefsUtil.with(context).readString("UserId"), true);
                         } else {
-                            Toast.makeText(NotificationActivity.this,
-                                    (String) obj, Toast.LENGTH_SHORT).show();
+                            if (showToast) {
+                                Toast.makeText(NotificationActivity.this,
+                                        (String) obj, Toast.LENGTH_SHORT).show();
+                            }
                         }
                     }
 
@@ -134,8 +147,8 @@ public class NotificationActivity extends AppCompatActivity {
         binding.progress.setVisibility(View.VISIBLE);
 
         LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-
-        textParams.put("user_id", PrefsUtil.with(NotificationActivity.this).readString("UserId"));
+        String userId = PrefsUtil.with(NotificationActivity.this).readString("UserId");
+        textParams.put("user_id", userId);
 
         new WebServiceCall(NotificationActivity.this, WebServiceUrl.URL_GET_NOTIFICATION,
                 textParams, NotificationListPojo.class, false, new WebServiceCall.OnResultListener() {
@@ -145,9 +158,21 @@ public class NotificationActivity extends AppCompatActivity {
                 binding.llMain.setVisibility(View.VISIBLE);
                 if (status) {
                     NotificationListPojo notificationListPojo = (NotificationListPojo) obj;
+                    if (notificationListPojo.getData() == null) return;
+                    
                     final_size = notificationListPojo.getData().size();
+                    
+                    // Verifica se le notifiche sono mai state configurate per questo utente
+                    String prefKey = "isNotificationConfigured_" + userId;
+                    boolean isAlreadyConfigured = PrefsUtil.with(context).readBoolean(prefKey);
+                    
+                    boolean shouldAutoEnable = !isAlreadyConfigured;
+                    if (shouldAutoEnable) {
+                        Log.d(TAG, "First time notification access for user " + userId + ". Auto-enabling all.");
+                    }
 
                     for (int i = 0; i < notificationListPojo.getData().size(); i++) {
+                        NotificationListPojoItem item = notificationListPojo.getData().get(i);
 
                         LinearLayout layoutMain = new LinearLayout(NotificationActivity.this);
                         layoutMain.setOrientation(LinearLayout.VERTICAL);
@@ -158,32 +183,35 @@ public class NotificationActivity extends AppCompatActivity {
                         param.setMargins(50, 0, 25, 50);
 
                         TextView textView = new TextView(NotificationActivity.this);
-                        textView.setText(notificationListPojo.getData().get(i).getTitle());
+                        textView.setText(item.getTitle());
                         textView.setTextColor(ContextCompat.getColor(context, R.color.text_light));
                         textView.setTextAppearance(NotificationActivity.this, R.style.font_regular);
                         textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
                         textView.setLayoutParams(param);
 
                         final SwitchCompat aSwitch = new SwitchCompat(NotificationActivity.this);
-                        aSwitch.setId(Integer.parseInt(notificationListPojo.getData().get(i).getId()));
+                        aSwitch.setId(Integer.parseInt(item.getId()));
                         aSwitch.setThumbDrawable(ContextCompat.getDrawable(context,R.drawable.custom_thumb));
                         aSwitch.setTrackDrawable(null);
                         all.add(String.valueOf(aSwitch.getId()));
 
                         aSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                            String switchId = String.valueOf(aSwitch.getId());
                             if (isChecked) {
-                                checked.add(String.valueOf(aSwitch.getId()));
-                            } else {
-                                try {
-                                    checked.remove(String.valueOf(aSwitch.getId()));
-                                } catch (Exception e) {
-                                    e.printStackTrace();
+                                if (!checked.contains(switchId)) {
+                                    checked.add(switchId);
                                 }
+                            } else {
+                                checked.remove(switchId);
                             }
                         });
 
-                        if (notificationListPojo.getData().get(i).getChecked().equals("true")) {
+                        // Logica di attivazione di default
+                        if (item.getChecked().equals("true") || shouldAutoEnable) {
                             aSwitch.setChecked(true);
+                            if (!checked.contains(item.getId())) {
+                                checked.add(item.getId());
+                            }
                         } else {
                             aSwitch.setChecked(false);
                         }
@@ -204,6 +232,12 @@ public class NotificationActivity extends AppCompatActivity {
 
                         binding.layoutNotification.addView(layoutMain);
                     }
+                    
+                    // Se abbiamo auto-abilitato, eseguiamo un salvataggio silenzioso sul server
+                    if (shouldAutoEnable) {
+                        serviceCallUpdateSetting(false);
+                    }
+
                 } else {
                     Toast.makeText(context, obj.toString(), Toast.LENGTH_SHORT).show();
                 }

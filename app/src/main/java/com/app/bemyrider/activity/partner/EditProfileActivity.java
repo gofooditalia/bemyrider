@@ -101,9 +101,9 @@ public class EditProfileActivity extends AppCompatActivity {
     private String strendtime = "";
     private String countrycode = "";
     private String strselectedCountryCodeId = "";
-    private String smallDelivery = "";
-    private String mediumDelivery = "";
-    private String largeDelivery = "";
+    private String smallDelivery = "n";
+    private String mediumDelivery = "n";
+    private String largeDelivery = "n";
 
     private LatLng selectedLatLng = new LatLng(0.0, 0.0);
     private String selectedImagePath = "";
@@ -138,7 +138,6 @@ public class EditProfileActivity extends AppCompatActivity {
 
             @Override
             public void onStoragePermissionGranted() {
-                // Not needed with Photo Picker
             }
         });
 
@@ -160,10 +159,12 @@ public class EditProfileActivity extends AppCompatActivity {
                 finish();
                 return;
             }
+            // For new users, we might not have these yet
         }
 
         initView();
         fillData();
+        setupDaysListeners(); // Set up listeners before checking the boxes
         setAvailableDays();
         initActivityResult();
 
@@ -212,8 +213,6 @@ public class EditProfileActivity extends AppCompatActivity {
             TimePickerDialog timePickerDialog = new TimePickerDialog(mContext, (view, hourOfDay, minute) -> {
                 mCalendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
                 mCalendar.set(Calendar.MINUTE, minute);
-                mCalendar.set(Calendar.SECOND, 0);
-                mCalendar.set(Calendar.MILLISECOND, 0);
                 Format formatter = new SimpleDateFormat("HH:mm", Locale.US);
                 binding.etEditStartTime.setText(formatter.format(mCalendar.getTime()));
                 strstarttime = formatter.format(mCalendar.getTime());
@@ -228,8 +227,6 @@ public class EditProfileActivity extends AppCompatActivity {
             TimePickerDialog timePickerDialog = new TimePickerDialog(mContext, (view, hourOfDay, minute) -> {
                 mCalendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
                 mCalendar.set(Calendar.MINUTE, minute);
-                mCalendar.set(Calendar.SECOND, 0);
-                mCalendar.set(Calendar.MILLISECOND, 0);
                 Format formatter = new SimpleDateFormat("HH:mm", Locale.US);
                 binding.etEditEndTime.setText(formatter.format(mCalendar.getTime()));
                 strendtime = formatter.format(mCalendar.getTime());
@@ -240,6 +237,16 @@ public class EditProfileActivity extends AppCompatActivity {
 
         setEditTextListener();
 
+        binding.btnUpdateProfile.setOnClickListener(v -> {
+            if (checkValidation()) {
+                callService();
+            }
+        });
+
+        binding.edtDateOfBirth.setOnClickListener(v -> showDatePicker());
+    }
+
+    private void setupDaysListeners() {
         binding.switchSunday.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) { if (!switches.contains(SUN)) switches.add(SUN); }
             else { switches.remove(SUN); }
@@ -274,15 +281,6 @@ public class EditProfileActivity extends AppCompatActivity {
             if (isChecked) { if (!switches.contains(SAT)) switches.add(SAT); }
             else { switches.remove(SAT); }
         });
-
-        binding.btnUpdateProfile.setOnClickListener(v -> {
-            if (checkValidation()) {
-                callService();
-            }
-        });
-
-        binding.edtDateOfBirth.setOnClickListener(v -> showDatePicker());
-
     }
 
     private void showDatePicker() {
@@ -298,25 +296,58 @@ public class EditProfileActivity extends AppCompatActivity {
         dpd.show(getSupportFragmentManager(), "DatePickerDialog");
     }
 
-
     private void setAvailableDays() {
-        String strprofileavldays = PrefsUtil.with(mContext).readString("userAvalDay");
-        if (strprofileavldays.contains("0")) { binding.switchSunday.setChecked(true); switches.add(SUN); }
-        if (strprofileavldays.contains("1")) { binding.switchMonday.setChecked(true); switches.add(MON); }
-        if (strprofileavldays.contains("2")) { binding.switchTuesday.setChecked(true); switches.add(TUE); }
-        if (strprofileavldays.contains("3")) { binding.switchWednwsday.setChecked(true); switches.add(WED); }
-        if (strprofileavldays.contains("4")) { binding.switchThursday.setChecked(true); switches.add(THU); }
-        if (strprofileavldays.contains("5")) { binding.switchFriday.setChecked(true); switches.add(FRI); }
-        if (strprofileavldays.contains("6")) { binding.switchSaturday.setChecked(true); switches.add(SAT); }
+        String strprofileavldays = "";
+        if (isFromEdit && profilePojoData != null) {
+            strprofileavldays = profilePojoData.getAvailableDays();
+        } 
+        
+        if (TextUtils.isEmpty(strprofileavldays)) {
+            strprofileavldays = PrefsUtil.with(mContext).readString("userAvalDay");
+        }
 
-        binding.switchSmall.setChecked(smallDelivery.equalsIgnoreCase("y"));
-        binding.switchMedium.setChecked(mediumDelivery.equalsIgnoreCase("y"));
-        binding.switchLarge.setChecked(largeDelivery.equalsIgnoreCase("y"));
+        if (strprofileavldays == null) strprofileavldays = "";
+        
+        Log.d(TAG, "setAvailableDays raw data: " + strprofileavldays);
+
+        // Reset list before applying UI states to avoid duplicates
+        switches.clear();
+
+        // setChecked(true) will trigger the listeners set in setupDaysListeners()
+        // which will correctly populate the 'switches' list.
+        binding.switchSunday.setChecked(strprofileavldays.contains("0"));
+        binding.switchMonday.setChecked(strprofileavldays.contains("1"));
+        binding.switchTuesday.setChecked(strprofileavldays.contains("2"));
+        binding.switchWednwsday.setChecked(strprofileavldays.contains("3"));
+        binding.switchThursday.setChecked(strprofileavldays.contains("4"));
+        binding.switchFriday.setChecked(strprofileavldays.contains("5"));
+        binding.switchSaturday.setChecked(strprofileavldays.contains("6"));
+
+        // Force sync list from UI state in case some triggers were missed
+        updateSwitchesListFromUI();
+
+        binding.switchSmall.setChecked(smallDelivery != null && smallDelivery.equalsIgnoreCase("y"));
+        binding.switchMedium.setChecked(mediumDelivery != null && mediumDelivery.equalsIgnoreCase("y"));
+        binding.switchLarge.setChecked(largeDelivery != null && largeDelivery.equalsIgnoreCase("y"));
+    }
+
+    private void updateSwitchesListFromUI() {
+        switches.clear();
+        if (binding.switchSunday.isChecked()) switches.add(SUN);
+        if (binding.switchMonday.isChecked()) switches.add(MON);
+        if (binding.switchTuesday.isChecked()) switches.add(TUE);
+        if (binding.switchWednwsday.isChecked()) switches.add(WED);
+        if (binding.switchThursday.isChecked()) switches.add(THU);
+        if (binding.switchFriday.isChecked()) switches.add(FRI);
+        if (binding.switchSaturday.isChecked()) switches.add(SAT);
     }
 
     private void callService() {
         binding.progressUpdateProfile.setVisibility(View.VISIBLE);
         binding.btnUpdateProfile.setClickable(false);
+
+        // Final sync of working days before sending
+        updateSwitchesListFromUI();
 
         LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
         LinkedHashMap<String, File> fileParams = new LinkedHashMap<>();
@@ -367,8 +398,8 @@ public class EditProfileActivity extends AppCompatActivity {
                     PrefsUtil.with(mActivity).write("login_cust_address", String.valueOf(binding.etEditAddress.getText()).trim());
                     
                     if (pojo.getData() != null) {
-                        // FIX: Added null check for pojo.getData() to prevent NPE
                         PrefsUtil.with(mActivity).write("UserImg", pojo.getData().getProfileImg());
+                        PrefsUtil.with(mContext).write("userAvalDay", pojo.getData().getAvailableDays());
                     }
 
                     if (isFromEdit) {
@@ -405,7 +436,6 @@ public class EditProfileActivity extends AppCompatActivity {
                     countrycodeAdapter.notifyDataSetChanged();
                     
                     String editExtra = getIntent().getStringExtra("Edit");
-                    // FIX: Replaced complex null/equals check with simple, robust check
                     if ("true".equals(editExtra)) {
                         for (int i = 0; i < countrycodeArrayList.size(); i++) {
                             if (countrycodeArrayList.get(i).getId().equals(PrefsUtil.with(mContext).readString("countrycodeid"))) {
@@ -453,23 +483,23 @@ public class EditProfileActivity extends AppCompatActivity {
             return false;
         } else if (TextUtils.isEmpty(String.valueOf(binding.edtCityOfBirth.getText()).trim())) {
             binding.tilCityOfBirth.setError(getString(R.string.error_required));
-            binding.tilCityOfBirth.requestFocus();
+            binding.edtCityOfBirth.requestFocus();
             return false;
         } else if (TextUtils.isEmpty(String.valueOf(binding.edtDateOfBirth.getText()).trim())) {
             binding.tilDataOfBirth.setError(getString(R.string.error_required));
-            binding.tilDataOfBirth.requestFocus();
+            binding.edtDateOfBirth.requestFocus();
             return false;
         } else if (TextUtils.isEmpty(String.valueOf(binding.edtCityOfResidence.getText()).trim())) {
             binding.tilCityOfResidence.setError(getString(R.string.error_required));
-            binding.tilCityOfResidence.requestFocus();
+            binding.edtCityOfResidence.requestFocus();
             return false;
         } else if (TextUtils.isEmpty(String.valueOf(binding.edtResidentialAddress.getText()).trim())) {
             binding.tilResidentialAddress.setError(getString(R.string.error_required));
-            binding.tilResidentialAddress.requestFocus();
+            binding.edtResidentialAddress.requestFocus();
             return false;
         } else if (TextUtils.isEmpty(String.valueOf(binding.edtTaxIdCode.getText()).trim())) {
             binding.tilTaxIdCode.setError(getResources().getString(R.string.err_msg_tax_id_code));
-            binding.tilTaxIdCode.requestFocus();
+            binding.edtTaxIdCode.requestFocus();
             return false;
         } else if (String.valueOf(binding.etEditAddress.getText()).trim().isEmpty() || String.valueOf(binding.etEditAddress.getText()).equalsIgnoreCase("n/a")) {
             binding.tillEditAddress.setError(getString(R.string.error_required));
@@ -594,7 +624,6 @@ public class EditProfileActivity extends AppCompatActivity {
                     Uri destinationUri = Uri.fromFile(file);
                     openCropActivity(uri, destinationUri);
                 } catch (Exception e) {
-                    // Log rimosso
                 }
             }
         });
@@ -727,7 +756,9 @@ public class EditProfileActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         isDestroyed = true;
-        try { connectionManager.unregisterReceiver(); } catch (Exception e) { Log.e(TAG, "Error unregistering receiver: " + e.getMessage()); }
+        if (connectionManager != null) {
+            try { connectionManager.unregisterReceiver(); } catch (Exception e) { Log.e(TAG, "Error unregistering receiver: " + e.getMessage()); }
+        }
         Utils.cancelAsyncTask(editProfileAsync);
         Utils.cancelAsyncTask(countryCodeAsync);
         editProfileAsync = null;

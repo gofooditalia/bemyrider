@@ -36,6 +36,7 @@ import com.app.bemyrider.model.partner.CountryCodePojoItem;
 import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.LocaleManager;
 import com.app.bemyrider.utils.PrefsUtil;
+import com.app.bemyrider.utils.SecurePrefsUtil;
 import com.app.bemyrider.utils.Utils;
 import com.app.bemyrider.viewmodel.AppSignupViewModel;
 
@@ -59,6 +60,7 @@ public class SignupActivity extends AppCompatActivity {
     private AppSignupViewModel viewModel;
     private boolean doubleBackToExitPressedOnce = false;
     private final Context mContext = SignupActivity.this;
+    private SecurePrefsUtil securePrefs;
 
 
     @Override
@@ -70,6 +72,7 @@ public class SignupActivity extends AppCompatActivity {
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 
         viewModel = new ViewModelProvider(this).get(AppSignupViewModel.class);
+        securePrefs = SecurePrefsUtil.with(mContext);
         
         initView();
 
@@ -191,8 +194,8 @@ public class SignupActivity extends AppCompatActivity {
                 performEmailSignup();
             }
 
-            PrefsUtil.with(mContext).write("countrycode", selectedCountryCode);
-            PrefsUtil.with(mContext).write("countrycodeid", selectedCountryCodePosition);
+            securePrefs.write("countrycode", selectedCountryCode);
+            securePrefs.write("countrycodeid", selectedCountryCodePosition);
         });
 
         // Pulsante Annulla
@@ -214,9 +217,9 @@ public class SignupActivity extends AppCompatActivity {
         String contactNumber = binding.etSignupContactno.getText().toString().trim();
         String password = binding.etSignupPassword.getText().toString().trim();
         String rePassword = binding.etSignupConfirmpassword.getText().toString().trim();
-        String deviceToken = PrefsUtil.with(SignupActivity.this).readString("device_token");
+        String deviceToken = securePrefs.readString("device_token");
 
-        // Updated to expect RegistrationPojo from ViewModel
+        // Updated to expect NewLoginPojo from ViewModel (variable name kept for compatibility)
         viewModel.signup(firstName, lastName, email, strUserType, contactNumber, password, rePassword, selectedCountryCodePosition, deviceToken)
             .observe(this, registrationPojo -> {
                 binding.progressSignUp.setVisibility(View.GONE);
@@ -251,7 +254,7 @@ public class SignupActivity extends AppCompatActivity {
         String email = getIntent().getStringExtra("Email");
         String loginType = getIntent().getStringExtra("loginType");
         String contactNumber = binding.etSignupContactno.getText().toString().trim();
-        String deviceToken = PrefsUtil.with(SignupActivity.this).readString("device_token");
+        String deviceToken = securePrefs.readString("device_token");
 
         viewModel.socialLogin(firstName, lastName, email, loginType, socialId, null, null, "", deviceToken)
             .observe(this, newLoginPojo -> {
@@ -262,21 +265,21 @@ public class SignupActivity extends AppCompatActivity {
                     NewLoginPojoItem loginData = newLoginPojo.getData();
 
                     if (loginData.getIsUserActive() != null && loginData.getIsUserActive().equalsIgnoreCase("d")) {
-                        PrefsUtil.with(SignupActivity.this).write("eMail", email);
+                        securePrefs.write("eMail", email);
                         AlertDialog.Builder builder = new AlertDialog.Builder(SignupActivity.this);
                         builder.setPositiveButton(getString(R.string.ok), (dialogInterface, i) ->
                                 startActivity(new Intent(SignupActivity.this, ContactUsActivity.class))).setMessage(newLoginPojo.getMessage()).show();
                     } else {
-                        PrefsUtil.with(SignupActivity.this).clearPrefs();
-                        PrefsUtil.with(SignupActivity.this).write("UserId", loginData.getUserId());
-                        PrefsUtil.with(SignupActivity.this).write("UserName", loginData.getUserName());
-                        PrefsUtil.with(SignupActivity.this).write("FirstName", loginData.getFirstName());
-                        PrefsUtil.with(SignupActivity.this).write("LastName", loginData.getLastName());
-                        PrefsUtil.with(SignupActivity.this).write("UserType", loginData.getUserType());
-                        PrefsUtil.with(SignupActivity.this).write("eMail", loginData.getEmailId());
-                        PrefsUtil.with(mContext).write("CurrencySign", getResources().getString(R.string.currency));
-                        PrefsUtil.with(mContext).write("UserImg", loginData.getProfileImg());
-                        PrefsUtil.with(mContext).write("login_cust_address", loginData.getAddress());
+                        securePrefs.clearPrefs();
+                        securePrefs.write("UserId", loginData.getUserId());
+                        securePrefs.write("UserName", loginData.getUserName());
+                        securePrefs.write("FirstName", loginData.getFirstName());
+                        securePrefs.write("LastName", loginData.getLastName());
+                        securePrefs.write("UserType", loginData.getUserType());
+                        securePrefs.write("eMail", loginData.getEmailId());
+                        securePrefs.write("CurrencySign", getResources().getString(R.string.currency));
+                        securePrefs.write("UserImg", loginData.getProfileImg());
+                        securePrefs.write("login_cust_address", loginData.getAddress());
 
                         if (loginData.getUserType().equalsIgnoreCase("c")) {
                             startActivity(new Intent(SignupActivity.this, CustomerHomeActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));

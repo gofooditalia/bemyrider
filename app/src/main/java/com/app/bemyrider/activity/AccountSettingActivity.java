@@ -40,6 +40,7 @@ import java.util.ArrayList;
 
 public class AccountSettingActivity extends AppCompatActivity {
 
+    private static final String TAG = "AccountSettingActivity";
     private ActivityAccountSettingBinding binding;
     private AppAccountSettingViewModel viewModel;
     private ArrayAdapter<LanguagePojoItem> lanadapter;
@@ -188,26 +189,33 @@ public class AccountSettingActivity extends AppCompatActivity {
     private void performChangePassword() {
         binding.pgSaveChange.setVisibility(View.VISIBLE);
 
+        String userId = SecurePrefsUtil.with(AccountSettingActivity.this).readString("UserId");
+        if (userId.isEmpty()) {
+            userId = PrefsUtil.with(AccountSettingActivity.this).readString("UserId");
+        }
+
         String currentPwd = binding.etCurrentPass.getText().toString().trim();
         String newPwd = binding.etNewPass.getText().toString().trim();
         String reNewPwd = binding.etCnewPass.getText().toString().trim();
-        String userId = SecurePrefsUtil.with(AccountSettingActivity.this).readString("UserId");
+
+        Log.d(TAG, "performChangePassword: userId=" + userId);
 
         viewModel.changePassword(currentPwd, newPwd, reNewPwd, userId).observe(this, commonPojo -> {
             binding.pgSaveChange.setVisibility(View.GONE);
             binding.btnSaveChange.setClickable(true);
 
             if (commonPojo != null) {
+                Log.d(TAG, "changePassword result: status=" + commonPojo.isStatus() + ", message=" + commonPojo.getMessage());
                 if (commonPojo.isStatus()) {
                     Toast.makeText(AccountSettingActivity.this, commonPojo.getMessage(), Toast.LENGTH_SHORT).show();
                     
                     SecurePrefsUtil.with(AccountSettingActivity.this).write("Pass", newPwd);
-                    PrefsUtil.with(AccountSettingActivity.this).write("Pass", newPwd);
                     finish();
                 } else {
                     Toast.makeText(AccountSettingActivity.this, commonPojo.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             } else {
+                Log.e(TAG, "changePassword result is null");
                 Toast.makeText(AccountSettingActivity.this, getString(R.string.server_error), Toast.LENGTH_SHORT).show();
             }
         });
@@ -217,16 +225,32 @@ public class AccountSettingActivity extends AppCompatActivity {
         binding.pgDeActiveAccount.setVisibility(View.VISIBLE);
 
         String userId = SecurePrefsUtil.with(AccountSettingActivity.this).readString("UserId");
+        if (userId.isEmpty()) {
+            userId = PrefsUtil.with(AccountSettingActivity.this).readString("UserId");
+        }
+
         String userType = SecurePrefsUtil.with(AccountSettingActivity.this).readString("UserType");
+        if (userType.isEmpty()) {
+            userType = PrefsUtil.with(AccountSettingActivity.this).readString("UserType");
+        }
+
+        Log.d(TAG, "performDeactivateAccount: userId=" + userId + ", userType=" + userType);
+
+        if (userId.isEmpty()) {
+            binding.pgDeActiveAccount.setVisibility(View.GONE);
+            binding.btnDeactivateAccount.setClickable(true);
+            Toast.makeText(AccountSettingActivity.this, "Errore: ID utente non trovato. Effettua nuovamente il login.", Toast.LENGTH_LONG).show();
+            return;
+        }
 
         viewModel.deactivateAccount(userId, userType).observe(this, commonPojo -> {
             binding.pgDeActiveAccount.setVisibility(View.GONE);
             binding.btnDeactivateAccount.setClickable(true);
 
             if (commonPojo != null) {
+                Log.d(TAG, "deactivateAccount result: status=" + commonPojo.isStatus() + ", message=" + commonPojo.getMessage());
                 if (commonPojo.isStatus()) {
                     SecurePrefsUtil.with(AccountSettingActivity.this).clearPrefs();
-                    PrefsUtil.with(AccountSettingActivity.this).clearPrefs();
                     finish();
                     Intent i = new Intent(AccountSettingActivity.this, LoginActivity.class);
                     i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -235,6 +259,7 @@ public class AccountSettingActivity extends AppCompatActivity {
                     Toast.makeText(AccountSettingActivity.this, commonPojo.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             } else {
+                Log.e(TAG, "deactivateAccount result is null");
                 Toast.makeText(AccountSettingActivity.this, getString(R.string.server_error), Toast.LENGTH_SHORT).show();
             }
         });

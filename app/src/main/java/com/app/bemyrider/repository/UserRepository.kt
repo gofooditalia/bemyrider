@@ -1,5 +1,6 @@
 package com.app.bemyrider.repository
 
+import android.util.Log
 import com.app.bemyrider.model.CheckStripeConnectedPojo
 import com.app.bemyrider.model.CommonPojo
 import com.app.bemyrider.model.LanguagePojo
@@ -24,6 +25,7 @@ import java.util.Locale
 
 class AppRepository {
 
+    private val TAG = "AppRepository"
     private val apiService: ApiServiceKt = RetrofitClient.getClient().create(ApiServiceKt::class.java)
     private val gson: Gson = GsonBuilder().setDateFormat("M/d/yy hh:mm a").create()
 
@@ -79,12 +81,14 @@ class AppRepository {
         return parseGenericResponse(response, ProfilePojo::class.java)
     }
     
-    suspend fun changePassword(currentPwd: String, newPwd: String, reNewPwd: String, userId: String): Response<CommonPojo> {
-        return apiService.changePassword(currentPwd, newPwd, reNewPwd, userId)
+    suspend fun changePassword(currentPwd: String, newPwd: String, reNewPwd: String, userId: String): CommonPojo {
+        val response = apiService.changePassword(currentPwd, newPwd, reNewPwd, userId)
+        return parseGenericResponse(response, CommonPojo::class.java)
     }
 
-    suspend fun deactivateAccount(userId: String, userType: String): Response<CommonPojo> {
-        return apiService.deactivateAccount(userId, userType)
+    suspend fun deactivateAccount(userId: String, userType: String): CommonPojo {
+        val response = apiService.deactivateAccount(userId, userType)
+        return parseGenericResponse(response, CommonPojo::class.java)
     }
 
     suspend fun login(email: String, password: String, deviceToken: String): NewLoginPojo {
@@ -125,27 +129,32 @@ class AppRepository {
     // --- Helpers per il parsing (Porting dal Java) ---
 
     private fun <T : Any> parseGenericResponse(response: Response<ResponseBody>, type: Class<T>): T {
-        // Correzione per l'API deprecata newInstance()
         val result = type.getDeclaredConstructor().newInstance()
         
         try {
             if (response.isSuccessful && response.body() != null) {
                 val rawJson = response.body()!!.string()
+                Log.d(TAG, "Raw Response for ${type.simpleName}: $rawJson")
                 try {
                     val parsed = gson.fromJson(rawJson, type)
                     return parsed ?: result
                 } catch (e: JsonSyntaxException) {
+                    Log.e(TAG, "JSON Syntax Error: ${e.message}")
                     setPojoStatus(result, false)
                     setPojoMessage(result, extractErrorMessage(rawJson))
                 }
             } else {
+                val errorBody = response.errorBody()?.string() ?: "Empty error body"
+                Log.e(TAG, "Server Error: ${response.code()} - $errorBody")
                 setPojoStatus(result, false)
                 setPojoMessage(result, "Errore del server: ${response.code()}")
             }
         } catch (e: IOException) {
+            Log.e(TAG, "Network Error: ${e.message}")
             setPojoStatus(result, false)
             setPojoMessage(result, "Errore di rete.")
         } catch (e: Exception) {
+            Log.e(TAG, "Unknown Error: ${e.message}")
             setPojoStatus(result, false)
             setPojoMessage(result, "Errore sconosciuto: ${e.message}")
         }

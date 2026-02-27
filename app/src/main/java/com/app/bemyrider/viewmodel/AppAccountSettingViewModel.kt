@@ -28,14 +28,7 @@ class AppAccountSettingViewModel : ViewModel() {
     fun changePassword(currentPwd: String, newPwd: String, reNewPwd: String, userId: String): LiveData<CommonPojo> = liveData(Dispatchers.IO) {
         try {
             val response = appRepository.changePassword(currentPwd, newPwd, reNewPwd, userId)
-            if (response.isSuccessful && response.body() != null) {
-                emit(response.body()!!)
-            } else {
-                val error = CommonPojo()
-                error.setStatus(false)
-                error.setMessage("Errore server: ${response.code()}")
-                emit(error)
-            }
+            emit(response)
         } catch (e: Exception) {
             val error = CommonPojo()
             error.setStatus(false)
@@ -47,14 +40,7 @@ class AppAccountSettingViewModel : ViewModel() {
     fun deactivateAccount(userId: String, userType: String): LiveData<CommonPojo> = liveData(Dispatchers.IO) {
         try {
             val response = appRepository.deactivateAccount(userId, userType)
-            if (response.isSuccessful && response.body() != null) {
-                emit(response.body()!!)
-            } else {
-                val error = CommonPojo()
-                error.setStatus(false)
-                error.setMessage("Errore server: ${response.code()}")
-                emit(error)
-            }
+            emit(response)
         } catch (e: Exception) {
             val error = CommonPojo()
             error.setStatus(false)

@@ -31,6 +31,7 @@ import com.app.bemyrider.model.NewLoginPojoItem;
 import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.LocaleManager;
 import com.app.bemyrider.utils.PrefsUtil;
+import com.app.bemyrider.utils.SecurePrefsUtil;
 import com.app.bemyrider.utils.Utils;
 import com.app.bemyrider.viewmodel.AppLoginViewModel;
 import com.google.android.material.textfield.TextInputLayout;
@@ -43,6 +44,7 @@ public class LoginActivity extends AppCompatActivity {
     private Activity activity = LoginActivity.this;
     private ConnectionManager connectionManager;
     private AppLoginViewModel viewModel;
+    private SecurePrefsUtil securePrefs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,15 +55,16 @@ public class LoginActivity extends AppCompatActivity {
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 
         viewModel = new ViewModelProvider(this).get(AppLoginViewModel.class);
+        securePrefs = SecurePrefsUtil.with(context);
 
-        if (PrefsUtil.with(activity).readString("UserId") != null && PrefsUtil.with(activity).readString("UserId").length() > 0) {
-            boolean isProfileCompleted = PrefsUtil.with(context).readBoolean("isProfileCompleted");
-            if (PrefsUtil.with(activity).readString("UserType").equalsIgnoreCase("c") && isProfileCompleted) {
+        if (securePrefs.readString("UserId") != null && securePrefs.readString("UserId").length() > 0) {
+            boolean isProfileCompleted = securePrefs.readBoolean("isProfileCompleted");
+            if (securePrefs.readString("UserType").equalsIgnoreCase("c") && isProfileCompleted) {
                 Intent i = new Intent(activity, CustomerHomeActivity.class);
                 i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(i);
                 finish();
-            } else if (PrefsUtil.with(activity).readString("UserType").equalsIgnoreCase("p") && isProfileCompleted) {
+            } else if (securePrefs.readString("UserType").equalsIgnoreCase("p") && isProfileCompleted) {
                 Intent i = new Intent(activity, ProviderHomeActivity.class);
                 i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(i);
@@ -220,7 +223,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void handleDeactivatedUser(String email, String message) {
-        PrefsUtil.with(activity).write("eMail", email);
+        securePrefs.write("eMail", email);
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setPositiveButton(getString(R.string.ok), (dialogInterface, i) ->
                 startActivity(new Intent(activity, ContactUsActivity.class))).setMessage(message).show();
@@ -244,7 +247,7 @@ public class LoginActivity extends AppCompatActivity {
 
         String email = binding.etLoginUsername.getText().toString().trim();
         String password = binding.etLoginPassword.getText().toString().trim();
-        String deviceToken = PrefsUtil.with(activity).readString("device_token");
+        String deviceToken = securePrefs.readString("device_token");
 
         viewModel.login(email, password, deviceToken).observe(this, newLoginPojo -> {
             binding.progressLogin.setVisibility(View.GONE);
@@ -257,19 +260,19 @@ public class LoginActivity extends AppCompatActivity {
                     handleDeactivatedUser(email, newLoginPojo.getMessage());
                 }
                 else {
-                    PrefsUtil.with(context).clearPrefs(); // manual login
-                    PrefsUtil.with(context).write("isProfileCompleted", false);
-                    PrefsUtil.with(context).write("UserId", item.getUserId());
-                    PrefsUtil.with(context).write("countrycodeid", item.getCountryCodeId());
-                    PrefsUtil.with(context).write("UserName", item.getUserName());
-                    PrefsUtil.with(context).write("FirstName", item.getFirstName());
-                    PrefsUtil.with(context).write("LastName", item.getLastName());
-                    PrefsUtil.with(context).write("UserType", item.getUserType());
-                    PrefsUtil.with(context).write("eMail", item.getEmailId());
-                    PrefsUtil.with(context).write("Pass", binding.etLoginPassword.getText().toString().trim());
-                    PrefsUtil.with(context).write("CurrencySign", getResources().getString(R.string.currency));
-                    PrefsUtil.with(context).write("UserImg", item.getProfileImg());
-                    PrefsUtil.with(activity).write("login_cust_address", item.getAddress());
+                    securePrefs.clearPrefs(); // manual login
+                    securePrefs.write("isProfileCompleted", false);
+                    securePrefs.write("UserId", item.getUserId());
+                    securePrefs.write("countrycodeid", item.getCountryCodeId());
+                    securePrefs.write("UserName", item.getUserName());
+                    securePrefs.write("FirstName", item.getFirstName());
+                    securePrefs.write("LastName", item.getLastName());
+                    securePrefs.write("UserType", item.getUserType());
+                    securePrefs.write("eMail", item.getEmailId());
+                    securePrefs.write("Pass", binding.etLoginPassword.getText().toString().trim());
+                    securePrefs.write("CurrencySign", getResources().getString(R.string.currency));
+                    securePrefs.write("UserImg", item.getProfileImg());
+                    securePrefs.write("login_cust_address", item.getAddress());
 
                     if (item.getUserType().equals("c")) {
                         if (item.getFirstName().equals("") || item.getLastName().equals("") || item.getContactNumber().equals("")) {
@@ -279,7 +282,7 @@ public class LoginActivity extends AppCompatActivity {
                             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                             startActivity(intent);
                         } else {
-                            PrefsUtil.with(context).write("isProfileCompleted", true);
+                            securePrefs.write("isProfileCompleted", true);
                             startActivity(new Intent(context, CustomerHomeActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
                         }
                         finish();
@@ -292,7 +295,7 @@ public class LoginActivity extends AppCompatActivity {
                             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                             startActivity(intent);
                         } else {
-                            PrefsUtil.with(context).write("isProfileCompleted", true);
+                            securePrefs.write("isProfileCompleted", true);
                             startActivity(new Intent(context, ProviderHomeActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
                         }
                         finish();

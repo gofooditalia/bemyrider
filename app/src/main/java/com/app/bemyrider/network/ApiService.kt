@@ -67,14 +67,14 @@ interface ApiServiceKt {
             @Field("newpwd") newPwd: String,
             @Field("renewpwd") reNewPwd: String,
             @Field("user_id") userId: String
-    ): Response<CommonPojo>
+    ): Response<ResponseBody>
 
     @FormUrlEncoded
     @POST("profile/deactiveuser")
     suspend fun deactivateAccount(
             @Field("user_id") userId: String,
             @Field("user_type") userType: String
-    ): Response<CommonPojo>
+    ): Response<ResponseBody>
 
     @FormUrlEncoded
     @POST("profile/login")
