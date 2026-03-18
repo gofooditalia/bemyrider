@@ -601,4 +601,13 @@
     <string name="profile_not_loaded_share_error">Profilo non caricato, impossibile condividere.</string>
     <string name="notification_permission_title">Non perdere nessuna prenotazione!</string>
     <string name="notification_permission_message">Per assicurarti di ricevere avvisi istantanei per nuove prenotazioni e messaggi, ti preghiamo di concedere l\'autorizzazione alle notifiche nella schermata successiva.</string>
+
+    <string name="confirm_cancel_title">Conferma Annullamento</string>
+    <string name="confirm_cancel_msg">Attenzione! Stai per annullare la prenotazione. Per procedere, digita \'CANCELLA\' nel campo sottostante per confermare.</string>
+    <string name="confirm_cancel_error">La parola inserita non è corretta. Riprova.</string>
+
+    <string name="cancel_booking">Cancella prenotazione</string>
+    <string name="accept_cancel_terms">Accetto i &lt;u&gt;termini di cancellazione&lt;/u&gt;</string>
+    <string name="please_accept_terms">Per favore accetta prima i termini di cancellazione</string>
+
 </resources>

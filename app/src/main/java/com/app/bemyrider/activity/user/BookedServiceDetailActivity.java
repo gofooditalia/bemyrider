@@ -12,9 +12,11 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.RatingBar;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResult;
@@ -577,9 +579,42 @@ public class BookedServiceDetailActivity extends AppCompatActivity implements Ta
 
         binding.btnExtendPayment.setOnClickListener(view -> serviceCallExtendPayment());
         binding.btnCancel.setOnClickListener(view -> {
-            new AlertDialog.Builder(BookedServiceDetailActivity.this).setMessage(R.string.are_you_cancel)
-                    .setPositiveButton(getString(R.string.yes), (dialogInterface, i) -> serviceCallCancelService(dialogInterface))
-                    .setNegativeButton(getString(R.string.no), (dialogInterface, i) -> dialogInterface.dismiss()).show();
+            final Dialog dialog = new Dialog(BookedServiceDetailActivity.this);
+            dialog.setContentView(R.layout.dialog_cancel_booking);
+            dialog.setCancelable(false);
+            WindowManager.LayoutParams params = new WindowManager.LayoutParams();
+            if (dialog.getWindow() != null) {
+                params.copyFrom(dialog.getWindow().getAttributes());
+                params.width = WindowManager.LayoutParams.MATCH_PARENT;
+                params.height = WindowManager.LayoutParams.WRAP_CONTENT;
+                dialog.getWindow().setAttributes(params);
+            }
+            final EditText edtConfirm = dialog.findViewById(R.id.edt_confirm_cancel);
+            final CheckBox chkAccept = dialog.findViewById(R.id.chk_accept_terms);
+            final TextView txtTerms = dialog.findViewById(R.id.txt_cancel_terms);
+
+            // Corretto rendering dell'HTML nel TextView
+            txtTerms.setText(HtmlCompat.fromHtml(getString(R.string.accept_cancel_terms), HtmlCompat.FROM_HTML_MODE_LEGACY));
+
+            txtTerms.setOnClickListener(v -> {
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://bemyrider.it/app/termini-e-condizioni-bemyrider/#s4"));
+                startActivity(browserIntent);
+            });
+
+            dialog.findViewById(R.id.btn_no).setOnClickListener(v -> dialog.dismiss());
+            dialog.findViewById(R.id.btn_yes).setOnClickListener(v -> {
+                if (!chkAccept.isChecked()) {
+                    Toast.makeText(BookedServiceDetailActivity.this, R.string.please_accept_terms, Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                if (edtConfirm.getText().toString().trim().equalsIgnoreCase("CANCELLA")) {
+                    Utils.hideSoftKeyboard(BookedServiceDetailActivity.this);
+                    serviceCallCancelService(dialog);
+                } else {
+                    Toast.makeText(BookedServiceDetailActivity.this, R.string.confirm_cancel_error, Toast.LENGTH_SHORT).show();
+                }
+            });
+            dialog.show();
         });
         binding.btnDownloadInvoice.setOnClickListener(view -> serviceCallDownloadInvoice());
         binding.btnExtendService.setOnClickListener(view -> {

@@ -619,4 +619,13 @@
     <string name="share">Share</string>
     <string name="notification_permission_title">Don\'t miss a booking!</string>
     <string name="notification_permission_message">To ensure you receive instant alerts for new bookings and messages, please grant notification permission on the next screen.</string>
+
+    <string name="confirm_cancel_title">Confirm Cancellation</string>
+    <string name="confirm_cancel_msg">Attention! You are about to cancel your booking. To proceed, type \'CANCELLA\' in the field below to confirm.</string>
+    <string name="confirm_cancel_error">The word entered is incorrect. Please try again.</string>
+
+    <string name="cancel_booking">Cancel booking</string>
+    <string name="accept_cancel_terms">I accept the &lt;u&gt;cancellation terms&lt;/u&gt;</string>
+    <string name="please_accept_terms">Please accept the cancellation terms first</string>
+
 </resources>
