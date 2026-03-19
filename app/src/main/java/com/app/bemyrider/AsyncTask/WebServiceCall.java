@@ -14,6 +14,7 @@ import android.widget.ProgressBar;
 import androidx.appcompat.app.AlertDialog;
 
 import com.app.bemyrider.R;
+import com.app.bemyrider.model.CommonPojo;
 import com.app.bemyrider.utils.SecurePrefsUtil;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -297,6 +298,21 @@ public class WebServiceCall {
 
     private void handleSuccessResponse(String result) {
         try {
+            // Pulizia del risultato da eventuali spazi o apici spuri (es. server che risponde solo "s")
+            String cleanResult = result.trim().replace("\"", "");
+            if (cleanResult.equalsIgnoreCase("s")) {
+                if (model == CommonPojo.class) {
+                    CommonPojo pojo = new CommonPojo();
+                    pojo.setStatus(true);
+                    pojo.setMessage("Success");
+                    if (OnResultListener != null) OnResultListener.onResult(true, pojo);
+                    return;
+                } else if (model == String.class) {
+                    if (OnResultListener != null) OnResultListener.onResult(true, result);
+                    return;
+                }
+            }
+
             JSONObject object = new JSONObject(result);
             if (model == String.class) {
                 if (OnResultListener != null) OnResultListener.onResult(true, result);
@@ -314,7 +330,7 @@ public class WebServiceCall {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(TAG, "Parsing Error for result: " + result, e);
             if (OnResultListener != null) OnResultListener.onResult(false, "Parsing Error: " + e.getMessage());
         }
     }

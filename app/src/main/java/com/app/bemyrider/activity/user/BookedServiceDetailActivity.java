@@ -11,9 +11,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.RatingBar;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -221,13 +223,12 @@ public class BookedServiceDetailActivity extends AppCompatActivity implements Ta
         });
     }
 
-    private void serviceCallCancelService(final DialogInterface dialogInterface) {
-        binding.btnCancel.setClickable(false);
-        binding.pgCancel.setVisibility(View.VISIBLE);
-
+    private void serviceCallCancelService(final DialogInterface dialogInterface, String reason) {
         LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
         textParams.put("service_id", getIntent().getStringExtra("serviceRequestId"));
         textParams.put("user_id", PrefsUtil.with(this).readString("UserId"));
+        textParams.put("cancel_reason", reason);
+        textParams.put("user_type", "c");
 
         new WebServiceCall(this, WebServiceUrl.URL_CANCEL_SERVICE, textParams, CommonPojo.class, false,
                 new WebServiceCall.OnResultListener() {
@@ -243,6 +244,12 @@ public class BookedServiceDetailActivity extends AppCompatActivity implements Ta
                             startActivity(intent);
                             finish();
                         } else {
+                            if (dialogInterface instanceof Dialog) {
+                                Dialog d = (Dialog) dialogInterface;
+                                d.findViewById(R.id.pg_confirm).setVisibility(View.GONE);
+                                d.findViewById(R.id.btn_yes).setVisibility(View.VISIBLE);
+                                d.findViewById(R.id.btn_no).setEnabled(true);
+                            }
                             Toast.makeText(BookedServiceDetailActivity.this, (String) obj, Toast.LENGTH_SHORT).show();
                         }
                     }
@@ -592,27 +599,66 @@ public class BookedServiceDetailActivity extends AppCompatActivity implements Ta
             final EditText edtConfirm = dialog.findViewById(R.id.edt_confirm_cancel);
             final CheckBox chkAccept = dialog.findViewById(R.id.chk_accept_terms);
             final TextView txtTerms = dialog.findViewById(R.id.txt_cancel_terms);
+            final ProgressBar pgConfirm = dialog.findViewById(R.id.pg_confirm);
+            final AppCompatButton btnYes = dialog.findViewById(R.id.btn_yes);
+            final AppCompatButton btnNo = dialog.findViewById(R.id.btn_no);
+            
+            final Spinner spinnerReason = dialog.findViewById(R.id.spinner_cancel_reason);
+            final EditText edtOther = dialog.findViewById(R.id.edt_other_reason);
 
-            // Corretto rendering dell'HTML nel TextView
+            // Gestione visibilità "Altro" motivo
+            spinnerReason.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                    if (parent.getItemAtPosition(position).toString().equalsIgnoreCase("Other") || 
+                        parent.getItemAtPosition(position).toString().equalsIgnoreCase("Altro")) {
+                        edtOther.setVisibility(View.VISIBLE);
+                    } else {
+                        edtOther.setVisibility(View.GONE);
+                    }
+                }
+                @Override public void onNothingSelected(AdapterView<?> parent) {}
+            });
+
+            // Rendering HTML termini
             txtTerms.setText(HtmlCompat.fromHtml(getString(R.string.accept_cancel_terms), HtmlCompat.FROM_HTML_MODE_LEGACY));
-
             txtTerms.setOnClickListener(v -> {
                 Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://bemyrider.it/app/termini-e-condizioni-bemyrider/#s4"));
                 startActivity(browserIntent);
             });
 
-            dialog.findViewById(R.id.btn_no).setOnClickListener(v -> dialog.dismiss());
-            dialog.findViewById(R.id.btn_yes).setOnClickListener(v -> {
+            btnNo.setOnClickListener(v -> dialog.dismiss());
+            btnYes.setOnClickListener(v -> {
+                if (spinnerReason.getSelectedItemPosition() == 0) {
+                    Toast.makeText(BookedServiceDetailActivity.this, R.string.select_cancel_reason, Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                
                 if (!chkAccept.isChecked()) {
                     Toast.makeText(BookedServiceDetailActivity.this, R.string.please_accept_terms, Toast.LENGTH_SHORT).show();
                     return;
                 }
-                if (edtConfirm.getText().toString().trim().equalsIgnoreCase("CANCELLA")) {
-                    Utils.hideSoftKeyboard(BookedServiceDetailActivity.this);
-                    serviceCallCancelService(dialog);
-                } else {
+                
+                if (!edtConfirm.getText().toString().trim().equalsIgnoreCase("CANCELLA")) {
                     Toast.makeText(BookedServiceDetailActivity.this, R.string.confirm_cancel_error, Toast.LENGTH_SHORT).show();
+                    return;
                 }
+
+                String finalReason = spinnerReason.getSelectedItem().toString();
+                if (edtOther.getVisibility() == View.VISIBLE) {
+                    if (edtOther.getText().toString().trim().isEmpty()) {
+                        edtOther.setError(getString(R.string.hint_other_reason));
+                        return;
+                    }
+                    finalReason = edtOther.getText().toString().trim();
+                }
+
+                Utils.hideSoftKeyboard(BookedServiceDetailActivity.this);
+                pgConfirm.setVisibility(View.VISIBLE);
+                btnYes.setVisibility(View.INVISIBLE);
+                btnNo.setEnabled(false);
+                
+                serviceCallCancelService(dialog, finalReason);
             });
             dialog.show();
         });

@@ -20,8 +20,8 @@
     <string name="connection_time_out">La connessione è scaduta. Vuoi riprovare?</string>
     <string name="unexpected_error">Si è verificato un errore imprevisto</string>
     <string name="error">Errore!</string>
-    <string name="yes">sì</string>
-    <string name="no">No</string>
+    <string name="yes">SI</string>
+    <string name="no">NO</string>
     <string name="ok">OK</string>
     <string name="connect_account">Collegare l\'account?</string>
     <string name="loading">Caricamento in corso…</string>
@@ -95,7 +95,7 @@
     <string name="wallet_fund_deposit">Crediti da riscattare al termine dei servizi</string>
     <string name="wallet_redeem_request">Questo è il saldo che hai richiesto per il riscatto.</string>
     <string name="contact">Contatto</string>
-    <string name="time">Tempo</string>
+    <string name="time">Time</string>
     <string name="booked_time">Tempo prenotato</string>
     <string name="price">Tariffa Oraria</string>
     <string name="payment_pref">Preferenza di pagamento</string>
@@ -189,8 +189,8 @@
     <string name="enter_discription">Inserisci la descrizione*</string>
     <string name="reset">Ripristina</string>
     <string name="update">Aggiornare</string>
-    <string name="no_record_founf">Nessun record trovato</string>
-    <string name="no_service">Non avendo alcun servizio</string>
+    <string name="no_record_founf">No Record Found</string>
+    <string name="no_service">Not having any services</string>
     <string name="assigned_tasks">Compito assegnato</string>
     <string name="available_on">Disponibile su</string>
     <string name="positive_rating">Voto positivo</string>
@@ -465,7 +465,7 @@
     <string name="skip">SALTA</string>
     <string name="intro_second_page_text">Rider che cerchi, professionista che trovi</string>
     <string name="intro_third_page_text">Leggi le recensioni, confronta il servizio e scegli il rider più adatto alle tue esigenze</string>
-    <string name="intron_fourth_text">Chatta col tuo rider in tempo reale per una gestione puntuale del servizio</string>
+    <string name="intron_fourth_text">Chat col tuo rider in tempo reale per una gestione puntuale del servizio</string>
     <string name="intro_fifth_text"><![CDATA[Una giusta <b>programmazione</b> è la <b>chiave</b> per ogni <b>business</b> di <b>successo</b>]]></string>
     <string name="intro_signin"><![CDATA[<u>Iscriviti</u>]]></string>
     <!--<string name="intro_signin"><u>Registrati</u></string>-->
@@ -610,4 +610,22 @@
     <string name="accept_cancel_terms">Accetto i &lt;u&gt;termini di cancellazione&lt;/u&gt;</string>
     <string name="please_accept_terms">Per favore accetta prima i termini di cancellazione</string>
 
+    <string name="select_cancel_reason">Seleziona motivo cancellazione*</string>
+    <string name="hint_other_reason">Specifica altro motivo*</string>
+    <string-array name="cancel_reasons_customer">
+        <item>Seleziona motivo</item>
+        <item>Servizio non più necessario</item>
+        <item>Prezzo errato</item>
+        <item>Il rider ha richiesto la cancellazione</item>
+        <item>Ho trovato un altro rider</item>
+        <item>Altro</item>
+    </string-array>
+    <string-array name="cancel_reasons_provider">
+        <item>Seleziona motivo</item>
+        <item>Problemi tecnici al veicolo</item>
+        <item>Emergenza salute</item>
+        <item>Il cliente ha richiesto la cancellazione</item>
+        <item>Motivi personali</item>
+        <item>Altro</item>
+    </string-array>
 </resources>

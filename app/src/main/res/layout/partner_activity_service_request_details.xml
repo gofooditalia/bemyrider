@@ -105,8 +105,43 @@
                 layout="@layout/partner_servicerequest_detail"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_above="@+id/linBottomWrapper"
+                android:layout_above="@+id/layout_cancel"
                 android:layout_below="@+id/relDetail" />
+
+            <!-- Nuovo Layout per il pulsante Cancella prenotazione (discreto come lato cliente) -->
+            <RelativeLayout
+                android:id="@+id/layout_cancel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_above="@+id/linBottomWrapper"
+                android:layout_marginBottom="@dimen/_10sdp"
+                android:visibility="gone">
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/btn_cancel"
+                    style="@style/font_regular"
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/_30sdp"
+                    android:layout_centerHorizontal="true"
+                    android:paddingStart="@dimen/_20sdp"
+                    android:paddingEnd="@dimen/_20sdp"
+                    android:background="@drawable/button_style_filltype"
+                    android:text="@string/cancel_booking"
+                    android:textAllCaps="false"
+                    android:textColor="@color/button"
+                    android:textSize="@dimen/_11ssp" />
+
+                <ProgressBar
+                    android:id="@+id/pg_cancel_global"
+                    android:layout_width="@dimen/_24sdp"
+                    android:layout_height="@dimen/_24sdp"
+                    android:layout_centerVertical="true"
+                    android:layout_toEndOf="@+id/btn_cancel"
+                    android:layout_marginStart="@dimen/_8sdp"
+                    android:theme="@style/WhiteAccent"
+                    android:visibility="gone" />
+
+            </RelativeLayout>
 
             <!-- Nuovo Wrapper per il pulsante Modifica Richiesta -->
             <androidx.appcompat.widget.LinearLayoutCompat
@@ -180,7 +215,7 @@
                 android:orientation="horizontal">
 
                 <!-- Layout pulsante ACCETTA (per il codice Java) -->
-                <RelativeLayout
+                <androidx.appcompat.widget.LinearLayoutCompat
                     android:id="@+id/ll_btn_accept"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -214,10 +249,10 @@
                         android:textColor="@color/white"
                         android:textSize="@dimen/_13ssp"
                         android:visibility="visible" />
-                </RelativeLayout>
+                </androidx.appcompat.widget.LinearLayoutCompat>
 
                 <!-- Layout pulsante RIFIUTA (per il codice Java) -->
-                <RelativeLayout
+                <androidx.appcompat.widget.LinearLayoutCompat
                     android:id="@+id/ll_btn_reject"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -251,7 +286,7 @@
                         android:textColor="@color/button"
                         android:textSize="@dimen/_13ssp"
                         android:visibility="visible" />
-                </RelativeLayout>
+                </androidx.appcompat.widget.LinearLayoutCompat>
 
                 <!-- Layout Download Invoice -->
                 <RelativeLayout
@@ -290,20 +325,6 @@
                         android:visibility="visible" />
 
                 </RelativeLayout>
-
-                <androidx.appcompat.widget.AppCompatButton
-                    android:id="@+id/btn_cancel"
-                    style="@style/font_regular"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="@dimen/_3sdp"
-                    android:layout_weight="1"
-                    android:background="@drawable/button_style_filltype_two"
-                    android:text="@string/cancel"
-                    android:textAllCaps="false"
-                    android:textColor="@color/white"
-                    android:textSize="@dimen/_13ssp"
-                    android:visibility="gone" />
 
                 <androidx.appcompat.widget.AppCompatButton
                     android:id="@+id/btn_tab_dispute"

@@ -2,20 +2,26 @@ package com.app.bemyrider.activity.partner;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatButton;
 import androidx.core.text.HtmlCompat;
 import androidx.databinding.DataBindingUtil;
 
@@ -123,30 +129,104 @@ public class PartnerServiceRequestDetailsActivity extends AppCompatActivity {
         });
 
         binding.btnCancel.setOnClickListener(view -> {
-            AlertDialog.Builder builder = new AlertDialog.Builder(PartnerServiceRequestDetailsActivity.this);
-            builder.setMessage(R.string.are_you_cancel)
-                    .setPositiveButton(getString(R.string.yes), (dialogInterface, i) -> {
-                        dialogInterface.dismiss();
-                        binding.btnCancel.setClickable(false);
-                        serviceCallCancelService();
-                    })
-                    .setNegativeButton(getString(R.string.no), (dialogInterface, i) -> dialogInterface.dismiss())
-                    .show();
+            final Dialog dialog = new Dialog(PartnerServiceRequestDetailsActivity.this);
+            dialog.setContentView(R.layout.dialog_cancel_booking);
+            dialog.setCancelable(false);
+            WindowManager.LayoutParams params = new WindowManager.LayoutParams();
+            if (dialog.getWindow() != null) {
+                params.copyFrom(dialog.getWindow().getAttributes());
+                params.width = WindowManager.LayoutParams.MATCH_PARENT;
+                params.height = WindowManager.LayoutParams.WRAP_CONTENT;
+                dialog.getWindow().setAttributes(params);
+            }
+            final EditText edtConfirm = dialog.findViewById(R.id.edt_confirm_cancel);
+            final CheckBox chkAccept = dialog.findViewById(R.id.chk_accept_terms);
+            final TextView txtTerms = dialog.findViewById(R.id.txt_cancel_terms);
+            final ProgressBar pgConfirm = dialog.findViewById(R.id.pg_confirm);
+            final AppCompatButton btnYes = dialog.findViewById(R.id.btn_yes);
+            final AppCompatButton btnNo = dialog.findViewById(R.id.btn_no);
+            
+            final Spinner spinnerReason = dialog.findViewById(R.id.spinner_cancel_reason);
+            final EditText edtOther = dialog.findViewById(R.id.edt_other_reason);
 
+            // Carica ragioni specifiche per il rider
+            spinnerReason.setAdapter(new android.widget.ArrayAdapter<>(this, 
+                android.R.layout.simple_spinner_dropdown_item, 
+                getResources().getStringArray(R.array.cancel_reasons_provider)));
+
+            // Gestione visibilità "Altro" motivo
+            spinnerReason.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                    if (parent.getItemAtPosition(position).toString().equalsIgnoreCase("Other") || 
+                        parent.getItemAtPosition(position).toString().equalsIgnoreCase("Altro")) {
+                        edtOther.setVisibility(View.VISIBLE);
+                    } else {
+                        edtOther.setVisibility(View.GONE);
+                    }
+                }
+                @Override public void onNothingSelected(AdapterView<?> parent) {}
+            });
+
+            // Rendering HTML termini
+            txtTerms.setText(HtmlCompat.fromHtml(getString(R.string.accept_cancel_terms), HtmlCompat.FROM_HTML_MODE_LEGACY));
+            txtTerms.setOnClickListener(v -> {
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://bemyrider.it/app/termini-e-condizioni-bemyrider/#s4"));
+                startActivity(browserIntent);
+            });
+
+            btnNo.setOnClickListener(v -> dialog.dismiss());
+            btnYes.setOnClickListener(v -> {
+                if (spinnerReason.getSelectedItemPosition() == 0) {
+                    Toast.makeText(PartnerServiceRequestDetailsActivity.this, R.string.select_cancel_reason, Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                
+                if (!chkAccept.isChecked()) {
+                    Toast.makeText(PartnerServiceRequestDetailsActivity.this, R.string.please_accept_terms, Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                
+                if (!edtConfirm.getText().toString().trim().equalsIgnoreCase("CANCELLA")) {
+                    Toast.makeText(PartnerServiceRequestDetailsActivity.this, R.string.confirm_cancel_error, Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                String finalReason = spinnerReason.getSelectedItem().toString();
+                if (edtOther.getVisibility() == View.VISIBLE) {
+                    if (edtOther.getText().toString().trim().isEmpty()) {
+                        edtOther.setError(getString(R.string.hint_other_reason));
+                        return;
+                    }
+                    finalReason = edtOther.getText().toString().trim();
+                }
+
+                Utils.hideSoftKeyboard(PartnerServiceRequestDetailsActivity.this);
+                pgConfirm.setVisibility(View.VISIBLE);
+                btnYes.setVisibility(View.INVISIBLE);
+                btnNo.setEnabled(false);
+                
+                // FEEDBACK GLOBALE: Mostriamo il loader anche nell'Activity
+                binding.pgCancelGlobal.setVisibility(View.VISIBLE);
+                binding.btnCancel.setClickable(false);
+
+                serviceCallCancelService(dialog, finalReason);
+            });
+            dialog.show();
         });
 
         binding.layoutSendMessage.setOnClickListener(v -> {
-            Intent intent;
+            Intent intentLocal;
             if (serviceDetailData.getServiceStatus().equalsIgnoreCase("dispute")) {
-                intent = new Intent(PartnerServiceRequestDetailsActivity.this, Partner_DisputeDetail_Activity.class);
-                intent.putExtra("DisputeId", serviceDetailData.getDisputeId());
+                intentLocal = new Intent(PartnerServiceRequestDetailsActivity.this, Partner_DisputeDetail_Activity.class);
+                intentLocal.putExtra("DisputeId", serviceDetailData.getDisputeId());
             } else {
-                intent = new Intent(PartnerServiceRequestDetailsActivity.this, MessageDetailActivity.class);
-                intent.putExtra("to_user", serviceDetailData.getCustomerId());
-                intent.putExtra("master_id", serviceDetailData.getServiceId());
-                intent.putExtra("service_booking_id", serviceDetailData.getServiceBookingId());
+                intentLocal = new Intent(PartnerServiceRequestDetailsActivity.this, MessageDetailActivity.class);
+                intentLocal.putExtra("to_user", serviceDetailData.getCustomerId());
+                intentLocal.putExtra("master_id", serviceDetailData.getServiceId());
+                intentLocal.putExtra("service_booking_id", serviceDetailData.getServiceBookingId());
             }
-            startActivity(intent);
+            startActivity(intentLocal);
         });
 
         binding.layoutRaiseDispute.setOnClickListener(view -> {
@@ -237,6 +317,7 @@ public class PartnerServiceRequestDetailsActivity extends AppCompatActivity {
         textParams.put("proposal_id", proposalServiceDataItems.get(proposalServiceDataItems.size() - 1).getProposalId());
 
         textParams.put("user_id", PrefsUtil.with(PartnerServiceRequestDetailsActivity.this).readString("UserId"));
+        textParams.put("user_type", "p");
 
         new WebServiceCall(PartnerServiceRequestDetailsActivity.this,
                 WebServiceUrl.URL_ACCEPT_PROPOSAL, textParams, CommonPojo.class, false,
@@ -286,6 +367,8 @@ public class PartnerServiceRequestDetailsActivity extends AppCompatActivity {
 
         textParams.put("status_type", serviceStatus);
         textParams.put("extend_id", extendServiceListPojoItems.get(0).getExtendId());
+        textParams.put("user_id", PrefsUtil.with(PartnerServiceRequestDetailsActivity.this).readString("UserId"));
+        textParams.put("user_type", "p");
 
         new WebServiceCall(PartnerServiceRequestDetailsActivity.this,
                 WebServiceUrl.URL_ACCEPT_EXTEND_REQUEST, textParams, CommonPojo.class, false,
@@ -355,6 +438,7 @@ public class PartnerServiceRequestDetailsActivity extends AppCompatActivity {
         textParams.put("txt_proposal_id", proposalId);
 
         textParams.put("user_id", PrefsUtil.with(PartnerServiceRequestDetailsActivity.this).readString("UserId"));
+        textParams.put("user_type", "p");
 
         new WebServiceCall(PartnerServiceRequestDetailsActivity.this,
                 WebServiceUrl.URL_SEND_PRAPOSAL, textParams, CommonPojo.class, false,
@@ -395,24 +479,34 @@ public class PartnerServiceRequestDetailsActivity extends AppCompatActivity {
                 });
     }
 
-    private void serviceCallCancelService() {
+    private void serviceCallCancelService(final DialogInterface dialogInterface, String reason) {
         LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
 
         textParams.put("service_id", serviceRequestId);
         textParams.put("user_id", PrefsUtil.with(PartnerServiceRequestDetailsActivity.this).readString("UserId"));
+        textParams.put("cancel_reason", reason);
+        textParams.put("user_type", "p");
 
         new WebServiceCall(PartnerServiceRequestDetailsActivity.this,
                 WebServiceUrl.URL_CANCEL_SERVICE, textParams, CommonPojo.class, false,
                 new WebServiceCall.OnResultListener() {
                     @Override
                     public void onResult(boolean status, Object obj) {
+                        binding.pgCancelGlobal.setVisibility(View.GONE);
                         binding.btnCancel.setClickable(true);
                         if (status) {
+                            dialogInterface.dismiss();
                             Intent i = new Intent(mContext, ProviderHomeActivity.class);
                             i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                             startActivity(i);
                             finish();
                         } else {
+                            if (dialogInterface instanceof Dialog) {
+                                Dialog d = (Dialog) dialogInterface;
+                                d.findViewById(R.id.pg_confirm).setVisibility(View.GONE);
+                                d.findViewById(R.id.btn_yes).setVisibility(View.VISIBLE);
+                                d.findViewById(R.id.btn_no).setEnabled(true);
+                            }
                             Toast.makeText(mContext, (String) obj, Toast.LENGTH_SHORT).show();
                         }
                     }
@@ -436,6 +530,7 @@ public class PartnerServiceRequestDetailsActivity extends AppCompatActivity {
         textParams.put("service_id", serviceRequestId);
         textParams.put("provider_id", providerId);
         textParams.put("status_type", serviceStatus);
+        textParams.put("user_type", "p");
 
         new WebServiceCall(PartnerServiceRequestDetailsActivity.this,
                 WebServiceUrl.URL_ACCEPT_SERVICE, textParams, CommonPojo.class, false,
@@ -449,7 +544,8 @@ public class PartnerServiceRequestDetailsActivity extends AppCompatActivity {
                         binding.includeRequestDetail.btnAcceptProposalP.setClickable(true);
                         if (serviceStatus.equalsIgnoreCase("accepted")) {
                             binding.pgAccept.setVisibility(View.GONE);
-                        } else {
+                        }
+                        else {
                             binding.pgReject.setVisibility(View.GONE);
                         }
 
@@ -502,6 +598,7 @@ public class PartnerServiceRequestDetailsActivity extends AppCompatActivity {
     private void callAPICheckConnectedStripeAccount() {
         LinkedHashMap<String, String> params = new LinkedHashMap<>();
         params.put("user_id", PrefsUtil.with(mContext).readString("UserId"));
+        params.put("user_type", "p"); // Rider
 
         new WebServiceCall(mContext, WebServiceUrl.URL_STRIPE_CONNECT, params, CheckStripeConnectedPojo.class, true,
                 new WebServiceCall.OnResultListener() {
@@ -544,6 +641,7 @@ public class PartnerServiceRequestDetailsActivity extends AppCompatActivity {
 
         textParams.put("user_id", PrefsUtil.with(PartnerServiceRequestDetailsActivity.this).readString("UserId"));
         textParams.put("service_request_id", serviceRequestId);
+        textParams.put("user_type", "p");
 
         new WebServiceCall(PartnerServiceRequestDetailsActivity.this,
                 WebServiceUrl.URL_SERVICEDETAILS, textParams, ProviderServiceRequestPojo.class, false,
@@ -590,7 +688,7 @@ public class PartnerServiceRequestDetailsActivity extends AppCompatActivity {
         String statusDisplayName = serviceDetailData.getServiceStatusDisplayName();
         String customerFirstName = serviceDetailData.getCustomerFname();
         String customerLastName = serviceDetailData.getCustomerLname();
-        String customerImage = serviceDetailData.getCustomerImage();
+        String customerImage = customerImage = serviceDetailData.getCustomerImage();
         String servicePrice = serviceDetailData.getServicePrice();
         String serviceType = serviceDetailData.getServiceType();
         String serviceAddress = serviceDetailData.getBookingAddress();
@@ -603,6 +701,17 @@ public class PartnerServiceRequestDetailsActivity extends AppCompatActivity {
         String bookingDetails = Utils.decodeEmoji(serviceDetailData.getBookingDetails());
         String serviceDescription = Utils.decodeEmoji(serviceDetailData.getDescription());
         
+        // Reset della visibilità di tutti gli elementi all'inizio del metodo
+        binding.txtNote.setVisibility(View.GONE);
+        binding.llBtnAccept.setVisibility(View.GONE);
+        binding.llBtnReject.setVisibility(View.GONE);
+        binding.btnSendProposal.setVisibility(View.GONE);
+        binding.layoutCancel.setVisibility(View.GONE);
+        binding.layoutSendMessage.setVisibility(View.GONE);
+        binding.layoutRaiseDispute.setVisibility(View.GONE);
+        binding.viewLineOne.setVisibility(View.INVISIBLE);
+        binding.viewLineTwo.setVisibility(View.INVISIBLE);
+
         Log.d(TAG, "Dati Attrezzatura/Modello (descrizione): " + serviceDetailData.getDescription());
         Log.d(TAG, "Dati Istruzioni/Comunicazioni (bookingDetails): " + serviceDetailData.getBookingDetails());
 
@@ -760,210 +869,94 @@ public class PartnerServiceRequestDetailsActivity extends AppCompatActivity {
             binding.includeRequestDetail.txtExtendStatusP.setBackgroundResource(statusColor);
         }
 
-        if (status.equalsIgnoreCase("closed")) {
-            binding.layoutSendMessage.setVisibility(View.INVISIBLE);
-            binding.layoutRaiseDispute.setVisibility(View.INVISIBLE);
-            binding.viewLineOne.setVisibility(View.INVISIBLE);
-            binding.viewLineTwo.setVisibility(View.INVISIBLE);
-            binding.txtNote.setVisibility(View.GONE);
-            binding.llBtnAccept.setVisibility(View.GONE);
-            binding.btnSendProposal.setVisibility(View.GONE);
-            binding.llBtnReject.setVisibility(View.GONE);
+        binding.txtServiceStatus.setText(statusDisplayName);
 
-            binding.txtServiceStatus.setText(statusDisplayName);
-            binding.txtServiceStatus.setBackgroundResource(R.color.status_closed);
-
-            binding.txtUserName.setText(String.format("%s %s", customerFirstName, customerLastName));
-
-            ImageRequest.Builder profileBuilder = new ImageRequest.Builder(mContext)
-                .placeholder(R.drawable.loading)
-                .error(R.mipmap.user)
-                .target(binding.imgUserProfile);
-
-            if (customerImage != null && !customerImage.isEmpty()) {
-                try {
-                    profileBuilder.data(customerImage);
-                    Coil.imageLoader(mContext).enqueue(profileBuilder.build());
-                } catch (IllegalArgumentException e) {
-                    Log.e(TAG, "Error loading customer image via Coil: " + e.getMessage());
-                }
-            } else {
-                binding.imgUserProfile.setImageResource(R.mipmap.user);
-            }
-
-            binding.includeRequestDetail.TxtServiceName.setText(categoryName);
-            if (serviceType.equalsIgnoreCase("hourly")) {
-                binding.includeRequestDetail.TxtServicePrice.setText(String.format("%s%s (%s%s/hour)", PrefsUtil.with(PartnerServiceRequestDetailsActivity.this).readString("CurrencySign"), bookingAmount, PrefsUtil.with(PartnerServiceRequestDetailsActivity.this).readString("CurrencySign"), servicePrice));
-            } else {
-                binding.includeRequestDetail.TxtServicePrice.setText(String.format("%s%s", PrefsUtil.with(PartnerServiceRequestDetailsActivity.this).readString("CurrencySign"), bookingAmount));
-            }
-
-            if (paymentMode.equalsIgnoreCase("")) {
-                binding.includeRequestDetail.TxtPaymentpreference.setText(getResources().getString(R.string.none));
-            }
-            if (paymentMode.equalsIgnoreCase("wallet")) {
-                binding.includeRequestDetail.TxtPaymentpreference.setText(getResources().getString(R.string.wallet));
-            }
-            if (paymentMode.equalsIgnoreCase("cash")) {
-                binding.includeRequestDetail.TxtPaymentpreference.setText(getResources().getString(R.string.cash));
-            }
-
-            binding.txtUserName.setText(String.format("%s %s", customerFirstName, customerLastName));
-
-            if (paymentMode.equalsIgnoreCase("cash")) {
-                binding.includeRequestDetail.TxtAdminFeesP.setVisibility(View.GONE);
-            } else {
-                binding.includeRequestDetail.TxtAdminFeesP.setText(String.format("%s%s", PrefsUtil.with(PartnerServiceRequestDetailsActivity.this).readString("CurrencySign"), providerCommissionAmount));
-            }
-
-            binding.includeRequestDetail.TxtServiceTime.setText(bookingStartTime);
-            binding.includeRequestDetail.TxtEndServiceTime.setText(bookingEndTime);
-            binding.includeRequestDetail.TxtServiceAddress.setText(serviceAddress);
-            binding.includeRequestDetail.TxtServiceAddress.setPadding(0, 0, 0, 60);
-            binding.includeRequestDetail.TxtDesc.setText(bookingDetails);
-            binding.includeRequestDetail.TxtServiceDesc.setText(serviceDescription);
-        } else if ("accepted".equalsIgnoreCase(status) || "ongoing".equalsIgnoreCase(status) || "dispute".equalsIgnoreCase(status)) {
+        if ("pending".equalsIgnoreCase(status)) {
+            binding.llBtnAccept.setVisibility(View.VISIBLE);
+            binding.llBtnReject.setVisibility(View.VISIBLE);
+            binding.btnSendProposal.setVisibility(View.VISIBLE);
+            binding.txtNote.setVisibility(View.VISIBLE);
+            
+            binding.txtServiceStatus.setBackgroundResource(R.color.status_pending);
+            
+        } else if ("accepted".equalsIgnoreCase(status)) {
+            binding.layoutSendMessage.setVisibility(View.VISIBLE);
+            
+            binding.txtServiceStatus.setBackgroundResource(R.color.status_accepted);
+            
+        } else if ("hired".equalsIgnoreCase(status) || "ongoing".equalsIgnoreCase(status) || "dispute".equalsIgnoreCase(status)) {
             binding.layoutSendMessage.setVisibility(View.VISIBLE);
             binding.layoutRaiseDispute.setVisibility(View.VISIBLE);
-            binding.llBtnAccept.setVisibility(View.GONE);
-            binding.llBtnReject.setVisibility(View.GONE);
-            binding.btnSendProposal.setVisibility(View.GONE);
-            binding.btnCancel.setVisibility(View.GONE);
-            binding.txtNote.setVisibility(View.GONE);
-            binding.viewLineOne.setVisibility(View.INVISIBLE);
-            binding.viewLineTwo.setVisibility(View.INVISIBLE);
-
-
-            binding.txtServiceStatus.setText(statusDisplayName);
-            if ("accepted".equalsIgnoreCase(status)) {
-                 binding.txtServiceStatus.setBackgroundResource(R.color.status_accepted);
-            } else if ("ongoing".equalsIgnoreCase(status)) {
+            binding.layoutCancel.setVisibility(View.VISIBLE);
+            
+            if ("ongoing".equalsIgnoreCase(status)) {
                  binding.txtServiceStatus.setBackgroundResource(R.color.status_ongoing);
             } else if ("dispute".equalsIgnoreCase(status)) {
                  binding.txtServiceStatus.setBackgroundResource(R.color.status_dispute);
-            }
-
-            binding.txtUserName.setText(String.format("%s %s", customerFirstName, customerLastName));
-
-            ImageRequest.Builder profileBuilder = new ImageRequest.Builder(mContext)
-                .placeholder(R.drawable.loading)
-                .error(R.mipmap.user)
-                .target(binding.imgUserProfile);
-
-            if (customerImage != null && !customerImage.isEmpty()) {
-                try {
-                    profileBuilder.data(customerImage);
-                    Coil.imageLoader(mContext).enqueue(profileBuilder.build());
-                } catch (IllegalArgumentException e) {
-                    Log.e(TAG, "Error loading customer image via Coil: " + e.getMessage());
-                }
             } else {
-                binding.imgUserProfile.setImageResource(R.mipmap.user);
+                 binding.txtServiceStatus.setBackgroundResource(R.color.status_hired);
             }
-
-            binding.includeRequestDetail.TxtServiceName.setText(categoryName);
-            if (serviceType.equalsIgnoreCase("hourly")) {
-                binding.includeRequestDetail.TxtServicePrice.setText(String.format("%s%s (%s%s/hour)", PrefsUtil.with(PartnerServiceRequestDetailsActivity.this).readString("CurrencySign"), bookingAmount, PrefsUtil.with(PartnerServiceRequestDetailsActivity.this).readString("CurrencySign"), servicePrice));
-            } else {
-                binding.includeRequestDetail.TxtServicePrice.setText(String.format("%s%s", PrefsUtil.with(PartnerServiceRequestDetailsActivity.this).readString("CurrencySign"), bookingAmount));
+            
+        } else {
+            // "closed", "cancelled", "rejected", "expired"
+            if ("closed".equalsIgnoreCase(status)) {
+                binding.txtServiceStatus.setBackgroundResource(R.color.status_closed);
+            } else if ("cancelled".equalsIgnoreCase(status)) {
+                binding.txtServiceStatus.setBackgroundResource(R.color.status_cancelled);
+            } else if ("rejected".equalsIgnoreCase(status)) {
+                binding.txtServiceStatus.setBackgroundResource(R.color.status_rejected);
+            } else if ("expired".equalsIgnoreCase(status)) {
+                binding.txtServiceStatus.setBackgroundResource(R.color.status_expired);
             }
-
-            if (paymentMode.equalsIgnoreCase("")) {
-                binding.includeRequestDetail.TxtPaymentpreference.setText(getResources().getString(R.string.none));
-            }
-            if (paymentMode.equalsIgnoreCase("wallet")) {
-                binding.includeRequestDetail.TxtPaymentpreference.setText(getResources().getString(R.string.wallet));
-            }
-            if (paymentMode.equalsIgnoreCase("cash")) {
-                binding.includeRequestDetail.TxtPaymentpreference.setText(getResources().getString(R.string.cash));
-            }
-
-            binding.txtUserName.setText(String.format("%s %s", customerFirstName, customerLastName));
-
-            if (paymentMode.equalsIgnoreCase("cash")) {
-                binding.includeRequestDetail.TxtAdminFeesP.setVisibility(View.GONE);
-            } else {
-
-                binding.includeRequestDetail.TxtAdminFeesP.setText(String.format("%s%s", PrefsUtil.with(PartnerServiceRequestDetailsActivity.this).readString("CurrencySign"), providerCommissionAmount));
-            }
-
-            binding.includeRequestDetail.TxtServiceTime.setText(bookingStartTime);
-            binding.includeRequestDetail.TxtEndServiceTime.setText(bookingEndTime);
-            binding.includeRequestDetail.TxtServiceAddress.setText(serviceAddress);
-            binding.includeRequestDetail.TxtServiceAddress.setPadding(0, 0, 0, 60);
-            binding.includeRequestDetail.TxtDesc.setText(bookingDetails);
-            binding.includeRequestDetail.TxtServiceDesc.setText(serviceDescription);
-
         }
-        else {
-            binding.txtServiceStatus.setText(statusDisplayName);
-            
-            if ("pending".equalsIgnoreCase(status)) {
-                binding.llBtnAccept.setVisibility(View.VISIBLE);
-                binding.llBtnReject.setVisibility(View.VISIBLE);
-                binding.btnSendProposal.setVisibility(View.VISIBLE);
-                binding.layoutSendMessage.setVisibility(View.GONE);
-                binding.layoutRaiseDispute.setVisibility(View.GONE);
-            } else {
-                 binding.llBtnAccept.setVisibility(View.GONE);
-                 binding.llBtnReject.setVisibility(View.GONE);
-                 binding.btnSendProposal.setVisibility(View.GONE);
+        
+        binding.txtUserName.setText(String.format("%s %s", customerFirstName, customerLastName));
+
+        ImageRequest.Builder profileBuilder = new ImageRequest.Builder(mContext)
+            .placeholder(R.drawable.loading)
+            .error(R.mipmap.user)
+            .target(binding.imgUserProfile);
+
+        if (customerImage != null && !customerImage.isEmpty()) {
+            try {
+                profileBuilder.data(customerImage);
+                Coil.imageLoader(mContext).enqueue(profileBuilder.build());
+            } catch (IllegalArgumentException e) {
+                Log.e(TAG, "Error loading customer image via Coil: " + e.getMessage());
             }
-            
-            binding.txtUserName.setText(String.format("%s %s", customerFirstName, customerLastName));
-
-            ImageRequest.Builder profileBuilder = new ImageRequest.Builder(mContext)
-                .placeholder(R.drawable.loading)
-                .error(R.mipmap.user)
-                .target(binding.imgUserProfile);
-
-            if (customerImage != null && !customerImage.isEmpty()) {
-                try {
-                    profileBuilder.data(customerImage);
-                    Coil.imageLoader(mContext).enqueue(profileBuilder.build());
-                } catch (IllegalArgumentException e) {
-                    Log.e(TAG, "Error loading customer image via Coil: " + e.getMessage());
-                }
-            } else {
-                binding.imgUserProfile.setImageResource(R.mipmap.user);
-            }
-
-            binding.includeRequestDetail.TxtServiceName.setText(categoryName);
-            if (serviceType.equalsIgnoreCase("hourly")) {
-                binding.includeRequestDetail.TxtServicePrice.setText(String.format("%s%s (%s%s/hour)", PrefsUtil.with(PartnerServiceRequestDetailsActivity.this).readString("CurrencySign"), bookingAmount, PrefsUtil.with(PartnerServiceRequestDetailsActivity.this).readString("CurrencySign"), servicePrice));
-            } else {
-                binding.includeRequestDetail.TxtServicePrice.setText(String.format("%s%s", PrefsUtil.with(PartnerServiceRequestDetailsActivity.this).readString("CurrencySign"), bookingAmount));
-            }
-
-            if (paymentMode.equalsIgnoreCase("")) {
-                binding.includeRequestDetail.TxtPaymentpreference.setText(getResources().getString(R.string.none));
-            }
-            if (paymentMode.equalsIgnoreCase("wallet")) {
-                binding.includeRequestDetail.TxtPaymentpreference.setText(getResources().getString(R.string.wallet));
-            }
-            if (paymentMode.equalsIgnoreCase("cash")) {
-                binding.includeRequestDetail.TxtPaymentpreference.setText(getResources().getString(R.string.cash));
-            }
-
-            binding.txtUserName.setText(String.format("%s %s", customerFirstName, customerLastName));
-
-            if (paymentMode.equalsIgnoreCase("cash")) {
-                binding.includeRequestDetail.TxtAdminFeesP.setVisibility(View.GONE);
-            } else {
-
-                binding.includeRequestDetail.TxtAdminFeesP.setText(String.format("%s%s", PrefsUtil.with(PartnerServiceRequestDetailsActivity.this).readString("CurrencySign"), providerCommissionAmount));
-            }
-
-            binding.includeRequestDetail.TxtServiceTime.setText(bookingStartTime);
-            binding.includeRequestDetail.TxtEndServiceTime.setText(bookingEndTime);
-            binding.includeRequestDetail.TxtServiceAddress.setText(serviceAddress);
-            binding.includeRequestDetail.TxtServiceAddress.setPadding(0, 0, 0, 60);
-            binding.includeRequestDetail.TxtDesc.setText(bookingDetails);
-            
-            binding.includeRequestDetail.TxtServiceDesc.setText(serviceDescription);
-            
-            binding.btnSendProposal.setVisibility(View.GONE);
+        } else {
+            binding.imgUserProfile.setImageResource(R.mipmap.user);
         }
+
+        binding.includeRequestDetail.TxtServiceName.setText(categoryName);
+        if (serviceType.equalsIgnoreCase("hourly")) {
+            binding.includeRequestDetail.TxtServicePrice.setText(String.format("%s%s (%s%s/hour)", PrefsUtil.with(PartnerServiceRequestDetailsActivity.this).readString("CurrencySign"), bookingAmount, PrefsUtil.with(PartnerServiceRequestDetailsActivity.this).readString("CurrencySign"), servicePrice));
+        } else {
+            binding.includeRequestDetail.TxtServicePrice.setText(String.format("%s%s", PrefsUtil.with(PartnerServiceRequestDetailsActivity.this).readString("CurrencySign"), bookingAmount));
+        }
+
+        if (paymentMode.equalsIgnoreCase("")) {
+            binding.includeRequestDetail.TxtPaymentpreference.setText(getResources().getString(R.string.none));
+        }
+        if (paymentMode.equalsIgnoreCase("wallet")) {
+            binding.includeRequestDetail.TxtPaymentpreference.setText(getResources().getString(R.string.wallet));
+        }
+        if (paymentMode.equalsIgnoreCase("cash")) {
+            binding.includeRequestDetail.TxtPaymentpreference.setText(getResources().getString(R.string.cash));
+        }
+
+        if (paymentMode.equalsIgnoreCase("cash")) {
+            binding.includeRequestDetail.TxtAdminFeesP.setVisibility(View.GONE);
+        } else {
+            binding.includeRequestDetail.TxtAdminFeesP.setText(String.format("%s%s", PrefsUtil.with(PartnerServiceRequestDetailsActivity.this).readString("CurrencySign"), providerCommissionAmount));
+        }
+
+        binding.includeRequestDetail.TxtServiceTime.setText(bookingStartTime);
+        binding.includeRequestDetail.TxtEndServiceTime.setText(bookingEndTime);
+        binding.includeRequestDetail.TxtServiceAddress.setText(serviceAddress);
+        binding.includeRequestDetail.TxtServiceAddress.setPadding(0, 0, 0, 60);
+        binding.includeRequestDetail.TxtDesc.setText(bookingDetails);
+        binding.includeRequestDetail.TxtServiceDesc.setText(serviceDescription);
     }
 
     private void initView() {
