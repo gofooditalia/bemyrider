@@ -140,8 +140,8 @@
     <string name="enter_price">Inserire il prezzo*</string>
     <string name="upload_image">Carica immagine*</string>
     <string name="viewall"><u> Mostra tutto</u>  </string>
-    <string name="accept_dispute"><u> ACCETTA LA CONTROVERSIA</u>  </string>
-    <string name="escalate"><u> RISPONDERE AD AMMINISTRATORE</u>  </string>
+    <string name="accept_dispute">Accetta Controversia</string>
+    <string name="escalate">Inoltra ad Amministratore</string>
     <string name="myrating">Le mie valutazioni</string>
     <string name="servicename">Nome di Servizio:</string>
     <string name="servicecat">Categoria di servizio:</string>
@@ -150,8 +150,8 @@
     <string name="rate_provider">Si prega di valutare il fornitore</string>
     <string name="bycash">In contanti</string>
     <string name="bywallet">Da Portafoglio</string>
-    <string name="subject">Soggetto:</string>
-    <string name="raised_by">Cresciuto da:</string>
+    <string name="subject">Oggetto:</string>
+    <string name="raised_by">Inviata da:</string>
     <string name="total_earned">Totale Guadagnato</string>
     <string name="complete_service">Servizi completi</string>
     <string name="commision">Commissione</string>
@@ -343,7 +343,7 @@
 
 
     <string name="addressa">Indirizzo*</string>
-    <string name="raise_by_me">Cresciuto da me</string>
+    <string name="raise_by_me">Inviata da me</string>
     <string name="paypal_email">Email PayPal*</string>
     <string name="admin_feesa">Commissioni di amministrazione</string>
     <string name="task_hours">Durata del servizio</string>
@@ -458,7 +458,7 @@
     <string name="time_validation">L\'orario di lavoro minimo deve essere 8</string>
     <string name="past_time_validation">L\'ora corrente/passata non è consentita, selezionare l\'ora futura</string>
     <string name="uploaded_images">Uploaded Images</string>
-    <string name="cancel_dispute"><u>ANNULLA CONTROVERSIA</u></string>
+    <string name="cancel_dispute">ANNULLA CONTROVERSIA</string>
     <!--<string name="intro_lets_start"><![CDATA[<u>Cominciamo</u>]]></string>-->
     <string name="intro_lets_start">Cominciamo</string>
     <string name="intro_first_page_text"><![CDATA[<b>Benvenuto</b> nella prima <b>community</b> di <b>riders autonomi</b> della <b>tua città</b>]]></string>

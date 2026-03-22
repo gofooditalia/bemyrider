@@ -1,127 +1,163 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    <androidx.appcompat.widget.LinearLayoutCompat
         android:id="@+id/activity_partner__dispute_detail_"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:background="@color/white"
+        android:background="#F5F5F5"
         android:fitsSystemWindows="true"
-        android:paddingTop="?attr/actionBarSize"
-        android:paddingStart="@dimen/_14sdp"
-        android:paddingEnd="@dimen/_14sdp"
-        android:paddingBottom="@dimen/_14sdp">
+        android:paddingTop="?attr/actionBarSize">
 
-        <androidx.appcompat.widget.LinearLayoutCompat
-            android:id="@+id/layout_subject"
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:layout_margin="@dimen/_10sdp"
+            app:cardCornerRadius="@dimen/_8sdp"
+            app:cardElevation="@dimen/_4sdp"
+            app:strokeWidth="0dp">
 
-            <androidx.appcompat.widget.AppCompatTextView
+            <androidx.appcompat.widget.LinearLayoutCompat
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/subject"
-                style="@style/font_regular"
-                android:textColor="@color/text"
-                android:textSize="@dimen/_12ssp" />
+                android:orientation="vertical"
+                android:padding="@dimen/_12sdp">
 
-            <androidx.appcompat.widget.AppCompatTextView
-                android:id="@+id/txt_dispute_subject"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="0.4"
-                style="@style/font_regular"
-                android:textColor="@color/text_light"
-                android:textSize="@dimen/_12ssp" />
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
 
-        </androidx.appcompat.widget.LinearLayoutCompat>
+                    <androidx.appcompat.widget.AppCompatTextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/subject"
+                        style="@style/font_bold"
+                        android:textColor="@color/text"
+                        android:textSize="@dimen/_12ssp" />
 
-        <androidx.appcompat.widget.LinearLayoutCompat
-            android:id="@+id/layout_raised"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/layout_subject"
-            android:layout_marginTop="6dp"
-            android:orientation="horizontal">
+                    <androidx.appcompat.widget.AppCompatTextView
+                        android:id="@+id/txt_dispute_subject"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="@dimen/_6sdp"
+                        style="@style/font_regular"
+                        android:textColor="@color/text_light"
+                        android:textSize="@dimen/_12ssp" />
 
-            <androidx.appcompat.widget.AppCompatTextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/raised_by"
-                style="@style/font_regular"
-                android:textColor="@color/text"
-                android:textSize="@dimen/_12ssp" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
 
-            <androidx.appcompat.widget.AppCompatTextView
-                android:id="@+id/txt_raise_by"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="0.4"
-                style="@style/font_light"
-                android:textColor="@color/text_light"
-                android:textSize="@dimen/_12ssp" />
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/_4sdp"
+                    android:orientation="horizontal">
 
-        </androidx.appcompat.widget.LinearLayoutCompat>
+                    <androidx.appcompat.widget.AppCompatTextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/raised_by"
+                        style="@style/font_bold"
+                        android:textColor="@color/text"
+                        android:textSize="@dimen/_12ssp" />
 
-        <androidx.appcompat.widget.LinearLayoutCompat
-            android:id="@+id/layout_accept"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/layout_raised"
-            android:layout_marginTop="@dimen/_8sdp"
-            android:layout_marginBottom="@dimen/_6sdp"
-            android:gravity="center"
-            android:orientation="horizontal"
-            android:visibility="gone">
+                    <androidx.appcompat.widget.AppCompatTextView
+                        android:id="@+id/txt_raise_by"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="@dimen/_6sdp"
+                        style="@style/font_light"
+                        android:textColor="@color/text_light"
+                        android:textSize="@dimen/_12ssp" />
 
-            <ProgressBar
-                android:id="@+id/pgAcceptDispute"
-                android:layout_width="@dimen/_20sdp"
-                android:layout_height="@dimen/_20sdp"
-                android:layout_gravity="center"
-                android:layout_marginEnd="@dimen/_5sdp"
-                android:visibility="gone" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
 
-            <androidx.appcompat.widget.AppCompatTextView
-                android:id="@+id/accept_dispute"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                style="@style/font_regular"
-                android:gravity="start"
-                android:text="@string/accept_dispute"
-                android:textColor="@color/button"
-                android:textSize="@dimen/_12ssp" />
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="@dimen/_8sdp"
+                    android:layout_marginBottom="@dimen/_8sdp"
+                    android:background="#E0E0E0" />
 
-            <ProgressBar
-                android:id="@+id/pgEscalateAdmin"
-                android:layout_width="@dimen/_20sdp"
-                android:layout_height="@dimen/_20sdp"
-                android:layout_gravity="center"
-                android:visibility="gone" />
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/layout_accept"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:visibility="gone">
 
-            <androidx.appcompat.widget.AppCompatTextView
-                android:id="@+id/escalate_to_admin"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="0.9"
-                android:gravity="end"
-                style="@style/font_regular"
-                android:text="@string/escalate"
-                android:textColor="@color/button"
-                android:textSize="@dimen/_12ssp" />
+                    <RelativeLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1">
 
-        </androidx.appcompat.widget.LinearLayoutCompat>
+                        <androidx.appcompat.widget.AppCompatTextView
+                            android:id="@+id/accept_dispute"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            style="@style/font_medium"
+                            android:gravity="center"
+                            android:padding="@dimen/_6sdp"
+                            android:background="@drawable/button_style_filltype"
+                            android:text="@string/accept_dispute"
+                            android:textColor="@color/button"
+                            android:textSize="@dimen/_10ssp" />
+
+                        <ProgressBar
+                            android:id="@+id/pgAcceptDispute"
+                            android:layout_width="@dimen/_20sdp"
+                            android:layout_height="@dimen/_20sdp"
+                            android:layout_centerInParent="true"
+                            android:visibility="gone" />
+
+                    </RelativeLayout>
+
+                    <View
+                        android:layout_width="@dimen/_10sdp"
+                        android:layout_height="1dp" />
+
+                    <RelativeLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1">
+
+                        <androidx.appcompat.widget.AppCompatTextView
+                            android:id="@+id/escalate_to_admin"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:padding="@dimen/_6sdp"
+                            android:background="@drawable/button_style_filltype_two"
+                            style="@style/font_medium"
+                            android:text="@string/escalate"
+                            android:textColor="@color/white"
+                            android:textSize="@dimen/_10ssp" />
+
+                        <ProgressBar
+                            android:id="@+id/pgEscalateAdmin"
+                            android:layout_width="@dimen/_20sdp"
+                            android:layout_height="@dimen/_20sdp"
+                            android:layout_centerInParent="true"
+                            android:visibility="gone" />
+
+                    </RelativeLayout>
+
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+            </androidx.appcompat.widget.LinearLayoutCompat>
+        </com.google.android.material.card.MaterialCardView>
 
         <!--Main Layout-->
         <androidx.appcompat.widget.LinearLayoutCompat
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:background="@color/white">
 
             <!--Recycler View & No record & Progress Bar layout-->
             <androidx.appcompat.widget.LinearLayoutCompat
@@ -142,7 +178,7 @@
 
                 <ProgressBar
                     android:id="@+id/progress"
-                    android:layout_width="match_parent"
+                    android:layout_width="@dimen/_30sdp"
                     android:layout_height="@dimen/_30sdp"
                     android:layout_gravity="center"
                     android:visibility="gone" />
@@ -150,9 +186,7 @@
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/recycler_dispute_details"
                     android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_marginTop="@dimen/_8sdp"
-                    android:layout_weight="1"
+                    android:layout_height="match_parent"
                     android:overScrollMode="never"
                     android:visibility="gone" />
 
@@ -162,8 +196,7 @@
                 android:id="@+id/layout_bottompanel"
                 layout="@layout/bottom_panel"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/_4sdp" />
+                android:layout_height="wrap_content" />
 
         </androidx.appcompat.widget.LinearLayoutCompat>
 

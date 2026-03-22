@@ -220,13 +220,19 @@ public class PartnerServiceRequestDetailsActivity extends AppCompatActivity {
             if (serviceDetailData.getServiceStatus().equalsIgnoreCase("dispute")) {
                 intentLocal = new Intent(PartnerServiceRequestDetailsActivity.this, Partner_DisputeDetail_Activity.class);
                 intentLocal.putExtra("DisputeId", serviceDetailData.getDisputeId());
+                intentLocal.putExtra("serviceId", serviceDetailData.getServiceId());
+                intentLocal.putExtra("serviceRequestId", serviceDetailData.getServiceBookingId());
+                intentLocal.putExtra("customerId", serviceDetailData.getCustomerId());
+                intentLocal.putExtra("providerId", serviceDetailData.getProviderId());
+                startActivity(intentLocal);
             } else {
                 intentLocal = new Intent(PartnerServiceRequestDetailsActivity.this, MessageDetailActivity.class);
                 intentLocal.putExtra("to_user", serviceDetailData.getCustomerId());
                 intentLocal.putExtra("master_id", serviceDetailData.getServiceId());
                 intentLocal.putExtra("service_booking_id", serviceDetailData.getServiceBookingId());
+                startActivity(intentLocal);
             }
-            startActivity(intentLocal);
+
         });
 
         binding.layoutRaiseDispute.setOnClickListener(view -> {

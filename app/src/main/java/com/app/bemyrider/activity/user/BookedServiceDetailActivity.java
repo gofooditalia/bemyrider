@@ -694,6 +694,8 @@ public class BookedServiceDetailActivity extends AppCompatActivity implements Ta
             if (serviceDetailData.getServiceStatus().equals("dispute")) {
                 Intent intent = new Intent(BookedServiceDetailActivity.this, Partner_DisputeDetail_Activity.class);
                 intent.putExtra("DisputeId", serviceDetailData.getDisputeId());
+                intent.putExtra("serviceId", serviceDetailData.getServiceId());
+                intent.putExtra("serviceRequestId", serviceDetailData.getServiceRequestId());
                 startActivity(intent);
             } else {
                 Intent intent = new Intent(BookedServiceDetailActivity.this, MessageDetailActivity.class);

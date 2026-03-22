@@ -119,6 +119,11 @@ public class DisputeListAdapter extends RecyclerView.Adapter<DisputeListAdapter.
                 Intent intent = new Intent(act, Partner_DisputeDetail_Activity.class);
                 intent.putExtra("DisputeId", item.getDisputeId());
                 intent.putExtra("createdID", item.getCreatedUser());
+                // Nuovi parametri per allineamento iOS/Backend
+                intent.putExtra("serviceId", item.getServiceId());
+                intent.putExtra("serviceRequestId", item.getServiceRequestId());
+                intent.putExtra("customerId", item.getCustomerId());
+                intent.putExtra("providerId", item.getProviderId());
 
                 if (item.getCreatedUser().equals(item.getCustomerId())) {
                     intent.putExtra("CreatedUser", item.getCustomerFirstname() + " " + item.getCustomerLastname());

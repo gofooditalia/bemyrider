@@ -159,13 +159,6 @@ public class Partner_DisputeDetail_Activity extends AppCompatActivity {
         connectionManager.registerInternetCheckReceiver();
         connectionManager.checkConnection(mContext);
 
-        binding.acceptDispute.getPaint().setUnderlineText(true);
-        if (PrefsUtil.with(this).readString("UserType").equals("p")) {
-            binding.acceptDispute.setText(HtmlCompat.fromHtml(getResources().getString(R.string.accept_dispute),HtmlCompat.FROM_HTML_MODE_LEGACY));
-        } else if (PrefsUtil.with(this).readString("UserType").equals("c")) {
-            binding.acceptDispute.setText(HtmlCompat.fromHtml(getResources().getString(R.string.cancel_dispute),HtmlCompat.FROM_HTML_MODE_LEGACY));
-        }
-
         binding.acceptDispute.setClickable(false);
         binding.escalateToAdmin.setClickable(false);
         binding.layoutBottompanel.ImgSend.setClickable(false);
@@ -222,9 +215,11 @@ public class Partner_DisputeDetail_Activity extends AppCompatActivity {
         binding.acceptDispute.setClickable(false);
         binding.pgEscalateAdmin.setVisibility(View.VISIBLE);
 
+        String currentUserId = PrefsUtil.with(this).readString("UserId");
+
         LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-        textParams.put("service_id", serviceRequestId);
-        textParams.put("user_id", PrefsUtil.with(this).readString("UserId"));
+        textParams.put("dispute_id", getIntent().getStringExtra("DisputeId"));
+        textParams.put("user_id", currentUserId);
 
         new WebServiceCall(this, WebServiceUrl.URL_ESCALAPERTO_ADMIN, textParams, CommonPojo.class, false,
                 new WebServiceCall.OnResultListener() {
@@ -252,9 +247,11 @@ public class Partner_DisputeDetail_Activity extends AppCompatActivity {
         binding.escalateToAdmin.setClickable(false);
         binding.pgAcceptDispute.setVisibility(View.VISIBLE);
 
+        String currentUserId = PrefsUtil.with(this).readString("UserId");
+
         LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-        textParams.put("service_id", serviceRequestId);
-        textParams.put("user_id", PrefsUtil.with(this).readString("UserId"));
+        textParams.put("dispute_id", getIntent().getStringExtra("DisputeId"));
+        textParams.put("user_id", currentUserId);
 
         new WebServiceCall(this, WebServiceUrl.URL_ACCEPT_DISPUTE, textParams, CommonPojo.class, false,
                 new WebServiceCall.OnResultListener() {
@@ -286,12 +283,14 @@ public class Partner_DisputeDetail_Activity extends AppCompatActivity {
         binding.layoutBottompanel.ImgSend.setVisibility(View.GONE);
         binding.layoutBottompanel.pgSend.setVisibility(View.VISIBLE);
 
+        String currentUserId = PrefsUtil.with(this).readString("UserId");
+
         LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
         LinkedHashMap<String, File> fileParams = new LinkedHashMap<>();
 
         textParams.put("dispute_id", getIntent().getStringExtra("DisputeId"));
         textParams.put("message_text", binding.layoutBottompanel.edtMessage.getText().toString().trim());
-        textParams.put("user_id", PrefsUtil.with(this).readString("UserId"));
+        textParams.put("user_id", currentUserId);
 
         if (attachedFile) {
             fileParams.put("attachment", new File(realPath));
@@ -327,6 +326,8 @@ public class Partner_DisputeDetail_Activity extends AppCompatActivity {
             binding.recyclerDisputeDetails.scrollToPosition(0);
         }
         binding.progress.setVisibility(View.VISIBLE);
+
+        String currentUserId = PrefsUtil.with(this).readString("UserId");
 
         LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
 
@@ -402,6 +403,7 @@ public class Partner_DisputeDetail_Activity extends AppCompatActivity {
             binding.layoutBottompanel.ImgSend.setClickable(false);
             binding.acceptDispute.setVisibility(View.GONE);
             binding.escalateToAdmin.setVisibility(View.GONE);
+            binding.layoutAccept.setVisibility(View.GONE); // Hide container
             binding.layoutBottompanel.imgAttachFiles.setVisibility(View.GONE);
             binding.layoutBottompanel.ImgSend.setVisibility(View.GONE);
             if (detailPojo.getData().getServiceStatus().equals("completed") || detailPojo.getData().getServiceStatus().equals("closed")) {
@@ -413,6 +415,7 @@ public class Partner_DisputeDetail_Activity extends AppCompatActivity {
         } else {
             binding.acceptDispute.setVisibility(View.VISIBLE);
             binding.escalateToAdmin.setVisibility(View.VISIBLE);
+            binding.layoutAccept.setVisibility(View.VISIBLE); // Show container
             binding.acceptDispute.setClickable(true);
             binding.escalateToAdmin.setClickable(true);
             binding.layoutBottompanel.ImgSend.setClickable(true);
@@ -424,7 +427,7 @@ public class Partner_DisputeDetail_Activity extends AppCompatActivity {
             binding.layoutAccept.setVisibility(View.GONE);
         } else {
             binding.layoutBottompanel.llMainBottomPanel.setVisibility(View.VISIBLE);
-            binding.layoutAccept.setVisibility(View.VISIBLE);
+            // Already handled by escalateAdmin check
         }
     }
 

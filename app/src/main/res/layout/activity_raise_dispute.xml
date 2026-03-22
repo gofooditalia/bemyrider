@@ -7,13 +7,18 @@
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:background="@color/white"
-        android:padding="@dimen/_14sdp">
+        android:fitsSystemWindows="true"
+        android:paddingTop="?attr/actionBarSize"
+        android:paddingStart="@dimen/_14sdp"
+        android:paddingEnd="@dimen/_14sdp"
+        android:paddingBottom="@dimen/_14sdp">
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/til_subject"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            style="@style/StyledTilInput">
+            style="@style/StyledTilInput"
+            android:layout_marginTop="@dimen/_10sdp">
 
             <!--app:theme="@style/TextLabel"-->
             <androidx.appcompat.widget.AppCompatEditText
