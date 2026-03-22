@@ -161,6 +161,11 @@ public class DeliveryTypeFragment extends Fragment {
             action = "small";
         }
 
+        // FIX: Set the delivery type in the adapter for the current tab
+        if (deliveryTypeAdapter != null) {
+            deliveryTypeAdapter.setDeliveryType(action);
+        }
+
         LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
 
         textParams.put("action", action);
@@ -203,13 +208,14 @@ public class DeliveryTypeFragment extends Fragment {
                         binding.txtNoRecord.setVisibility(View.VISIBLE);
                     }
 
-                    if (currentIndex == 2) {
+                    // REMOVED: writing to PrefsUtil here is wrong as it's shared between all fragments in ViewPager
+                    /*if (currentIndex == 2) {
                         PrefsUtil.with(activity).write("delivery_type", "large");
                     } else if (currentIndex == 1) {
                         PrefsUtil.with(activity).write("delivery_type", "medium");
                     } else {
                         PrefsUtil.with(activity).write("delivery_type", "small");
-                    }
+                    }*/
 
                     deliveryTypeAdapter.submitList(new ArrayList<>(arrayList));
 

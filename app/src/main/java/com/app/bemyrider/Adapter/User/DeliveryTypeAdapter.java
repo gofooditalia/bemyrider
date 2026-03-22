@@ -29,10 +29,15 @@ import coil.request.ImageRequest;
 public class DeliveryTypeAdapter extends ListAdapter<ProviderItem, DeliveryTypeAdapter.MyViewHolder> {
 
     private Activity act;
+    private String deliveryType = "small";
 
     public DeliveryTypeAdapter(Activity act) {
         super(new DeliveryTypeDiffCallback());
         this.act = act;
+    }
+
+    public void setDeliveryType(String deliveryType) {
+        this.deliveryType = deliveryType;
     }
 
     @NonNull
@@ -61,6 +66,8 @@ public class DeliveryTypeAdapter extends ListAdapter<ProviderItem, DeliveryTypeA
 
             holder.relDetail.setOnClickListener(v -> {
                 if (isUserLogin()) {
+                    // FIX: Save correctly the delivery_type based on the selected tab
+                    PrefsUtil.with(act).write("delivery_type", deliveryType);
                     PrefsUtil.with(act).write("request_type", "scheduled");
                     Intent i = new Intent(act, ServiceDetailActivity.class);
                     i.putExtra("isCallApi", "y");

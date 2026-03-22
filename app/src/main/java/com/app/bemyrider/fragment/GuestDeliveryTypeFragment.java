@@ -117,10 +117,25 @@ public class GuestDeliveryTypeFragment extends Fragment {
         }
 
         String url;
+        String deliveryType;
         switch (currentIndex) {
-            case 2: url = WebServiceUrl.URL_LARGE; break;
-            case 1: url = WebServiceUrl.URL_MEDIUM; break;
-            default: url = WebServiceUrl.URL_SMALL; break;
+            case 2:
+                url = WebServiceUrl.URL_LARGE;
+                deliveryType = "large";
+                break;
+            case 1:
+                url = WebServiceUrl.URL_MEDIUM;
+                deliveryType = "medium";
+                break;
+            default:
+                url = WebServiceUrl.URL_SMALL;
+                deliveryType = "small";
+                break;
+        }
+
+        // FIX: Set the delivery type in the adapter for the current tab
+        if (deliveryTypeAdapter != null) {
+            deliveryTypeAdapter.setDeliveryType(deliveryType);
         }
 
         LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
