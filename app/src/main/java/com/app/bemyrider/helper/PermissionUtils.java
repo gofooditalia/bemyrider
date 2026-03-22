@@ -9,13 +9,15 @@ import android.os.Build;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class PermissionUtils {
 
     private Activity mActivity;
     private Context mContext;
     private OnPermissionGrantedListener listener;
 
-//    public static int MY_PERMISSIONS_REQUEST_PERMISSION = 200;
     public static int REQ_CODE_STORAGE = 201;
     public static int REQ_CODE_CAMERA = 203;
 
@@ -36,34 +38,62 @@ public class PermissionUtils {
         return (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU);
     }
 
-    public void checkNotificationPermission(int REQ_CODE_NOTIFICATION) {
-        /*if (isAndroid13()) {
-            String permission = Manifest.permission.POST_NOTIFICATIONS;
-
-            if (ContextCompat.checkSelfPermission(mContext, permission) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(
-                        mActivity, new String[]{permission}, REQ_CODE_NOTIFICATION
-                );
-            }
-        }*/
+    public static boolean isAndroid14() {
+        return (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE);
     }
 
     public void checkStoragePermission() {
-        String read;
-        
-        // Android 13+ usa READ_MEDIA_IMAGES invece di READ_EXTERNAL_STORAGE
         if (isAndroid13()) {
-            read = Manifest.permission.READ_MEDIA_IMAGES;
+            List<String> permissions = new ArrayList<>();
+            permissions.add(Manifest.permission.READ_MEDIA_IMAGES);
+            permissions.add(Manifest.permission.READ_MEDIA_VIDEO);
+
+            if (isAndroid14()) {
+                permissions.add(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED);
+            }
+
+            boolean allGranted = true;
+            for (String p : permissions) {
+                if (!isGranted(p)) {
+                    allGranted = false;
+                    break;
+                }
+            }
+
+            if (allGranted) {
+                listener.onStoragePermissionGranted();
+            } else {
+                // Se siamo su Android 14 e l'utente ha già dato accesso parziale, consideriamolo concesso
+                if (isAndroid14() && isGranted(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED)) {
+                     listener.onStoragePermissionGranted();
+                } else {
+                    ActivityCompat.requestPermissions(mActivity, permissions.toArray(new String[0]), REQ_CODE_STORAGE);
+                }
+            }
         } else {
-            read = Manifest.permission.READ_EXTERNAL_STORAGE;
+            String read = Manifest.permission.READ_EXTERNAL_STORAGE;
+            if (isGranted(read)) {
+                listener.onStoragePermissionGranted();
+            } else {
+                ActivityCompat.requestPermissions(mActivity, new String[]{read}, REQ_CODE_STORAGE);
+            }
         }
-        
-        if (isGranted(read)) {
-            listener.onStoragePermissionGranted();
+    }
+
+    /**
+     * Helper to verify storage permission results, especially for Android 14.
+     */
+    public boolean verifyStorageResults(int[] grantResults) {
+        if (grantResults.length == 0) return false;
+
+        if (isAndroid13()) {
+            // Su Android 13+ (e 14), se ALMENO UN permesso è concesso, l'app può continuare (es. solo immagini o accesso parziale)
+            for (int result : grantResults) {
+                if (result == PackageManager.PERMISSION_GRANTED) return true;
+            }
+            return false;
         } else {
-            ActivityCompat.requestPermissions(
-                    mActivity, new String[]{read}, REQ_CODE_STORAGE
-            );
+            return grantResults[0] == PackageManager.PERMISSION_GRANTED;
         }
     }
 
@@ -80,24 +110,4 @@ public class PermissionUtils {
     public Boolean isGranted(String permission) {
         return ContextCompat.checkSelfPermission(mContext, permission) == PackageManager.PERMISSION_GRANTED;
     }
-
-    /*private void checkPermission(String camera, String read) {
-        if (!isGranted(read) && !isGranted(camera)) {
-            ActivityCompat.requestPermissions(
-                    mActivity, new String[]{read, camera}, MY_PERMISSIONS_REQUEST_PERMISSION
-            );
-        } else {
-            if (!isGranted(read)) {
-                ActivityCompat.requestPermissions(
-                        mActivity, new String[]{read}, MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE
-                );
-            } else if (!isGranted(camera)) {
-                ActivityCompat.requestPermissions(
-                        mActivity, new String[]{camera}, MY_PERMISSIONS_REQUEST_ACCESS_CAMERA
-                );
-            } else {
-                checkStoragePermission();
-            }
-        }
-    }*/
 }

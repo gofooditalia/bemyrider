@@ -71,7 +71,7 @@ public class MessageDetailActivity extends AppCompatActivity {
     private ActivityMessageDetailBinding binding;
     private MessageDetailItemAdapter messageDetailItemAdapter;
     private ArrayList<MessageListDetailPojoItem> messageDetailPojoItems = new ArrayList<>();
-    private String realPath = "", fileName, serviceId = "";
+    private String realPath = "", fileName = "", serviceId = "";
 
     private LinearLayoutManager layoutManager;
     private boolean attachedFile = false;
@@ -160,26 +160,40 @@ public class MessageDetailActivity extends AppCompatActivity {
                     try {
                         Intent data = result.getData();
                         if (result.getResultCode() == RESULT_OK && data != null) {
+                            Log.d(TAG, "File picked, URI: " + data.getData());
                             FileUtilPOJO fileUtils = FileUtils.getPath(MessageDetailActivity.this, data.getData());
-                            if (fileUtils.isRequiredDownload()) {
-                                String[] strArr = fileUtils.getPath().split(",");
-                                new DownloadAsync(MessageDetailActivity.this, Uri.parse(strArr[2]), strArr[0], strArr[1], downloadResult -> {
-                                    realPath = downloadResult;
-                                    fileName = realPath.substring(realPath.lastIndexOf("/") + 1);
-                                    attachedFile = true;
-                                    binding.layoutBottompanel.edtMessage.setText(fileName);
-                                    Log.e("PAAAAAAAAAAAAAAAAAAATH", realPath);
-                                }).execute();
+                            if (fileUtils != null) {
+                                if (fileUtils.isRequiredDownload()) {
+                                    String[] strArr = fileUtils.getPath().split(",");
+                                    new DownloadAsync(MessageDetailActivity.this, Uri.parse(strArr[2]), strArr[0], strArr[1], downloadResult -> {
+                                        realPath = downloadResult;
+                                        if (realPath != null) {
+                                            fileName = realPath.substring(realPath.lastIndexOf("/") + 1);
+                                            attachedFile = true;
+                                            binding.layoutBottompanel.edtMessage.setText(fileName);
+                                            Log.d(TAG, "Remote file downloaded to: " + realPath);
+                                        }
+                                    }).execute();
+                                } else {
+                                    realPath = fileUtils.getPath();
+                                    if (realPath != null) {
+                                        fileName = realPath.substring(realPath.lastIndexOf("/") + 1);
+                                        attachedFile = true;
+                                        binding.layoutBottompanel.edtMessage.setText(fileName);
+                                        Log.d(TAG, "Local file path obtained: " + realPath);
+                                    } else {
+                                        Log.e(TAG, "FileUtils.getPath returned null path.");
+                                        ToastMaster.showShort(mContext, "Could not get file path.");
+                                    }
+                                }
                             } else {
-                                realPath = fileUtils.getPath();
-                                fileName = realPath.substring(realPath.lastIndexOf("/") + 1);
-                                attachedFile = true;
-                                binding.layoutBottompanel.edtMessage.setText(fileName);
-                                Log.e("PAAAAAAAAAAAAAAAAAAATH", realPath);
+                                Log.e(TAG, "FileUtils.getPath returned null FileUtilPOJO.");
+                                ToastMaster.showShort(mContext, "Could not get file information.");
                             }
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
+                        Log.e(TAG, "Error in galleryActivityResult: " + e.getMessage());
                     }
                 });
     }
@@ -188,7 +202,7 @@ public class MessageDetailActivity extends AppCompatActivity {
         Intent intent = new Intent();
         intent.setType("*/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
-        actResGallery.launch(Intent.createChooser(intent, "select multiple images"));
+        actResGallery.launch(Intent.createChooser(intent, "select file"));
     }
 
     private void serviceCallSendMessage() {
@@ -202,10 +216,18 @@ public class MessageDetailActivity extends AppCompatActivity {
         textParams.put("to_user_id", getIntent().getStringExtra("to_user"));
         textParams.put("service_id", serviceId);
         textParams.put("service_master_id", getIntent().getStringExtra("master_id"));
-        if (attachedFile) {
-            fileParams.put("attachment", new File(realPath));
+        
+        if (attachedFile && realPath != null && !realPath.isEmpty()) {
+            File file = new File(realPath);
+            if (file.exists()) {
+                fileParams.put("attachment", file);
+                Log.d(TAG, "Sending attachment: " + realPath);
+            } else {
+                Log.e(TAG, "Attachment file does not exist: " + realPath);
+            }
         } else {
             textParams.put("message_text", Utils.encodeEmoji(binding.layoutBottompanel.edtMessage.getText().toString().trim()));
+            Log.d(TAG, "Sending text message");
         }
 
         new WebServiceCall(MessageDetailActivity.this, WebServiceUrl.URL_SEND_MESSAGE,
@@ -216,14 +238,18 @@ public class MessageDetailActivity extends AppCompatActivity {
                         binding.layoutBottompanel.pgSend.setVisibility(View.GONE);
                         binding.layoutBottompanel.ImgSend.setVisibility(View.VISIBLE);
                         if (status) {
+                            Log.d(TAG, "Message sent successfully");
                             binding.txtNoRecordMes.setVisibility(View.GONE);
                             binding.recyclerMessageDetails.setVisibility(View.VISIBLE);
                             SendMessagePojo sendMessagePojo = (SendMessagePojo) obj;
                             binding.layoutBottompanel.edtMessage.setText("");
+                            attachedFile = false; // Reset
+                            realPath = "";
                             messageDetailPojoItems.add(0, sendMessagePojo.getData());
                             messageDetailItemAdapter.notifyDataSetChanged();
                             binding.recyclerMessageDetails.scrollToPosition(0);
                         } else {
+                            Log.e(TAG, "Failed to send message: " + obj);
                             Toast.makeText(MessageDetailActivity.this, (String) obj, Toast.LENGTH_SHORT).show();
                         }
                     }
@@ -242,7 +268,7 @@ public class MessageDetailActivity extends AppCompatActivity {
 
         LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
 
-        if (page > 1) {
+        if (page > 1 && !messageDetailPojoItems.isEmpty()) {
             textParams.put("last_message_id", messageDetailPojoItems.get(messageDetailPojoItems.size() - 1).getMessageId());
         }
         textParams.put("from_user_id", PrefsUtil.with(MessageDetailActivity.this).readString("UserId"));
@@ -353,14 +379,14 @@ public class MessageDetailActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == PermissionUtils.REQ_CODE_STORAGE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) permissionUtils.checkStoragePermission();
+            if (permissionUtils.verifyStorageResults(grantResults)) permissionUtils.checkStoragePermission();
             else ToastMaster.showShort(mContext, R.string.err_permission_storage);
         }
     }
 
     @Override
     protected void onDestroy() {
-        try { connectionManager.unregisterReceiver(); } catch (Exception e) { e.printStackTrace(); }
+        try { if (connectionManager != null) connectionManager.unregisterReceiver(); } catch (Exception e) { e.printStackTrace(); }
         Utils.cancelAsyncTask(sendMessageAsync);
         Utils.cancelAsyncTask(messageDetailAsync);
         super.onDestroy();
