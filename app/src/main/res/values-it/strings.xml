@@ -571,7 +571,7 @@
     <string name="lbl_residential_address_with_dot">Indirizzo di residenza*</string>
     <string name="lbl_hourly_rate_with_dot">Inserisci la tua tariffa oraria*</string>
     <string name="lbl_vehicle_detail_with_dot">Modello ed equipaggiamento del veicolo*</string>
-    <string name="err_msg_price_per_hour">La tariffa oraria massima dovrebbe essere di 12,5€/ora</string>
+    <string name="err_msg_price_per_hour">La tariffa oraria deve essere compresa tra 8,5€ e 12,5€</string>
     <string name="lbl_city_of_birth">Città di nascita</string>
     <string name="lbl_date_of_birth">Data di nascita</string>
     <string name="lbl_city_of_residence">Città di residenza</string>

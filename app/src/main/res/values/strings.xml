@@ -578,7 +578,7 @@
     <string name="lbl_residential_address_with_dot">Residential Address*</string>
     <string name="lbl_hourly_rate_with_dot">Enter your hourly rate*</string>
     <string name="lbl_vehicle_detail_with_dot">Vehicle model and equipment*</string>
-    <string name="err_msg_price_per_hour">Maximum hourly rate should be 12.5€/hour</string>
+    <string name="err_msg_price_per_hour">Hourly rate must be between 8.5€ and 12.5€</string>
     <string name="lbl_city_of_company">City of Company</string>
     <string name="lbl_city_of_company_with_dot">City of Company*</string>
     <string name="err_msg_city_of_company">Please Provide City of Company</string>

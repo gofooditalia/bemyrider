@@ -22,8 +22,8 @@ android {
         applicationId "com.app.bemyrider"
         minSdk 29
         targetSdk 36
-        versionCode 42
-        versionName "1.4.6"
+        versionCode 43
+        versionName "1.4.7"
         // multiDexEnabled true <-- Rimosso: minSdk 29 non richiede più Multidex.
         
         resValue "string", "google_maps_api_key", getLocalProperty('GOOGLE_MAPS_API_KEY') ?: ""

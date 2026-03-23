@@ -315,7 +315,7 @@ public class AddNewService_Activity extends AppCompatActivity implements GridVie
         }
 
         float pricePerHour = Float.parseFloat(strPricePerHour);
-        if (pricePerHour > 12.5f) {
+        if (pricePerHour < 8.5f || pricePerHour > 12.5f) {
             Toast.makeText(mContext, R.string.err_msg_price_per_hour, Toast.LENGTH_SHORT).show();
             return false;
         }
