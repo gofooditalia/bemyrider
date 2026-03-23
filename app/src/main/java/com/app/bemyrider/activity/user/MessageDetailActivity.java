@@ -14,6 +14,7 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -66,7 +67,7 @@ public class MessageDetailActivity extends AppCompatActivity {
     private PermissionUtils permissionUtils;
     private ConnectionManager connectionManager;
 
-    private ActivityResultLauncher<Intent> actResGallery;
+    private ActivityResultLauncher<PickVisualMediaRequest> actResPhotoPicker;
 
     private ActivityMessageDetailBinding binding;
     private MessageDetailItemAdapter messageDetailItemAdapter;
@@ -123,7 +124,7 @@ public class MessageDetailActivity extends AppCompatActivity {
             }
         });
 
-        binding.layoutBottompanel.imgAttachFiles.setOnClickListener(view -> permissionUtils.checkStoragePermission());
+        binding.layoutBottompanel.imgAttachFiles.setOnClickListener(view -> openAndPickFile());
 
         binding.layoutBottompanel.ImgSend.setOnClickListener(v -> {
             if (!binding.layoutBottompanel.edtMessage.getText().toString().trim().equals("")) {
@@ -151,58 +152,55 @@ public class MessageDetailActivity extends AppCompatActivity {
         layoutManager.setStackFromEnd(true);
         binding.recyclerMessageDetails.setLayoutManager(layoutManager);
 
-        galleryActivityResult();
+        photoPickerActivityResult();
     }
 
-    private void galleryActivityResult() {
-        actResGallery = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(), result -> {
-                    try {
-                        Intent data = result.getData();
-                        if (result.getResultCode() == RESULT_OK && data != null) {
-                            Log.d(TAG, "File picked, URI: " + data.getData());
-                            FileUtilPOJO fileUtils = FileUtils.getPath(MessageDetailActivity.this, data.getData());
-                            if (fileUtils != null) {
-                                if (fileUtils.isRequiredDownload()) {
-                                    String[] strArr = fileUtils.getPath().split(",");
-                                    new DownloadAsync(MessageDetailActivity.this, Uri.parse(strArr[2]), strArr[0], strArr[1], downloadResult -> {
-                                        realPath = downloadResult;
-                                        if (realPath != null) {
-                                            fileName = realPath.substring(realPath.lastIndexOf("/") + 1);
-                                            attachedFile = true;
-                                            binding.layoutBottompanel.edtMessage.setText(fileName);
-                                            Log.d(TAG, "Remote file downloaded to: " + realPath);
-                                        }
-                                    }).execute();
-                                } else {
-                                    realPath = fileUtils.getPath();
-                                    if (realPath != null) {
-                                        fileName = realPath.substring(realPath.lastIndexOf("/") + 1);
-                                        attachedFile = true;
-                                        binding.layoutBottompanel.edtMessage.setText(fileName);
-                                        Log.d(TAG, "Local file path obtained: " + realPath);
-                                    } else {
-                                        Log.e(TAG, "FileUtils.getPath returned null path.");
-                                        ToastMaster.showShort(mContext, "Could not get file path.");
-                                    }
+    private void photoPickerActivityResult() {
+        actResPhotoPicker = registerForActivityResult(new ActivityResultContracts.PickVisualMedia(), uri -> {
+            if (uri != null) {
+                try {
+                    Log.d(TAG, "Photo picked, URI: " + uri);
+                    FileUtilPOJO fileUtils = FileUtils.getPath(MessageDetailActivity.this, uri);
+                    if (fileUtils != null) {
+                        if (fileUtils.isRequiredDownload()) {
+                            String[] strArr = fileUtils.getPath().split(",");
+                            new DownloadAsync(MessageDetailActivity.this, Uri.parse(strArr[2]), strArr[0], strArr[1], downloadResult -> {
+                                realPath = downloadResult;
+                                if (realPath != null) {
+                                    fileName = realPath.substring(realPath.lastIndexOf("/") + 1);
+                                    attachedFile = true;
+                                    binding.layoutBottompanel.edtMessage.setText(fileName);
+                                    Log.d(TAG, "Remote file downloaded to: " + realPath);
                                 }
+                            }).execute();
+                        } else {
+                            realPath = fileUtils.getPath();
+                            if (realPath != null) {
+                                fileName = realPath.substring(realPath.lastIndexOf("/") + 1);
+                                attachedFile = true;
+                                binding.layoutBottompanel.edtMessage.setText(fileName);
+                                Log.d(TAG, "Local file path obtained: " + realPath);
                             } else {
-                                Log.e(TAG, "FileUtils.getPath returned null FileUtilPOJO.");
-                                ToastMaster.showShort(mContext, "Could not get file information.");
+                                Log.e(TAG, "FileUtils.getPath returned null path.");
+                                ToastMaster.showShort(mContext, "Could not get file path.");
                             }
                         }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        Log.e(TAG, "Error in galleryActivityResult: " + e.getMessage());
+                    } else {
+                        Log.e(TAG, "FileUtils.getPath returned null FileUtilPOJO.");
+                        ToastMaster.showShort(mContext, "Could not get file information.");
                     }
-                });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Log.e(TAG, "Error in photoPickerActivityResult: " + e.getMessage());
+                }
+            }
+        });
     }
 
     private void openAndPickFile() {
-        Intent intent = new Intent();
-        intent.setType("*/*");
-        intent.setAction(Intent.ACTION_GET_CONTENT);
-        actResGallery.launch(Intent.createChooser(intent, "select file"));
+        actResPhotoPicker.launch(new PickVisualMediaRequest.Builder()
+                .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
+                .build());
     }
 
     private void serviceCallSendMessage() {

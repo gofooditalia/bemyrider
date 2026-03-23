@@ -44,32 +44,8 @@ public class PermissionUtils {
 
     public void checkStoragePermission() {
         if (isAndroid13()) {
-            List<String> permissions = new ArrayList<>();
-            permissions.add(Manifest.permission.READ_MEDIA_IMAGES);
-            permissions.add(Manifest.permission.READ_MEDIA_VIDEO);
-
-            if (isAndroid14()) {
-                permissions.add(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED);
-            }
-
-            boolean allGranted = true;
-            for (String p : permissions) {
-                if (!isGranted(p)) {
-                    allGranted = false;
-                    break;
-                }
-            }
-
-            if (allGranted) {
-                listener.onStoragePermissionGranted();
-            } else {
-                // Se siamo su Android 14 e l'utente ha già dato accesso parziale, consideriamolo concesso
-                if (isAndroid14() && isGranted(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED)) {
-                     listener.onStoragePermissionGranted();
-                } else {
-                    ActivityCompat.requestPermissions(mActivity, permissions.toArray(new String[0]), REQ_CODE_STORAGE);
-                }
-            }
+            // Con Photo Picker non servono permessi su Android 13+
+            listener.onStoragePermissionGranted();
         } else {
             String read = Manifest.permission.READ_EXTERNAL_STORAGE;
             if (isGranted(read)) {
@@ -87,11 +63,9 @@ public class PermissionUtils {
         if (grantResults.length == 0) return false;
 
         if (isAndroid13()) {
-            // Su Android 13+ (e 14), se ALMENO UN permesso è concesso, l'app può continuare (es. solo immagini o accesso parziale)
-            for (int result : grantResults) {
-                if (result == PackageManager.PERMISSION_GRANTED) return true;
-            }
-            return false;
+            // Su Android 13+, i permessi READ_MEDIA_* sono stati rimossi dall'app.
+            // Se questa funzione viene chiamata, assumiamo che non siano più necessari per il Photo Picker.
+            return true;
         } else {
             return grantResults[0] == PackageManager.PERMISSION_GRANTED;
         }
