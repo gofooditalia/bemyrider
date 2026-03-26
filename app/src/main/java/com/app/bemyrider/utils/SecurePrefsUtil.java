@@ -65,18 +65,26 @@ public class SecurePrefsUtil {
 
     public void write(String name, int number) {
         sharedPreferences.edit().putInt(name, number).apply();
+        try { PrefsUtil.with(mContext).write(name, number); } catch (Exception ignored) {}
     }
 
     public void write(String name, String str) {
         sharedPreferences.edit().putString(name, str).apply();
+        // Fallback per garantire la retrocompatibilità con l'intera app, 
+        // MA escludiamo rigorosamente i dati sensibili per chiudere la falla.
+        if (!"Pass".equals(name) && !"eMail".equals(name)) {
+            try { PrefsUtil.with(mContext).write(name, str); } catch (Exception ignored) {}
+        }
     }
 
     public void write(String name, float number) {
         sharedPreferences.edit().putFloat(name, number).apply();
+        try { PrefsUtil.with(mContext).write(name, number); } catch (Exception ignored) {}
     }
 
     public void write(String name, boolean bool) {
         sharedPreferences.edit().putBoolean(name, bool).apply();
+        try { PrefsUtil.with(mContext).write(name, bool); } catch (Exception ignored) {}
     }
 
     public int readInt(String name) { return sharedPreferences.getInt(name, DEFAULT_INT); }
