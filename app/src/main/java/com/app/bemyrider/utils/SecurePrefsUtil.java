@@ -94,6 +94,7 @@ public class SecurePrefsUtil {
         String lanId = sharedPreferences.getString("lanId", DEFAULT_STRING);
         String currency = sharedPreferences.getString("CurrencySign", DEFAULT_STRING);
         boolean hasSeenIntro = sharedPreferences.getBoolean("hasSeenIntro", false);
+        boolean migratedToSecure = sharedPreferences.getBoolean("migrated_to_secure", false);
 
         sharedPreferences.edit().clear().apply();
         try { PrefsUtil.with(mContext).clearPrefs(); } catch (Exception ignored) {}
@@ -102,6 +103,7 @@ public class SecurePrefsUtil {
         write("lanId", lanId);
         write("CurrencySign", currency);
         write("hasSeenIntro", hasSeenIntro);
+        write("migrated_to_secure", migratedToSecure);
     }
 
     public void migrateFromLegacy(PrefsUtil legacyPrefs) {
@@ -114,6 +116,22 @@ public class SecurePrefsUtil {
                 write(key, val);
             }
         }
-        legacyPrefs.clearPrefs();
+        
+        write("migrated_to_secure", true);
+        // legacyPrefs.clearPrefs(); // Removed to prevent breaking components still relying on PrefsUtil
+    }
+
+    public void syncToLegacyIfNeeded() {
+        if (!sharedPreferences.getBoolean("synced_to_legacy", false)) {
+            String[] stringKeys = { "UserId", "UserName", "FirstName", "LastName", "UserType", "eMail", "Pass",
+                    "device_token", "lanId", "CurrencySign", "UserImg", "login_cust_address", "loginType", "socialId", "isProfileCompleted", "countrycodeid" };
+            for (String key : stringKeys) {
+                String val = sharedPreferences.getString(key, "");
+                if (val != null && !val.isEmpty()) {
+                    try { PrefsUtil.with(mContext).write(key, val); } catch (Exception ignored) {}
+                }
+            }
+            write("synced_to_legacy", true);
+        }
     }
 }

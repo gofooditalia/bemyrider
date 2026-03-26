@@ -87,11 +87,18 @@ public class SplashScreenActivity extends AppCompatActivity {
     }
 
     private void migrateLegacyPrefs() {
-        PrefsUtil legacyPrefs = PrefsUtil.with(context);
-        if (legacyPrefs.readString("UserId") != null && !legacyPrefs.readString("UserId").isEmpty()) {
-            Log.i(TAG, "Migrating legacy preferences to encrypted storage...");
-            securePrefs.migrateFromLegacy(legacyPrefs);
+        if (!securePrefs.readBoolean("migrated_to_secure")) {
+            PrefsUtil legacyPrefs = PrefsUtil.with(context);
+            if (legacyPrefs.readString("UserId") != null && !legacyPrefs.readString("UserId").isEmpty()) {
+                Log.i(TAG, "Migrating legacy preferences to encrypted storage...");
+                securePrefs.migrateFromLegacy(legacyPrefs);
+            } else {
+                securePrefs.write("migrated_to_secure", true);
+            }
         }
+        
+        // Fix for previously corrupted users: restore the missing UserId in legacy
+        securePrefs.syncToLegacyIfNeeded();
     }
 
     private void setupFirebaseAndConnection() {
