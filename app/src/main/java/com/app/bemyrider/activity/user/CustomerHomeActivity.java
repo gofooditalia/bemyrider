@@ -90,6 +90,9 @@ public class CustomerHomeActivity extends AppCompatActivity implements BottomNav
             }
         };
 
+        // Fix: Evitiamo il leak di IntentReceiver registrandolo qui una sola volta
+        registerReceiver(mMessageReceiver, new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE"));
+
         // Modern OnBackPressed callback
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
@@ -143,6 +146,7 @@ public class CustomerHomeActivity extends AppCompatActivity implements BottomNav
             Intent intent = new Intent(mContext, UserServicesActivity.class);
             intent.putExtra(Utils.PROVIDER_ID, providerId);
             intent.putExtra("providerImage", ""); 
+            intent.putExtra("isFromDeepLink", true); // Fix: Impostiamo il flag per l'auto-redirect controllato
             startActivity(intent);
         }
     }
@@ -168,7 +172,6 @@ public class CustomerHomeActivity extends AppCompatActivity implements BottomNav
 
     @Override
     protected void onResume() {
-        registerReceiver(mMessageReceiver, new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE"));
         super.onResume();
     }
 
@@ -179,7 +182,12 @@ public class CustomerHomeActivity extends AppCompatActivity implements BottomNav
         } catch (Exception e) {
             e.printStackTrace();
         }
-        unregisterReceiver(mMessageReceiver);
+        
+        try {
+            unregisterReceiver(mMessageReceiver);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         super.onDestroy();
     }
 

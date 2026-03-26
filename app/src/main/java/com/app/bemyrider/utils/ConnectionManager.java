@@ -93,7 +93,12 @@ public class ConnectionManager {
 
     private void setSnackbarMessage(String status, boolean showInternet) {
         viewGroup = mActivity.findViewById(android.R.id.content);
-        snackView = mActivity.getLayoutInflater().inflate(R.layout.custom_snackbar, viewGroup);
+        
+        // Evita il Memory Leak: non ricreare la view ogni volta e non impilarla!
+        if (snackView == null) {
+            snackView = mActivity.getLayoutInflater().inflate(R.layout.custom_snackbar, viewGroup, false);
+            viewGroup.addView(snackView);
+        }
 
         String internetStatus = "";
         if (status.equalsIgnoreCase("Wifi enabled") || status.equalsIgnoreCase("Mobile data enabled")) {
@@ -102,19 +107,17 @@ public class ConnectionManager {
             internetStatus = mContext.getResources().getString(R.string.message_no_connection);
         }
         Log.e("checkConnection: ", internetStatus);
+        
+        final RelativeLayout relativeLayout = snackView.findViewById(R.id.snackbar_relativelayout);
+        TextView textView = snackView.findViewById(R.id.snackbar_text);
+        
         if (internetStatus.equalsIgnoreCase(mContext.getResources().getString(R.string.message_no_connection))) {
-
-            RelativeLayout relativeLayout = (snackView).findViewById(R.id.snackbar_relativelayout);
-            TextView textView = (snackView).findViewById(R.id.snackbar_text);
             relativeLayout.setBackgroundColor(mActivity.getResources().getColor(R.color.colorRed));
             textView.setText(internetStatus);
             relativeLayout.setVisibility(View.INVISIBLE);
             slideUp(relativeLayout);
         } else {
             if (showInternet) {
-
-                final RelativeLayout relativeLayout = (snackView).findViewById(R.id.snackbar_relativelayout);
-                TextView textView = (snackView).findViewById(R.id.snackbar_text);
                 relativeLayout.setBackgroundColor(mActivity.getResources().getColor(R.color.colorDarkGreen));
                 textView.setText(internetStatus);
 
@@ -137,7 +140,7 @@ public class ConnectionManager {
         TranslateAnimation animate = new TranslateAnimation(
                 0,                 // fromXDelta
                 0,                 // toXDelta
-                view.getHeight(),  // fromYDelta
+                view.getHeight() > 0 ? view.getHeight() : 150,  // fromYDelta
                 0);                // toYDelta
         animate.setDuration(300);
         animate.setFillAfter(true);
@@ -150,7 +153,7 @@ public class ConnectionManager {
                 0,                 // fromXDelta
                 0,                 // toXDelta
                 0,                 // fromYDelta
-                view.getHeight()); // toYDelta
+                view.getHeight() > 0 ? view.getHeight() : 150); // toYDelta
         animate.setDuration(300);
         animate.setFillAfter(true);
         animate.setInterpolator(new DecelerateInterpolator());

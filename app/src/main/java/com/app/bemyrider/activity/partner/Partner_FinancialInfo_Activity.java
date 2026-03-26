@@ -2,6 +2,8 @@ package com.app.bemyrider.activity.partner;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
@@ -35,6 +37,8 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.LinkedHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Modified by Hardik Talaviya on 3/12/19.
@@ -46,6 +50,8 @@ public class Partner_FinancialInfo_Activity extends AppCompatActivity {
     private WebServiceCall finincialDetailAsync;
     private Context context;
     private ConnectionManager connectionManager;
+    private ExecutorService diskExecutor = Executors.newSingleThreadExecutor();
+    private Handler mainHandler = new Handler(Looper.getMainLooper());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -120,7 +126,7 @@ public class Partner_FinancialInfo_Activity extends AppCompatActivity {
 
                     @Override
                     public void onAsync(Object asyncTask) {
-                        finincialDetailAsync = null;
+                        finincialDetailAsync = (WebServiceCall) asyncTask;
                     }
 
                     @Override
@@ -171,40 +177,66 @@ public class Partner_FinancialInfo_Activity extends AppCompatActivity {
     }
 
     private void getOfflineDetails() {
-        try {
-            binding.progress.setVisibility(View.GONE);
-            binding.llMain.setVisibility(View.VISIBLE);
-            Log.e("Offline", "onMessageEvent: Partner Financial Info");
-            File f = new File(getFilesDir().getPath() + "/" + "offline.json");
-            //check whether file exists
-            FileInputStream is = new FileInputStream(f);
-            int size = is.available();
-            byte[] buffer = new byte[size];
-            is.read(buffer);
-            is.close();
-            String s = new String(buffer);
-            JSONObject object = new JSONObject(s);
-            JSONObject dataObj = object.getJSONObject("data");
-            JSONObject financialInfo = dataObj.getJSONObject("financialInfo");
-            GsonBuilder gsonBuilder = new GsonBuilder();
-            gsonBuilder.setDateFormat("M/d/yy hh:mm a"); //Format of our JSON dates
-            Gson gson = gsonBuilder.create();
-            FinancialInfoPojoItem item = gson.fromJson(financialInfo.toString(), FinancialInfoPojoItem.class);
-            FinancialInfoPojo infoPojo = new FinancialInfoPojo();
-            infoPojo.setData(item);
-            binding.txtCompleteServiceA.setText(PrefsUtil.with(Partner_FinancialInfo_Activity.this).readString("CurrencySign") + infoPojo.getData().getTotalCompletedService());
-            binding.txtTotalCommision.setText(String.format("%s%s", PrefsUtil.with(Partner_FinancialInfo_Activity.this).readString("CurrencySign"), infoPojo.getData().getTotalCommission()));
-            binding.txtTotalEarned.setText(String.format("%s%s", PrefsUtil.with(Partner_FinancialInfo_Activity.this).readString("CurrencySign"), infoPojo.getData().getTotalNetEarned()));
-            binding.txtTotal.setText(String.format("%s%s", PrefsUtil.with(Partner_FinancialInfo_Activity.this).readString("CurrencySign"), infoPojo.getData().getTotalEarned()));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        binding.progress.setVisibility(View.VISIBLE);
+        binding.llMain.setVisibility(View.GONE);
+        Log.e("Offline", "onMessageEvent: Partner Financial Info - Loading in Background");
+        
+        diskExecutor.execute(() -> {
+            try {
+                File f = new File(getFilesDir().getPath() + "/" + "offline.json");
+                if (!f.exists()) {
+                    mainHandler.post(() -> {
+                        binding.progress.setVisibility(View.GONE);
+                        Toast.makeText(context, "No offline data available", Toast.LENGTH_SHORT).show();
+                    });
+                    return;
+                }
+                
+                FileInputStream is = new FileInputStream(f);
+                int size = is.available();
+                byte[] buffer = new byte[size];
+                is.read(buffer);
+                is.close();
+                String s = new String(buffer);
+                
+                JSONObject object = new JSONObject(s);
+                JSONObject dataObj = object.getJSONObject("data");
+                JSONObject financialInfo = dataObj.getJSONObject("financialInfo");
+                
+                GsonBuilder gsonBuilder = new GsonBuilder();
+                gsonBuilder.setDateFormat("M/d/yy hh:mm a"); 
+                Gson gson = gsonBuilder.create();
+                FinancialInfoPojoItem item = gson.fromJson(financialInfo.toString(), FinancialInfoPojoItem.class);
+                
+                mainHandler.post(() -> {
+                    try {
+                        binding.progress.setVisibility(View.GONE);
+                        binding.llMain.setVisibility(View.VISIBLE);
+                        
+                        // Fix P2: Rimosso il CurrencySign da TotalCompletedService (è un intero)
+                        binding.txtCompleteServiceA.setText(String.valueOf(item.getTotalCompletedService()));
+                        binding.txtTotalCommision.setText(String.format("%s%s", PrefsUtil.with(Partner_FinancialInfo_Activity.this).readString("CurrencySign"), item.getTotalCommission()));
+                        binding.txtTotalEarned.setText(String.format("%s%s", PrefsUtil.with(Partner_FinancialInfo_Activity.this).readString("CurrencySign"), item.getTotalNetEarned()));
+                        binding.txtTotal.setText(String.format("%s%s", PrefsUtil.with(Partner_FinancialInfo_Activity.this).readString("CurrencySign"), item.getTotalEarned()));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                });
+                
+            } catch (Exception e) {
+                e.printStackTrace();
+                mainHandler.post(() -> {
+                    binding.progress.setVisibility(View.GONE);
+                });
+            }
+        });
     }
 
     @Override
     protected void onDestroy() {
         try {
             connectionManager.unregisterReceiver();
+            if (diskExecutor != null && !diskExecutor.isShutdown()) diskExecutor.shutdown();
         } catch (Exception e) {
             e.printStackTrace();
         }

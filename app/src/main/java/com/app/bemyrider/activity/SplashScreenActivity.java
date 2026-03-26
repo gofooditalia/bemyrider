@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
@@ -27,12 +29,12 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import java.io.File;
 import java.io.FileWriter;
 import java.util.LinkedHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * BLAZING FAST SPLASH SCREEN - Refactored 2024
- * - No 3-second delay
- * - No synchronous blocking API calls
- * - Fast path directly to Home if logged in
+ * - Fast path directly to Home if logged in (with minimal delay for forced update check)
  * - Background data sync
  */
 public class SplashScreenActivity extends AppCompatActivity {
@@ -41,6 +43,12 @@ public class SplashScreenActivity extends AppCompatActivity {
     private Context context;
     private ConnectionManager connectionManager;
     private SecurePrefsUtil securePrefs;
+    private ExecutorService diskExecutor = Executors.newSingleThreadExecutor();
+    
+    private boolean isUpdateRequired = false;
+    private boolean isVersionChecked = false;
+    private Handler mainHandler = new Handler(Looper.getMainLooper());
+    private Runnable fallbackNavigationTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,14 +72,23 @@ public class SplashScreenActivity extends AppCompatActivity {
         }
 
         // ==========================================================
-        // FAST PATH: Start background tasks (Non-Blocking)
+        // Avvia i task in background
         // ==========================================================
-        performBackgroundTasks();
-
+        saveOfflineDataInBackground();
+        
         // ==========================================================
-        // FAST PATH: Immediate Navigation
+        // Safe Fast Path: Controlla aggiornamenti critici prima di navigare
         // ==========================================================
-        navigateToNextScreen();
+        checkVersionAndNavigate();
+        
+        // Timeout di sicurezza: se la connessione è instabile, naviga comunque dopo 2.5s
+        fallbackNavigationTask = () -> {
+            if (!isVersionChecked && !isDestroyed()) {
+                Log.w(TAG, "Timeout check versione, procedo con la navigazione standard.");
+                navigateToNextScreen();
+            }
+        };
+        mainHandler.postDelayed(fallbackNavigationTask, 2500);
     }
 
     private void handleDeepLink() {
@@ -115,13 +132,9 @@ public class SplashScreenActivity extends AppCompatActivity {
         });
     }
 
-    private void performBackgroundTasks() {
-        Log.d(TAG, "🔄 Starting background tasks (Version Check & Offline Data)");
-        checkVersionInBackground();
-        saveOfflineDataInBackground();
-    }
-
     private void navigateToNextScreen() {
+        if (isUpdateRequired) return; // Blocca la navigazione se serve un update
+
         String userId = securePrefs.readString("UserId");
         String userType = securePrefs.readString("UserType");
         boolean hasSeenIntro = securePrefs.readBoolean("hasSeenIntro");
@@ -136,7 +149,7 @@ public class SplashScreenActivity extends AppCompatActivity {
 
         if (userId != null && !userId.isEmpty() && !userId.equals("0")) {
             // ✅ FAST PATH: User is logged in! Go to Home directly.
-            Log.d(TAG, "🚀 Fast Path: User already logged in, navigating to Home IMMEDIATELY.");
+            Log.d(TAG, "🚀 Fast Path: User already logged in, navigating to Home.");
             if ("c".equalsIgnoreCase(userType)) {
                 startActivity(new Intent(context, CustomerHomeActivity.class));
             } else {
@@ -156,12 +169,17 @@ public class SplashScreenActivity extends AppCompatActivity {
         finish();
     }
 
-    private void checkVersionInBackground() {
+    private void checkVersionAndNavigate() {
         Context appContext = getApplicationContext();
         new WebServiceCall(appContext, WebServiceUrl.URL_GETSITESETTINGDATA,
                 new LinkedHashMap<>(), VersionDataPOJO.class, false, new WebServiceCall.OnResultListener() {
             @Override
             public void onResult(boolean status, Object obj) {
+                if (isDestroyed()) return;
+                
+                isVersionChecked = true;
+                mainHandler.removeCallbacks(fallbackNavigationTask);
+
                 if (status) {
                     try {
                         VersionDataPOJO versionDataPOJO = (VersionDataPOJO) obj;
@@ -170,6 +188,7 @@ public class SplashScreenActivity extends AppCompatActivity {
                             int newVersion = Integer.parseInt(versionDataPOJO.getVersionData().getAppVersion());
                             
                             if (versionCode < newVersion) {
+                                isUpdateRequired = true;
                                 Log.d(TAG, "⚠️ Forced update needed. Launching Play Store.");
                                 Toast.makeText(appContext, "Aggiornamento app richiesto. Reindirizzamento in corso...", Toast.LENGTH_LONG).show();
                                 
@@ -177,16 +196,23 @@ public class SplashScreenActivity extends AppCompatActivity {
                                 Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + appPackageName));
                                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                                 try {
-                                    appContext.startActivity(intent);
+                                    startActivity(intent);
                                 } catch (android.content.ActivityNotFoundException anfe) {
                                     Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + appPackageName));
                                     webIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                                    appContext.startActivity(webIntent);
+                                    startActivity(webIntent);
                                 }
+                                finish();
+                                return;
                             }
                         }
-                    } catch (Exception e) { e.printStackTrace(); }
+                    } catch (Exception e) { 
+                        Log.e(TAG, "Error checking version", e);
+                    }
                 }
+                
+                // Nessun update richiesto o API fallita, procedi
+                navigateToNextScreen();
             }
             @Override public void onAsync(Object obj) {}
             @Override public void onCancelled() {}
@@ -206,15 +232,19 @@ public class SplashScreenActivity extends AppCompatActivity {
             @Override
             public void onResult(boolean status, Object obj) {
                 if (status) {
-                    try {
-                        File offlineFile = new File(appContext.getFilesDir().getPath(), "/offline.json");
-                        if (!offlineFile.exists()) offlineFile.createNewFile();
-                        FileWriter file = new FileWriter(offlineFile);
-                        file.write((String) obj);
-                        file.flush();
-                        file.close();
-                        Log.d(TAG, "✅ Offline data saved in background");
-                    } catch (Exception e) { e.printStackTrace(); }
+                    diskExecutor.execute(() -> {
+                        try {
+                            File offlineFile = new File(appContext.getFilesDir().getPath(), "/offline.json");
+                            if (!offlineFile.exists()) offlineFile.createNewFile();
+                            FileWriter file = new FileWriter(offlineFile);
+                            file.write((String) obj);
+                            file.flush();
+                            file.close();
+                            Log.d(TAG, "✅ Offline data saved in background");
+                        } catch (Exception e) { 
+                            Log.e(TAG, "Error saving offline data", e);
+                        }
+                    });
                 }
             }
             @Override public void onAsync(Object obj) {}
@@ -226,6 +256,10 @@ public class SplashScreenActivity extends AppCompatActivity {
     protected void onDestroy() {
         try {
             if (connectionManager != null) connectionManager.unregisterReceiver();
+            if (diskExecutor != null && !diskExecutor.isShutdown()) diskExecutor.shutdown();
+            if (mainHandler != null && fallbackNavigationTask != null) {
+                mainHandler.removeCallbacks(fallbackNavigationTask);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }

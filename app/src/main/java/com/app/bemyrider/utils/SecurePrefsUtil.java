@@ -65,27 +65,22 @@ public class SecurePrefsUtil {
 
     public void write(String name, int number) {
         sharedPreferences.edit().putInt(name, number).apply();
-        try { PrefsUtil.with(mContext).write(name, number); } catch (Exception ignored) {}
     }
 
     public void write(String name, String str) {
         sharedPreferences.edit().putString(name, str).apply();
-        try { PrefsUtil.with(mContext).write(name, str); } catch (Exception ignored) {}
     }
 
     public void write(String name, float number) {
         sharedPreferences.edit().putFloat(name, number).apply();
-        try { PrefsUtil.with(mContext).write(name, number); } catch (Exception ignored) {}
     }
 
     public void write(String name, boolean bool) {
         sharedPreferences.edit().putBoolean(name, bool).apply();
-        try { PrefsUtil.with(mContext).write(name, bool); } catch (Exception ignored) {}
     }
 
     public int readInt(String name) { return sharedPreferences.getInt(name, DEFAULT_INT); }
     
-    // Fix for boolean cast exception on corrupted data
     public String readString(String name) { 
         try {
             return sharedPreferences.getString(name, DEFAULT_STRING); 
@@ -96,7 +91,6 @@ public class SecurePrefsUtil {
     
     public float readFloat(String name) { return sharedPreferences.getFloat(name, DEFAULT_FLOAT); }
     
-    // Fix for boolean cast exception on corrupted data
     public boolean readBoolean(String name) { 
         try {
             return sharedPreferences.getBoolean(name, DEFAULT_BOOLEAN); 
@@ -136,12 +130,18 @@ public class SecurePrefsUtil {
         }
         
         write("migrated_to_secure", true);
-        // legacyPrefs.clearPrefs(); // Removed to prevent breaking components still relying on PrefsUtil
+        
+        // Pulisco i dati sensibili in chiaro dalla memoria non sicura dopo la migrazione
+        try {
+            legacyPrefs.write("Pass", "");
+            legacyPrefs.write("eMail", "");
+        } catch (Exception ignored) {}
     }
 
     public void syncToLegacyIfNeeded() {
         if (!readBoolean("synced_to_legacy")) {
-            String[] stringKeys = { "UserId", "UserName", "FirstName", "LastName", "UserType", "eMail", "Pass",
+            // Rimosso Pass ed eMail dalla sync in chiaro per chiudere la falla!
+            String[] stringKeys = { "UserId", "UserName", "FirstName", "LastName", "UserType",
                     "device_token", "lanId", "CurrencySign", "UserImg", "login_cust_address", "loginType", "socialId", "countrycodeid" };
             for (String key : stringKeys) {
                 String val = readString(key);

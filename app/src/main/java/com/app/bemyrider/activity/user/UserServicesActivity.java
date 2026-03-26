@@ -3,6 +3,8 @@ package com.app.bemyrider.activity.user;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.MenuItem;
@@ -46,6 +48,8 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Modified by Hardik Talaviya on 2/12/19.
@@ -64,6 +68,12 @@ public class UserServicesActivity extends AppCompatActivity {
     private String keyWord = "";
     private WebServiceCall serviceListAsync;
     private ConnectionManager connectionManager;
+    
+    // Flag per evitare loop di navigazione sugli auto-redirects
+    private boolean isFromDeepLink = false;
+    
+    private ExecutorService diskExecutor = Executors.newSingleThreadExecutor();
+    private Handler mainHandler = new Handler(Looper.getMainLooper());
 
     /*pagination vars start*/
     private boolean loading = true;
@@ -93,6 +103,9 @@ public class UserServicesActivity extends AppCompatActivity {
             finish();
             return;
         }
+        
+        // Lettura del flag dal deep link
+        isFromDeepLink = getIntent().getBooleanExtra("isFromDeepLink", false);
 
         initView();
 
@@ -161,7 +174,8 @@ public class UserServicesActivity extends AppCompatActivity {
                     adapter.notifyDataSetChanged();
 
                     // --- LOGICA AUTO-REDIRECT PER DEEP LINK ---
-                    if (arrayList.size() == 1) {
+                    if (isFromDeepLink && arrayList.size() == 1) {
+                        isFromDeepLink = false; // Reset immediato del flag per evitare loop
                         MyServiceListItem item = arrayList.get(0);
                         Intent i = new Intent(mContext, ServiceDetailActivity.class);
                         i.putExtra(Utils.PROVIDER_SERVICE_ID, item.getProviderServiceId());
@@ -196,7 +210,7 @@ public class UserServicesActivity extends AppCompatActivity {
 
             @Override
             public void onAsync(Object asyncTask) {
-                serviceListAsync = null;
+                serviceListAsync = (WebServiceCall) asyncTask;
             }
 
             @Override
@@ -307,47 +321,72 @@ public class UserServicesActivity extends AppCompatActivity {
     }
 
     private void getOfflineDetails() {
-        try {
-            binding.layoutNoservice.setVisibility(View.GONE);
-            binding.progress.setVisibility(View.GONE);
-            binding.rvMyservice.setVisibility(View.VISIBLE);
-            Log.e("Offline", "onMessageEvent: My Service");
-            File f = new File(getFilesDir().getPath() + "/" + "offline.json");
-            //check whether file exists
-            FileInputStream is = new FileInputStream(f);
-            int size = is.available();
-            byte[] buffer = new byte[size];
-            is.read(buffer);
-            is.close();
-            String s = new String(buffer);
-            JSONObject object = new JSONObject(s);
-            JSONObject dataObj = object.getJSONObject("data");
-            JSONArray serviceList = dataObj.getJSONArray("serviceList");
-            GsonBuilder gsonBuilder = new GsonBuilder();
-            gsonBuilder.setDateFormat("M/d/yy hh:mm a"); //Format of our JSON dates
-            Gson gson = gsonBuilder.create();
-            Type listType = new TypeToken<List<MyServiceListItem>>() {
-            }.getType();
-            ArrayList<MyServiceListItem> list = gson.fromJson(serviceList.toString(), listType);
+        binding.layoutNoservice.setVisibility(View.GONE);
+        binding.progress.setVisibility(View.VISIBLE);
+        binding.rvMyservice.setVisibility(View.GONE);
+        Log.e("Offline", "onMessageEvent: My Service - Background task");
 
-            arrayList.clear();
-            arrayList.addAll(list);
-            if (!(arrayList.size() > 0)) {
-                binding.layoutNoservice.setVisibility(View.VISIBLE);
+        diskExecutor.execute(() -> {
+            try {
+                File f = new File(getFilesDir().getPath() + "/" + "offline.json");
+                if (!f.exists()) {
+                    mainHandler.post(() -> {
+                        binding.progress.setVisibility(View.GONE);
+                        binding.layoutNoservice.setVisibility(View.VISIBLE);
+                    });
+                    return;
+                }
+                
+                FileInputStream is = new FileInputStream(f);
+                int size = is.available();
+                byte[] buffer = new byte[size];
+                is.read(buffer);
+                is.close();
+                String s = new String(buffer);
+                
+                JSONObject object = new JSONObject(s);
+                JSONObject dataObj = object.getJSONObject("data");
+                JSONArray serviceList = dataObj.getJSONArray("serviceList");
+                
+                GsonBuilder gsonBuilder = new GsonBuilder();
+                gsonBuilder.setDateFormat("M/d/yy hh:mm a"); 
+                Gson gson = gsonBuilder.create();
+                Type listType = new TypeToken<List<MyServiceListItem>>() {}.getType();
+                ArrayList<MyServiceListItem> list = gson.fromJson(serviceList.toString(), listType);
+
+                mainHandler.post(() -> {
+                    try {
+                        binding.progress.setVisibility(View.GONE);
+                        binding.rvMyservice.setVisibility(View.VISIBLE);
+                        
+                        arrayList.clear();
+                        arrayList.addAll(list);
+                        
+                        if (!(arrayList.size() > 0)) {
+                            binding.layoutNoservice.setVisibility(View.VISIBLE);
+                        }
+            
+                        adapter.notifyDataSetChanged();
+                        binding.rvMyservice.removeOnScrollListener(listner);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                });
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                mainHandler.post(() -> {
+                    binding.progress.setVisibility(View.GONE);
+                });
             }
-
-            adapter.notifyDataSetChanged();
-            binding.rvMyservice.removeOnScrollListener(listner);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        });
     }
 
     @Override
     protected void onDestroy() {
         try {
             connectionManager.unregisterReceiver();
+            if (diskExecutor != null && !diskExecutor.isShutdown()) diskExecutor.shutdown();
         } catch (Exception e) {
             e.printStackTrace();
         }
