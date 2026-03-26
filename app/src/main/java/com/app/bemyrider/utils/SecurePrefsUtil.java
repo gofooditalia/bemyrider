@@ -84,9 +84,27 @@ public class SecurePrefsUtil {
     }
 
     public int readInt(String name) { return sharedPreferences.getInt(name, DEFAULT_INT); }
-    public String readString(String name) { return sharedPreferences.getString(name, DEFAULT_STRING); }
+    
+    // Fix for boolean cast exception on corrupted data
+    public String readString(String name) { 
+        try {
+            return sharedPreferences.getString(name, DEFAULT_STRING); 
+        } catch (ClassCastException e) {
+            return DEFAULT_STRING;
+        }
+    }
+    
     public float readFloat(String name) { return sharedPreferences.getFloat(name, DEFAULT_FLOAT); }
-    public boolean readBoolean(String name) { return sharedPreferences.getBoolean(name, DEFAULT_BOOLEAN); }
+    
+    // Fix for boolean cast exception on corrupted data
+    public boolean readBoolean(String name) { 
+        try {
+            return sharedPreferences.getBoolean(name, DEFAULT_BOOLEAN); 
+        } catch (ClassCastException e) {
+            return DEFAULT_BOOLEAN;
+        }
+    }
+    
     public boolean contains(String key) { return sharedPreferences.contains(key); }
 
     public void clearPrefs() {
@@ -122,15 +140,19 @@ public class SecurePrefsUtil {
     }
 
     public void syncToLegacyIfNeeded() {
-        if (!sharedPreferences.getBoolean("synced_to_legacy", false)) {
+        if (!readBoolean("synced_to_legacy")) {
             String[] stringKeys = { "UserId", "UserName", "FirstName", "LastName", "UserType", "eMail", "Pass",
-                    "device_token", "lanId", "CurrencySign", "UserImg", "login_cust_address", "loginType", "socialId", "isProfileCompleted", "countrycodeid" };
+                    "device_token", "lanId", "CurrencySign", "UserImg", "login_cust_address", "loginType", "socialId", "countrycodeid" };
             for (String key : stringKeys) {
-                String val = sharedPreferences.getString(key, "");
+                String val = readString(key);
                 if (val != null && !val.isEmpty()) {
                     try { PrefsUtil.with(mContext).write(key, val); } catch (Exception ignored) {}
                 }
             }
+            // Sync booleans separately to avoid ClassCastException
+            boolean isProfileCompleted = readBoolean("isProfileCompleted");
+            try { PrefsUtil.with(mContext).write("isProfileCompleted", isProfileCompleted); } catch (Exception ignored) {}
+
             write("synced_to_legacy", true);
         }
     }
