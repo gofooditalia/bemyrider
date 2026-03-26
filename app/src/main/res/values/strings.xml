@@ -646,4 +646,9 @@
         <item>Personal reasons</item>
         <item>Other</item>
     </string-array>
+
+    <!-- Job Board Feature -->
+    <string name="job_board">Bacheca Annunci</string>
+    <string name="create_job_post">Crea Annuncio Ingaggio</string>
+    <string name="my_job_posts">Bacheca Annunci</string>
 </resources>

@@ -21,10 +21,8 @@ import com.app.bemyrider.R;
 import com.app.bemyrider.activity.user.ServiceDetailActivity;
 import com.app.bemyrider.model.user.ProviderItem;
 import com.app.bemyrider.utils.PrefsUtil;
-// Coil Imports
 import coil.Coil;
 import coil.request.ImageRequest;
-// import com.squareup.picasso.Picasso;
 
 public class DeliveryTypeAdapter extends ListAdapter<ProviderItem, DeliveryTypeAdapter.MyViewHolder> {
 
@@ -51,27 +49,40 @@ public class DeliveryTypeAdapter extends ListAdapter<ProviderItem, DeliveryTypeA
     public void onBindViewHolder(@NonNull DeliveryTypeAdapter.MyViewHolder holder, int position) {
         ProviderItem item = getItem(position);
         if (item != null) {
-            holder.txtName.setText(item.getProviderFirstName() + " " + item.getProviderLastName());
+            String fullName = item.getProviderFirstName() + " " + item.getProviderLastName();
+            holder.txtName.setText(fullName);
             holder.txtAddress.setText(item.getAddress());
             holder.txtRateCount.setText(item.getAvgRating());
             holder.txtRate.setText(item.getHourRate().toString());
 
-            // Coil Migration from Picasso
-            ImageRequest request = new ImageRequest.Builder(act)
-                .data(item.getProviderImage())
-                .placeholder(R.drawable.loading)
-                .target(holder.imgProvider)
-                .build();
-            Coil.imageLoader(act).enqueue(request);
+            String imageUrl = item.getProviderImage();
+            
+            // Check if it is literally the server default placeholder
+            boolean isExplicitlyEmpty = imageUrl == null || imageUrl.isEmpty() || 
+                                       imageUrl.toLowerCase().contains("no_user_image.png");
+
+            ImageRequest.Builder requestBuilder = new ImageRequest.Builder(act)
+                .placeholder(R.drawable.account_circle_24)
+                .error(R.drawable.account_circle_24)
+                .target(holder.imgProvider);
+
+            if (!isExplicitlyEmpty) {
+                // Load the actual image.
+                // Do not use crossfade with custom CircleImageView to avoid blank bitmap conversions!
+                requestBuilder.data(imageUrl);
+            } else {
+                requestBuilder.data(R.drawable.account_circle_24);
+            }
+
+            Coil.imageLoader(act).enqueue(requestBuilder.build());
 
             holder.relDetail.setOnClickListener(v -> {
                 if (isUserLogin()) {
-                    // FIX: Save correctly the delivery_type based on the selected tab
                     PrefsUtil.with(act).write("delivery_type", deliveryType);
                     PrefsUtil.with(act).write("request_type", "scheduled");
                     Intent i = new Intent(act, ServiceDetailActivity.class);
                     i.putExtra("isCallApi", "y");
-                    i.putExtra("serviceName", item.getProviderFirstName() + " " + item.getProviderLastName());
+                    i.putExtra("serviceName", fullName);
                     i.putExtra(PROVIDER_ID, item.getProviderId());
                     act.startActivity(i);
                 }
@@ -93,7 +104,6 @@ public class DeliveryTypeAdapter extends ListAdapter<ProviderItem, DeliveryTypeA
             txtRateCount = itemView.findViewById(R.id.txtRateCount);
             relDetail = itemView.findViewById(R.id.relDetail);
             txtRate = itemView.findViewById(R.id.txtRate);
-
         }
     }
 }

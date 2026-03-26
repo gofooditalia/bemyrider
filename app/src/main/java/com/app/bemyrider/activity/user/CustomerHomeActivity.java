@@ -12,10 +12,12 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -69,7 +71,6 @@ public class CustomerHomeActivity extends AppCompatActivity implements BottomNav
                 }
             });
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -81,15 +82,36 @@ public class CustomerHomeActivity extends AppCompatActivity implements BottomNav
         initView();
         
         checkAndRequestNotificationPermission();
-        
         checkPendingDeepLink();
 
         mMessageReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                // Non inviare eventi EventBus da qui per evitare race condition
             }
         };
+
+        // Modern OnBackPressed callback
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (isFirst) {
+                    if (doubleBackToExitPressedOnce) {
+                        finish();
+                        return;
+                    }
+                    doubleBackToExitPressedOnce = true;
+                    ToastMaster.showShort(mContext, R.string.back_press_msg);
+                    new Handler(Looper.getMainLooper()).postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
+                } else {
+                    isFirst = true;
+                    Fragment fragment = new CustomerHomeFragment();
+                    FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+                    ft.replace(R.id.content_frame, fragment);
+                    binding.bottomNavigationView.getMenu().findItem(R.id.nav_home_c).setChecked(true);
+                    ft.commit();
+                }
+            }
+        });
     }
 
     private void checkAndRequestNotificationPermission() {
@@ -105,11 +127,9 @@ public class CustomerHomeActivity extends AppCompatActivity implements BottomNav
                 .setTitle(R.string.notification_permission_title)
                 .setMessage(R.string.notification_permission_message)
                 .setPositiveButton(R.string.ok, (dialog, which) -> {
-                    // L'utente ha accettato il nostro pre-dialogo, ora mostriamo il popup di sistema
                     requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
                 })
                 .setNegativeButton(R.string.cancel, (dialog, which) -> {
-                    // L'utente ha negato il pre-dialogo, non facciamo nulla.
                 })
                 .show();
     }
@@ -119,9 +139,7 @@ public class CustomerHomeActivity extends AppCompatActivity implements BottomNav
         String providerId = securePrefs.readString("pending_deeplink_id");
         if (providerId != null && !providerId.isEmpty()) {
             Log.i(TAG, "Found pending deep link for provider: " + providerId);
-            
             securePrefs.write("pending_deeplink_id", "");
-            
             Intent intent = new Intent(mContext, UserServicesActivity.class);
             intent.putExtra(Utils.PROVIDER_ID, providerId);
             intent.putExtra("providerImage", ""); 
@@ -201,26 +219,6 @@ public class CustomerHomeActivity extends AppCompatActivity implements BottomNav
             ft.commit();
         }
 
-    }
-
-    @Override
-    public void onBackPressed() {
-        if (isFirst) {
-            if (doubleBackToExitPressedOnce) {
-                super.onBackPressed();
-                return;
-            }
-            this.doubleBackToExitPressedOnce = true;
-            ToastMaster.showShort(mContext, R.string.back_press_msg);
-            new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
-        } else {
-            isFirst = true;
-            Fragment fragment = new CustomerHomeFragment();
-            FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-            ft.replace(R.id.content_frame, fragment);
-            binding.bottomNavigationView.getMenu().findItem(R.id.nav_home_c).setChecked(true);
-            ft.commit();
-        }
     }
 
     private void myActivityResult() {

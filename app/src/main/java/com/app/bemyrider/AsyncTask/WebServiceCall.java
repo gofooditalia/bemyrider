@@ -2,13 +2,10 @@ package com.app.bemyrider.AsyncTask;
 
 import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.View;
 import android.widget.ProgressBar;
 
 import androidx.appcompat.app.AlertDialog;
@@ -33,12 +30,16 @@ import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
 import java.net.URL;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
+/**
+ * Gestione chiamate API con supporto alla cancellazione.
+ * Optimized by Gemini - 2024.
+ */
 public class WebServiceCall {
 
     private static final String TAG = "WebServiceCall";
@@ -54,19 +55,14 @@ public class WebServiceCall {
     private boolean isInternetAvailable;
     private Dialog mdialog;
 
-    // Executor per sostituire AsyncTask
-    private static final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private static final ExecutorService executor = Executors.newFixedThreadPool(4);
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
-
-    // Deprecated legacy references to avoid breaking existing code immediately if referenced directly
-    // private GetAsyncTask getAsyncTask; 
-    // private UploadImageAsyncTask uploadImageAsyncTask;
+    private Future<?> currentTask;
+    private boolean isCancelled = false;
 
     public WebServiceCall(Context mContext, String url, LinkedHashMap<String, String> textParams,
                           Object model, boolean showDialog, OnResultListener OnResultListener) {
 
-        // Correzione Log Level
-        Log.i(TAG, "WebServiceCall: " + textParams.toString());
         this.url = url;
         this.model = model;
         this.mContext = mContext;
@@ -76,11 +72,6 @@ public class WebServiceCall {
         isInternetAvailable = cd.isNetworkConnected(mContext);
         if (isInternetAvailable) {
             executeRequest(textParams, null, showDialog);
-        } else {
-            // Gestione mancanza rete
-            if (OnResultListener != null) {
-                // OnResultListener.onResult(false, mContext.getString(R.string.no_internet));
-            }
         }
     }
 
@@ -96,65 +87,78 @@ public class WebServiceCall {
         config = new WebServiceConfig();
         if (isInternetAvailable) {
             executeRequest(textParams, fileParams, showDialog);
-        } else {
-             // Gestione mancanza rete
         }
+    }
+
+    /**
+     * Cancella la richiesta corrente.
+     */
+    public void cancel() {
+        isCancelled = true;
+        if (currentTask != null && !currentTask.isDone()) {
+            currentTask.cancel(true);
+            Log.d(TAG, "Task cancelled for URL: " + url);
+        }
+        if (mdialog != null && mdialog.isShowing()) {
+            mdialog.dismiss();
+        }
+    }
+
+    public boolean isCancelled() {
+        return isCancelled;
     }
 
     private void executeRequest(final LinkedHashMap<String, String> textParams, 
                                 final LinkedHashMap<String, File> fileParams, 
                                 final boolean showDialog) {
 
-        // Iniettiamo parametri comuni (token, lingua, userid)
         SecurePrefsUtil prefs = SecurePrefsUtil.with(mContext);
         textParams.put("lId", prefs.readString("lanId"));
         if (!TextUtils.isEmpty(prefs.readString("UserId"))) {
             textParams.put("login_userid", prefs.readString("UserId"));
         }
 
-        // Show Dialog UI
         if (showDialog) {
             showProgressDialog();
         }
 
-        // Notifica start
         if (OnResultListener != null) {
-            OnResultListener.onAsync(null); // Passiamo null perché non c'è più AsyncTask
+            OnResultListener.onAsync(this);
         }
 
-        // Esecuzione in background
-        executor.execute(() -> {
+        currentTask = executor.submit(() -> {
+            if (isCancelled) return;
+
             String result = "";
             boolean success = false;
-            long startTime = System.currentTimeMillis(); // Inizio misurazione tempo
+            long startTime = System.currentTimeMillis();
 
-            if (fileParams != null && !fileParams.isEmpty()) {
-                // Upload multipart con file
-                result = performMultipartRequest(url, textParams, fileParams);
-                // Se il risultato non è un messaggio di errore di rete, assumiamo successo HTTP
+            try {
+                if (fileParams != null && !fileParams.isEmpty()) {
+                    result = performMultipartRequest(url, textParams, fileParams);
+                } else {
+                    result = performPostRequest(url, textParams);
+                }
+
                 if (!result.equals(WebServiceConfig.CONNECTION_TIMEOUT_ERROR) 
                         && !result.equals(WebServiceConfig.UNEXPECTED_ERROR)) {
                     success = true;
                 }
-            } else {
-                // Richiesta Standard POST
-                result = performPostRequest(url, textParams);
-                // Se il risultato non è un messaggio di errore di rete, assumiamo successo HTTP
-                if (!result.equals(WebServiceConfig.CONNECTION_TIMEOUT_ERROR) 
-                        && !result.equals(WebServiceConfig.UNEXPECTED_ERROR)) {
-                    success = true;
-                }
+            } catch (Exception e) {
+                result = WebServiceConfig.UNEXPECTED_ERROR;
             }
 
-            long duration = System.currentTimeMillis() - startTime; // Calcolo durata
+            if (isCancelled) return;
 
-            Log.i(TAG, "Request URL: " + url + " completed in " + duration + "ms"); // Log durata
+            long duration = System.currentTimeMillis() - startTime;
+            Log.i(TAG, "Request completed in " + duration + "ms: " + url);
             
             final String finalResult = result;
             final boolean finalSuccess = success;
 
-            // Post result on UI Thread
             mainHandler.post(() -> {
+                if (isCancelled) return;
+                
                 if (showDialog) {
                     hideProgressDialog();
                 }
@@ -171,97 +175,53 @@ public class WebServiceCall {
     private String performMultipartRequest(String requestUrl, LinkedHashMap<String, String> textParams, 
                                            LinkedHashMap<String, File> fileParams) {
         String final_url = requestUrl.replaceAll(" ", "%20");
-        // Correzione Log Level
-        Log.i(TAG, "Multipart URL: " + final_url);
         String charset = "UTF-8";
         
         try {
             MultipartUtility multipart = new MultipartUtility(final_url, charset, config);
-            
-            // Aggiungi parametri testuali
             for (Map.Entry<String, String> entry : textParams.entrySet()) {
-                if (entry.getKey() != null && entry.getValue() != null) {
-                    // Correzione Log Level
-                    Log.d(TAG, "Multipart Param: " + entry.getKey() + ":" + entry.getValue());
-                    multipart.addFormField(entry.getKey(), entry.getValue());
-                }
+                if (isCancelled) return "";
+                multipart.addFormField(entry.getKey(), entry.getValue());
             }
             
-            // Aggiungi file
-            int filesAdded = 0;
             for (Map.Entry<String, File> entry : fileParams.entrySet()) {
-                if (entry.getKey() != null && entry.getValue() != null) {
-                    File file = entry.getValue();
-                    if (file.exists()) {
-                        // Correzione Log Level
-                        Log.d(TAG, "Multipart File: " + entry.getKey() + ":" + file.getAbsolutePath() + " (size: " + file.length() + " bytes)");
-                        multipart.addFilePart(entry.getKey(), file);
-                        filesAdded++;
-                    } else {
-                        // Correzione Log Level
-                        Log.w(TAG, "Multipart File NOT FOUND: " + entry.getKey() + ":" + file.getAbsolutePath());
-                    }
+                if (isCancelled) return "";
+                File file = entry.getValue();
+                if (file.exists()) {
+                    multipart.addFilePart(entry.getKey(), file);
                 }
             }
-            // Correzione Log Level
-            Log.i(TAG, "Total files added to multipart: " + filesAdded + " out of " + fileParams.size());
             
-            // Completa la richiesta e ottieni la risposta
-            String response = multipart.finish();
-            // Correzione Log Level
-            Log.i(TAG, "Multipart Response: " + response);
-            return response;
+            return multipart.finish();
             
         } catch (SocketTimeoutException e1) {
-            Log.e(TAG, "Multipart timeout: " + e1.getMessage());
             return WebServiceConfig.CONNECTION_TIMEOUT_ERROR;
         } catch (IOException e) {
-            Log.e(TAG, "Multipart IOException: " + e.getMessage());
-            e.printStackTrace();
-            // Se l'eccezione contiene una risposta del server (formato: "Server returned status X: {response}")
-            String errorMsg = e.getMessage();
-            if (errorMsg != null && errorMsg.contains("Server returned status")) {
-                // Estrai la risposta JSON dal messaggio di errore
-                int colonIndex = errorMsg.indexOf(": ");
-                if (colonIndex > 0 && colonIndex < errorMsg.length() - 1) {
-                    String serverResponse = errorMsg.substring(colonIndex + 2);
-                    Log.e(TAG, "Server error response: " + serverResponse);
-                    return serverResponse; // Restituisci la risposta del server per gestirla
-                }
-            }
             return WebServiceConfig.UNEXPECTED_ERROR;
         } catch (Exception e) {
-            Log.e(TAG, "Multipart error: " + e.getMessage());
-            e.printStackTrace();
             return WebServiceConfig.UNEXPECTED_ERROR;
         }
     }
 
     private String performPostRequest(String requestUrl, LinkedHashMap<String, String> params) {
         String final_url = requestUrl.replaceAll(" ", "%20");
-        // Correzione Log Level
-        Log.i("URL", final_url);
         try {
             URL urlObj = new URL(final_url);
-            HttpURLConnection httpURLConnection = (HttpURLConnection) urlObj.openConnection();
-            httpURLConnection.setRequestMethod("POST");
-            httpURLConnection.setConnectTimeout(config.CONNECTION_TIMEOUT_MILLISECONDS);
-            httpURLConnection.setReadTimeout(config.READ_TIMEOUT_MILLISECONDS);
-            httpURLConnection.setDoInput(true);
-            httpURLConnection.setDoOutput(true);
+            HttpURLConnection conn = (HttpURLConnection) urlObj.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setConnectTimeout(config.CONNECTION_TIMEOUT_MILLISECONDS);
+            conn.setReadTimeout(config.READ_TIMEOUT_MILLISECONDS);
+            conn.setDoInput(true);
+            conn.setDoOutput(true);
 
-            Uri.Builder builder = new Uri.Builder();
+            android.net.Uri.Builder builder = new android.net.Uri.Builder();
             for (Map.Entry<String, String> entry : params.entrySet()) {
-                if (entry.getKey() != null && entry.getValue() != null) {
-                    // Correzione Log Level
-                    Log.d("PARAMS", entry.getKey() + ":" + entry.getValue());
-                    builder.appendQueryParameter(entry.getKey(), entry.getValue());
-                }
+                builder.appendQueryParameter(entry.getKey(), entry.getValue());
             }
 
             String query = builder.build().getEncodedQuery();
             if (!TextUtils.isEmpty(query)) {
-                OutputStream os = httpURLConnection.getOutputStream();
+                OutputStream os = conn.getOutputStream();
                 BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
                 writer.write(query);
                 writer.flush();
@@ -269,19 +229,16 @@ public class WebServiceCall {
                 os.close();
             }
 
-            httpURLConnection.connect();
-            // Correzione Log Level
-            Log.i("Response Code:", "Response Code: " + httpURLConnection.getResponseCode());
-            InputStream in = new BufferedInputStream(httpURLConnection.getInputStream());
+            if (isCancelled) return "";
+            conn.connect();
+            
+            InputStream in = new BufferedInputStream(conn.getInputStream());
             String response = getStringFromInputStream(in);
-            // Correzione Log Level
-            Log.i("Response : ", response);
             return response;
 
         } catch (SocketTimeoutException e1) {
             return WebServiceConfig.CONNECTION_TIMEOUT_ERROR;
         } catch (Exception e) {
-            e.printStackTrace();
             return WebServiceConfig.UNEXPECTED_ERROR;
         }
     }
@@ -298,7 +255,6 @@ public class WebServiceCall {
 
     private void handleSuccessResponse(String result) {
         try {
-            // Pulizia del risultato da eventuali spazi o apici spuri (es. server che risponde solo "s")
             String cleanResult = result.trim().replace("\"", "");
             if (cleanResult.equalsIgnoreCase("s")) {
                 if (model == CommonPojo.class) {
@@ -316,13 +272,11 @@ public class WebServiceCall {
             JSONObject object = new JSONObject(result);
             if (model == String.class) {
                 if (OnResultListener != null) OnResultListener.onResult(true, result);
-                return; // Stop here for String requests
+                return;
             } 
             
             if (object.has("status") && object.getBoolean("status")) {
-                GsonBuilder gsonBuilder = new GsonBuilder();
-                gsonBuilder.setDateFormat("M/d/yy hh:mm a");
-                Gson gson = gsonBuilder.create();
+                Gson gson = new GsonBuilder().setDateFormat("M/d/yy hh:mm a").create();
                 if (OnResultListener != null) OnResultListener.onResult(true, gson.fromJson(result, (Class) model));
             } else {
                 String msg = object.has("message") ? object.getString("message") : "Unknown error";
@@ -330,8 +284,7 @@ public class WebServiceCall {
             }
 
         } catch (Exception e) {
-            Log.e(TAG, "Parsing Error for result: " + result, e);
-            if (OnResultListener != null) OnResultListener.onResult(false, "Parsing Error: " + e.getMessage());
+            if (OnResultListener != null) OnResultListener.onResult(false, "Parsing Error");
         }
     }
 
@@ -344,12 +297,11 @@ public class WebServiceCall {
             builder.setMessage(result);
             builder.setPositiveButton(R.string.retry, (dialog, which) -> {
                 dialog.dismiss();
-                // Retry logic
                 executeRequest(textParams, fileParams, showDialog);
             });
             builder.setNegativeButton(R.string.no, (dialog, which) -> {
                 dialog.dismiss();
-                if (OnResultListener != null) OnResultListener.onResult(false, "User Cancelled Retry");
+                if (OnResultListener != null) OnResultListener.onResult(false, "User Cancelled");
             });
             builder.show();
         } else {
@@ -360,42 +312,32 @@ public class WebServiceCall {
     private void showProgressDialog() {
         try {
             if (progressBar != null) {
-                progressBar.setVisibility(View.VISIBLE);
+                progressBar.setVisibility(android.view.View.VISIBLE);
             } else {
                 if (mdialog == null) {
                     mdialog = new Dialog(mContext);
-                    mdialog.setTitle("");
                     mdialog.setCancelable(false);
                     mdialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
                     mdialog.setContentView(R.layout.layout_progress);
                 }
                 if (!mdialog.isShowing()) mdialog.show();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     private void hideProgressDialog() {
         try {
             if (progressBar != null) {
-                progressBar.setVisibility(View.GONE);
-            } else {
-                if (mdialog != null && mdialog.isShowing()) {
-                    mdialog.dismiss();
-                }
+                progressBar.setVisibility(android.view.View.GONE);
+            } else if (mdialog != null && mdialog.isShowing()) {
+                mdialog.dismiss();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     public interface OnResultListener {
         void onResult(boolean status, Object obj);
-
-        // Mantenuto per compatibilità, ma deprecato
         void onAsync(Object obj);
-
         void onCancelled();
     }
 }

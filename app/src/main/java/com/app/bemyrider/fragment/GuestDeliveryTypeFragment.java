@@ -72,7 +72,10 @@ public class GuestDeliveryTypeFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         initView();
-        getAllProviders(true);
+        
+        // Posticipa la chiamata API per evitare invalidazioni della UI del TabLayout
+        binding.getRoot().post(() -> getAllProviders(true));
+        
         binding.rvDeliveryList.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
@@ -106,6 +109,8 @@ public class GuestDeliveryTypeFragment extends Fragment {
     }
 
     private void getAllProviders(boolean isClear) {
+        if (!isAdded()) return;
+
         if (isClear) {
             page = 1;
             binding.txtNoRecord.setVisibility(View.GONE);
@@ -152,6 +157,8 @@ public class GuestDeliveryTypeFragment extends Fragment {
         searchListAsync = new WebServiceCall(context, url, textParams, ProviderMainPojo.class, false, new WebServiceCall.OnResultListener() {
             @Override
             public void onResult(boolean status, Object obj) {
+                if (!isAdded()) return;
+                
                 if (binding.swipeRefresh.isRefreshing()) binding.swipeRefresh.setRefreshing(false);
                 
                 if (status) {
@@ -188,7 +195,7 @@ public class GuestDeliveryTypeFragment extends Fragment {
         currentIndex = position;
         mStrSearch = strSearch;
         binding.rvDeliveryList.setVisibility(View.GONE);
-        getAllProviders(true);
+        binding.getRoot().post(() -> getAllProviders(true));
     }
 
     public void filterDataUpdate(String address, String latitude, String longitude, String strAsc, String strDesc, String strSearch, String strRating, int position){
@@ -201,7 +208,7 @@ public class GuestDeliveryTypeFragment extends Fragment {
         mStrSearch = strSearch;
         mStrRating = strRating;
         binding.rvDeliveryList.setVisibility(View.GONE);
-        getAllProviders(true);
+        binding.getRoot().post(() -> getAllProviders(true));
     }
 
     @Override

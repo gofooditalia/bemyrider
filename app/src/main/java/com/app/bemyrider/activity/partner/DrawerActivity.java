@@ -21,15 +21,18 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.databinding.DataBindingUtil;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.app.bemyrider.Adapter.Partner.DrawerItemCustomAdapter;
 import com.app.bemyrider.R;
 import com.app.bemyrider.databinding.PartnerActivityProfileBinding;
+import com.app.bemyrider.fragment.partner.JobBoardFragment;
+import com.app.bemyrider.fragment.partner.ProviderProfileFragment; // Assunto che esista
 import com.app.bemyrider.model.MessageEvent;
 import com.app.bemyrider.model.ModelForDrawer;
 import com.app.bemyrider.utils.ConnectionManager;
-import com.app.bemyrider.utils.LocaleManager; // ✅ Import Aggiunto
-// import com.app.bemyrider.utils.Log; // This is the unused import
+import com.app.bemyrider.utils.LocaleManager;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -58,7 +61,6 @@ public class DrawerActivity extends AppCompatActivity {
         mMessageReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                // Non inviare eventi EventBus da qui per evitare race condition
             }
         };
 
@@ -69,13 +71,16 @@ public class DrawerActivity extends AppCompatActivity {
                     binding.drawerLayout.closeDrawer(binding.leftDrawer);
                 } else {
                     new AlertDialog.Builder(DrawerActivity.this)
-                            .setMessage("Are you sure you want to exit app?")
-                            .setPositiveButton("Yes", (dialogInterface, i) -> finish())
-                            .setNegativeButton("No", (dialogInterface, i) -> dialogInterface.cancel())
+                            .setMessage(getString(R.string.sure_exit_app))
+                            .setPositiveButton(getString(R.string.yes), (dialogInterface, i) -> finish())
+                            .setNegativeButton(getString(R.string.no), (dialogInterface, i) -> dialogInterface.cancel())
                             .show();
                 }
             }
         });
+        
+        // Default fragment
+        displaySelectedScreen(0);
     }
 
     private void initView() {
@@ -83,7 +88,7 @@ public class DrawerActivity extends AppCompatActivity {
 
         binding.appBarLayout.addOnOffsetChangedListener((appBarLayout, verticalOffset) -> {
             if (Math.abs(verticalOffset) == appBarLayout.getTotalScrollRange()) {
-                if (!binding.txtUsername.getText().equals(""))
+                if (!binding.txtUsername.getText().toString().equals(""))
                     binding.txtHeaderName.setText(binding.txtUsername.getText());
                 else
                     binding.txtHeaderName.setText(getResources().getString(R.string.provider_profile));
@@ -126,21 +131,22 @@ public class DrawerActivity extends AppCompatActivity {
     }
 
     private void setUpDrawer() {
-        ModelForDrawer[] drawerItem = new ModelForDrawer[14];
+        ModelForDrawer[] drawerItem = new ModelForDrawer[15];
         drawerItem[0] = new ModelForDrawer(R.mipmap.ic_profile_drawer, getString(R.string.profile));
-        drawerItem[1] = new ModelForDrawer(R.mipmap.ic_service_request, getString(R.string.service_request));
-        drawerItem[2] = new ModelForDrawer(R.mipmap.ic_financial_information, getString(R.string.financial_info));
-        drawerItem[3] = new ModelForDrawer(R.mipmap.ic_my_services, getString(R.string.my_services));
-        drawerItem[4] = new ModelForDrawer(R.mipmap.ic_messages_drawer, getString(R.string.message));
-        drawerItem[5] = new ModelForDrawer(R.mipmap.ic_notification_drawer, getString(R.string.notifications));
-        drawerItem[6] = new ModelForDrawer(R.mipmap.ic_resolution_center_drawer, getString(R.string.dispute_list));
-        drawerItem[7] = new ModelForDrawer(R.mipmap.ic_payment_history, getString(R.string.payment_history));
-        drawerItem[8] = new ModelForDrawer(R.mipmap.ic_wallet_drawer, getString(R.string.wallet));
-        drawerItem[9] = new ModelForDrawer(R.mipmap.ic_account_settings, getString(R.string.account_settings));
-        drawerItem[10] = new ModelForDrawer(R.mipmap.ic_feedback, getString(R.string.feedback));
-        drawerItem[11] = new ModelForDrawer(R.mipmap.ic_contact_us, getString(R.string.comtact_us));
-        drawerItem[12] = new ModelForDrawer(R.mipmap.ic_info_drawer, getString(R.string.info));
-        drawerItem[13] = new ModelForDrawer(R.mipmap.ic_logout, getString(R.string.logout));
+        drawerItem[1] = new ModelForDrawer(R.mipmap.ic_search_drawer, getString(R.string.job_board)); // Nuovo
+        drawerItem[2] = new ModelForDrawer(R.mipmap.ic_service_request, getString(R.string.service_request));
+        drawerItem[3] = new ModelForDrawer(R.mipmap.ic_financial_information, getString(R.string.financial_info));
+        drawerItem[4] = new ModelForDrawer(R.mipmap.ic_my_services, getString(R.string.my_services));
+        drawerItem[5] = new ModelForDrawer(R.mipmap.ic_messages_drawer, getString(R.string.message));
+        drawerItem[6] = new ModelForDrawer(R.mipmap.ic_notification_drawer, getString(R.string.notifications));
+        drawerItem[7] = new ModelForDrawer(R.mipmap.ic_resolution_center_drawer, getString(R.string.dispute_list));
+        drawerItem[8] = new ModelForDrawer(R.mipmap.ic_payment_history, getString(R.string.payment_history));
+        drawerItem[9] = new ModelForDrawer(R.mipmap.ic_wallet_drawer, getString(R.string.wallet));
+        drawerItem[10] = new ModelForDrawer(R.mipmap.ic_account_settings, getString(R.string.account_settings));
+        drawerItem[11] = new ModelForDrawer(R.mipmap.ic_feedback, getString(R.string.feedback));
+        drawerItem[12] = new ModelForDrawer(R.mipmap.ic_contact_us, getString(R.string.comtact_us));
+        drawerItem[13] = new ModelForDrawer(R.mipmap.ic_info_drawer, getString(R.string.info));
+        drawerItem[14] = new ModelForDrawer(R.mipmap.ic_logout, getString(R.string.logout));
 
         DrawerItemCustomAdapter adapter = new DrawerItemCustomAdapter(this, R.layout.drawerlist_rowitem, drawerItem, 0);
         binding.leftDrawer.setAdapter(adapter);
@@ -174,8 +180,27 @@ public class DrawerActivity extends AppCompatActivity {
     private class DrawerItemClickListener implements ListView.OnItemClickListener {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            // Implement navigation logic here
+            displaySelectedScreen(position);
             binding.drawerLayout.closeDrawers();
+        }
+    }
+
+    private void displaySelectedScreen(int position) {
+        Fragment fragment = null;
+        switch (position) {
+            case 0:
+                // fragment = new ProviderProfileFragment(); // Se esiste
+                break;
+            case 1:
+                fragment = new JobBoardFragment();
+                break;
+            // Altri casi da implementare...
+        }
+
+        if (fragment != null) {
+            FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+            ft.replace(R.id.content_frame_partner, fragment);
+            ft.commit();
         }
     }
 
@@ -227,7 +252,6 @@ public class DrawerActivity extends AppCompatActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMessageEvent(MessageEvent ignoredEvent) {
-        // Handle message event if needed
     }
 
     @Override

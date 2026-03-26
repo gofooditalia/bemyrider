@@ -16,21 +16,25 @@ import android.view.inputmethod.InputMethodManager;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.core.content.FileProvider;
 
+import com.app.bemyrider.AsyncTask.WebServiceCall;
 import com.app.bemyrider.helper.LogMaster;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Utility class for general operations.
+ * Optimized by Gemini - 2024.
+ */
 public class Utils {
 
     public static final String CATEGORY_ID = "categoryId";
     public static final String PROVIDER_ID = "providerId";
-    public static final String PROVIDER_SERVICE_ID = "providerServiceId"; // Added for Deep Link Redirection
+    public static final String PROVIDER_SERVICE_ID = "providerServiceId";
 
     public static InputFilter EMOJI_FILTER = (source, start, end, dest, dstart, dend) -> {
         for (int index = start; index < end; index++) {
@@ -68,10 +72,10 @@ public class Utils {
     public static boolean deleteDir(File dir) {
         if (dir != null && dir.isDirectory()) {
             String[] children = dir.list();
-            for (String child : children) {
-                boolean success = deleteDir(new File(dir, child));
-                if (!success) {
-                    return false;
+            if (children != null) {
+                for (String child : children) {
+                    boolean success = deleteDir(new File(dir, child));
+                    if (!success) return false;
                 }
             }
             return dir.delete();
@@ -93,16 +97,20 @@ public class Utils {
         return str == null || str.isEmpty();
     }
 
-    public static void cancelAsyncTask(Object task) { // MODIFICA: Accetta Object
+    /**
+     * Cancella task asincroni (AsyncTask o WebServiceCall).
+     */
+    public static void cancelAsyncTask(Object task) {
         try {
             if (task instanceof AsyncTask) {
                 AsyncTask<?, ?, ?> asyncTask = (AsyncTask<?, ?, ?>) task;
-                if (asyncTask != null && !asyncTask.isCancelled()) {
+                if (!asyncTask.isCancelled()) {
                     asyncTask.cancel(true);
                 }
+            } else if (task instanceof WebServiceCall) {
+                WebServiceCall webServiceCall = (WebServiceCall) task;
+                webServiceCall.cancel();
             }
-            // Se task è un WebServiceCall, non abbiamo un metodo di cancellazione esposto,
-            // ma almeno compila.
         } catch (Exception e) {
             e.printStackTrace();
         }

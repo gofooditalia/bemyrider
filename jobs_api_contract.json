@@ -1,0 +1,98 @@
+{
+  "api_version": "v1.0",
+  "project": "Bemyrider",
+  "feature": "Job Board (Bacheca)",
+  "base_path": "/api/v1/jobs/",
+  "models": {
+    "Job": {
+      "job_id": "int",
+      "customer_id": "int",
+      "title": "string (max 100)",
+      "description": "text",
+      "vehicle_required": "enum [auto, moto, bici, indifferente]",
+      "start_at": "datetime (YYYY-MM-DD HH:mm:ss)",
+      "end_at": "datetime (YYYY-MM-DD HH:mm:ss)",
+      "compensation": "decimal (ex: 50.00)",
+      "compensation_type": "enum [fisso, orario]",
+      "address": "string",
+      "lat": "double",
+      "lng": "double",
+      "status": "enum [open, selected, completed, cancelled]",
+      "created_at": "datetime"
+    },
+    "Applicant": {
+      "rider_id": "int",
+      "rider_name": "string",
+      "rider_image": "url",
+      "rating": "float",
+      "total_deliveries": "int",
+      "vehicle_type": "string"
+    }
+  },
+  "endpoints": {
+    "customer": [
+      {
+        "method": "POST",
+        "path": "create",
+        "description": "Crea un nuovo annuncio in bacheca",
+        "params": [
+          "user_id", "title", "description", "vehicle_required", "start_at", "end_at", "compensation", "compensation_type", "address", "lat", "lng"
+        ],
+        "push_action": "NEW_JOB_TO_RIDERS"
+      },
+      {
+        "method": "GET",
+        "path": "my-posts",
+        "description": "Lista annunci creati dall'esercente",
+        "query_params": ["user_id"]
+      },
+      {
+        "method": "GET",
+        "path": "{job_id}/applicants",
+        "description": "Lista rider candidati per un job specifico"
+      },
+      {
+        "method": "POST",
+        "path": "hire",
+        "description": "Ingaggia un rider e crea ServiceRequest",
+        "params": ["job_id", "rider_id"],
+        "response_extra": "serviceRequestId (ID per flusso pagamento)"
+      }
+    ],
+    "rider": [
+      {
+        "method": "GET",
+        "path": "available",
+        "description": "Lista job aperti filtrati per zona e veicolo",
+        "query_params": ["user_id", "lat", "lng", "vehicle_type"]
+      },
+      {
+        "method": "POST",
+        "path": "apply",
+        "description": "Candidatura del rider a un job",
+        "params": ["job_id", "user_id"],
+        "push_action": "NOTIFY_CUSTOMER_NEW_APPLICANT"
+      }
+    ]
+  },
+  "push_notification_payloads": {
+    "new_job": {
+      "title": "Nuovo lavoro disponibile!",
+      "body": "{customer_name} cerca un rider...",
+      "data": {
+        "type": "NEW_JOB",
+        "job_id": "123",
+        "click_action": "JOB_BOARD"
+      }
+    },
+    "new_applicant": {
+      "title": "Nuova candidatura!",
+      "body": "{rider_name} si è candidato...",
+      "data": {
+        "type": "JOB_APPLICATION",
+        "job_id": "123",
+        "click_action": "JOB_APPLICANTS"
+      }
+    }
+  }
+}

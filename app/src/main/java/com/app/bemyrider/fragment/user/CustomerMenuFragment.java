@@ -36,6 +36,7 @@ import com.app.bemyrider.activity.LoginActivity;
 import com.app.bemyrider.activity.user.CustomerProfileActivity;
 import com.app.bemyrider.activity.user.DisputeListActivity;
 import com.app.bemyrider.activity.user.EditProfileActivity;
+import com.app.bemyrider.activity.user.MyJobsActivity;
 import com.app.bemyrider.activity.user.PaymentHistoryActivity;
 import com.app.bemyrider.databinding.FragmentCustomerMenuBinding;
 import com.app.bemyrider.model.CommonPojo;
@@ -46,10 +47,8 @@ import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.PrefsUtil;
 import com.app.bemyrider.utils.SecurePrefsUtil;
 import com.app.bemyrider.utils.Utils;
-// Coil Imports
 import coil.Coil;
 import coil.request.ImageRequest;
-// import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.util.LinkedHashMap;
@@ -136,15 +135,16 @@ public class CustomerMenuFragment extends Fragment implements MenuItemClickListe
 
 
     void setUpMenuItems() {
-        drawerItem = new ModelForDrawer[8];
+        drawerItem = new ModelForDrawer[9];
         drawerItem[0] = new ModelForDrawer(R.drawable.ic_notification_menu, getString(R.string.notifications_title));
-        drawerItem[1] = new ModelForDrawer(R.drawable.ic_resolution_menu, getString(R.string.resolution_center));
-        drawerItem[2] = new ModelForDrawer(R.drawable.ic_payment_history_menu, getString(R.string.payment_history));
-        drawerItem[3] = new ModelForDrawer(R.drawable.ic_account_settings_menu, getString(R.string.account_settings));
-        drawerItem[4] = new ModelForDrawer(R.drawable.ic_info_menu, getString(R.string.info));
-        drawerItem[5] = new ModelForDrawer(R.drawable.ic_feedback_menu, getString(R.string.feedback));
-        drawerItem[6] = new ModelForDrawer(R.drawable.ic_contact_us_menu, getString(R.string.comtact_us));
-        drawerItem[7] = new ModelForDrawer(R.drawable.ic_logout_menu, getString(R.string.logout));
+        drawerItem[1] = new ModelForDrawer(R.drawable.ic_service_menu, getString(R.string.my_job_posts)); // Fix: ic_service_request_menu -> ic_service_menu
+        drawerItem[2] = new ModelForDrawer(R.drawable.ic_resolution_menu, getString(R.string.resolution_center));
+        drawerItem[3] = new ModelForDrawer(R.drawable.ic_payment_history_menu, getString(R.string.payment_history));
+        drawerItem[4] = new ModelForDrawer(R.drawable.ic_account_settings_menu, getString(R.string.account_settings));
+        drawerItem[5] = new ModelForDrawer(R.drawable.ic_info_menu, getString(R.string.info));
+        drawerItem[6] = new ModelForDrawer(R.drawable.ic_feedback_menu, getString(R.string.feedback));
+        drawerItem[7] = new ModelForDrawer(R.drawable.ic_contact_us_menu, getString(R.string.comtact_us));
+        drawerItem[8] = new ModelForDrawer(R.drawable.ic_logout_menu, getString(R.string.logout));
 
         binding.recCustMenu.setLayoutManager(new LinearLayoutManager(context));
         binding.recCustMenu.setItemAnimator(new DefaultItemAnimator());
@@ -212,24 +212,27 @@ public class CustomerMenuFragment extends Fragment implements MenuItemClickListe
                 startActivity(new Intent(activity, NotificationListingActivity.class));
                 break;
             case 1:
-                startActivity(new Intent(activity, DisputeListActivity.class));
+                startActivity(new Intent(activity, MyJobsActivity.class));
                 break;
             case 2:
-                startActivity(new Intent(activity, PaymentHistoryActivity.class));
+                startActivity(new Intent(activity, DisputeListActivity.class));
                 break;
             case 3:
-                startActivity(new Intent(activity, AccountSettingActivity.class));
+                startActivity(new Intent(activity, PaymentHistoryActivity.class));
                 break;
             case 4:
-                startActivity(new Intent(activity, InfoPageActivity.class));
+                startActivity(new Intent(activity, AccountSettingActivity.class));
                 break;
             case 5:
-                startActivity(new Intent(activity, FeedbackActivity.class));
+                startActivity(new Intent(activity, InfoPageActivity.class));
                 break;
             case 6:
-                startActivity(new Intent(activity, ContactUsActivity.class));
+                startActivity(new Intent(activity, FeedbackActivity.class));
                 break;
             case 7:
+                startActivity(new Intent(activity, ContactUsActivity.class));
+                break;
+            case 8:
                 AlertDialog.Builder builder = new AlertDialog.Builder(activity);
                 builder.setMessage(R.string.sure_logout)
                         .setPositiveButton(R.string.yes, (dialogInterface, i) -> serviceCallLogout())

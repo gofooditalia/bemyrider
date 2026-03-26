@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="@dimen/_10sdp"
+    android:layout_marginVertical="@dimen/_5sdp"
+    app:cardCornerRadius="@dimen/_8sdp"
+    app:cardElevation="@dimen/_2sdp"
+    app:strokeColor="@color/edit_border_color"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="@dimen/_10sdp">
+
+        <com.app.bemyrider.utils.CircleImageView
+            android:id="@+id/iv_rider"
+            android:layout_width="@dimen/_45sdp"
+            android:layout_height="@dimen/_45sdp"
+            android:src="@mipmap/user" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/_10sdp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/txt_rider_name"
+                style="@style/font_bold"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Nome Rider"
+                android:textColor="@color/text"
+                android:textSize="@dimen/_12ssp" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/_2sdp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="@dimen/_10sdp"
+                    android:layout_height="@dimen/_10sdp"
+                    android:src="@drawable/tabicon_review_style"
+                    app:tint="@color/icon_color" />
+
+                <TextView
+                    android:id="@+id/txt_rating"
+                    style="@style/font_medium"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/_2sdp"
+                    android:text="4.5"
+                    android:textColor="@color/text"
+                    android:textSize="@dimen/_10ssp" />
+
+                <TextView
+                    android:id="@+id/txt_deliveries"
+                    style="@style/font_regular"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/_8sdp"
+                    android:text="(120 consegne)"
+                    android:textColor="@color/text_light"
+                    android:textSize="@dimen/_10ssp" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/txt_vehicle"
+                style="@style/font_regular"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/_2sdp"
+                android:text="Veicolo: MOTO"
+                android:textColor="@color/text_light"
+                android:textSize="@dimen/_10ssp" />
+
+        </LinearLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_hire"
+            style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/_32sdp"
+            android:text="Ingaggia"
+            android:textAllCaps="false"
+            android:textSize="@dimen/_11ssp"
+            app:backgroundTint="@color/button"
+            app:cornerRadius="@dimen/_4sdp" />
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

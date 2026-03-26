@@ -468,6 +468,29 @@
             android:theme="@style/PlacesAutocompleteCustomTheme"
             tools:replace="android:theme" />
 
+        <!-- Job Board Feature Activities -->
+        <activity
+            android:name=".activity.user.CreateJobActivity"
+            android:configChanges="keyboardHidden|screenSize|screenLayout|orientation"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".activity.user.MyJobsActivity"
+            android:configChanges="keyboardHidden|screenSize|screenLayout|orientation"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".activity.user.JobApplicantsActivity"
+            android:configChanges="keyboardHidden|screenSize|screenLayout|orientation"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="stateHidden" />
+
     </application>
 
 </manifest>

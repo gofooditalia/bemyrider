@@ -19,7 +19,7 @@ public class LocaleManager {
     private static final String SELECTED_LANGUAGE = "Locale.Helper.Selected.Language";
 
     public static Context onAttach(Context context) {
-        String lang = getPersistedData(context, "it"); // Default italiano invece di lingua dispositivo
+        String lang = getPersistedData(context, "it");
         return setLocale(context, lang);
     }
 
@@ -29,39 +29,45 @@ public class LocaleManager {
     }
 
     public static String getLanguage(Context context) {
-        return getPersistedData(context, "it"); // Default italiano
+        return getPersistedData(context, "it");
     }
 
     public static Context setLocale(Context context, String language) {
         persist(context, language);
-        // Sincronizza anche in SecurePrefsUtil se possibile
-        syncToSecurePrefs(context, language);
+        
+        // Sincronizza con SecurePrefs solo se siamo oltre la fase di avvio critico
+        if (context.getApplicationContext() != null) {
+            syncToSecurePrefs(context, language);
+        }
+        
+        Resources resources = context.getResources();
+        Configuration configuration = resources.getConfiguration();
+        Locale currentLocale = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) 
+                ? configuration.getLocales().get(0) 
+                : configuration.locale;
+        
+        if (currentLocale.getLanguage().equals(language)) {
+            return context;
+        }
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             return updateResources(context, language);
         }
         return updateResourcesLegacy(context, language);
     }
     
-    /**
-     * Sincronizza la lingua in SecurePrefsUtil (salva il lanId corrispondente)
-     */
     private static void syncToSecurePrefs(Context context, String language) {
         try {
             SecurePrefsUtil securePrefs = SecurePrefsUtil.with(context);
             String lanId = convertLangCodeToLanId(language);
             if (lanId != null) {
                 securePrefs.write("lanId", lanId);
-                Log.d(TAG, "Synced language to SecurePrefsUtil (lanId=" + lanId + " for lang=" + language + ")");
             }
         } catch (Exception e) {
-            Log.w(TAG, "Error syncing language to SecurePrefsUtil", e);
+            Log.w(TAG, "Sync to SecurePrefs delayed/failed: " + e.getMessage());
         }
     }
     
-    /**
-     * Converte codice lingua in lanId
-     * en = 1, fr = 2, pt = 3, it = 4
-     */
     private static String convertLangCodeToLanId(String langCode) {
         if ("en".equals(langCode)) return "1";
         if ("fr".equals(langCode)) return "2";
@@ -70,45 +76,34 @@ public class LocaleManager {
         return null;
     }
 
-    /**
-     * Legge la lingua salvata, controllando prima SecurePrefsUtil (lanId) e poi SharedPreferences standard
-     */
     private static String getPersistedData(Context context, String defaultLanguage) {
-        try {
-            // Prima prova a leggere da SecurePrefsUtil (sistema nuovo)
-            SecurePrefsUtil securePrefs = SecurePrefsUtil.with(context);
-            String lanId = securePrefs.readString("lanId");
-            
-            if (!TextUtils.isEmpty(lanId)) {
-                // Converti lanId in codice lingua
-                String langCode = convertLanIdToLangCode(lanId);
-                if (langCode != null) {
-                    Log.d(TAG, "Language from SecurePrefsUtil (lanId=" + lanId + "): " + langCode);
-                    // Sincronizza anche in SharedPreferences standard per compatibilità
-                    persist(context, langCode);
-                    return langCode;
-                }
-            }
-        } catch (Exception e) {
-            Log.w(TAG, "Error reading from SecurePrefsUtil, falling back to SharedPreferences", e);
-        }
-        
-        // Fallback a SharedPreferences standard
+        // Durante l'avvio (attachBaseContext), usiamo SEMPRE SharedPreferences standard.
+        // È più veloce e sicuro per evitare deadlock o NPE con SecurePrefs.
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
         String savedLang = preferences.getString(SELECTED_LANGUAGE, null);
+        
         if (!TextUtils.isEmpty(savedLang)) {
-            Log.d(TAG, "Language from SharedPreferences: " + savedLang);
             return savedLang;
         }
+
+        // Se non troviamo nulla, e abbiamo l'app context, proviamo a recuperare da SecurePrefs (migrazione)
+        if (context.getApplicationContext() != null) {
+            try {
+                SecurePrefsUtil securePrefs = SecurePrefsUtil.with(context);
+                String lanId = securePrefs.readString("lanId");
+                if (!TextUtils.isEmpty(lanId)) {
+                    String langCode = convertLanIdToLangCode(lanId);
+                    if (langCode != null) {
+                        persist(context, langCode); 
+                        return langCode;
+                    }
+                }
+            } catch (Exception ignored) {}
+        }
         
-        Log.d(TAG, "Using default language: " + defaultLanguage);
         return defaultLanguage;
     }
 
-    /**
-     * Converte lanId in codice lingua
-     * 1 = en, 2 = fr, 3 = pt, 4 = it
-     */
     private static String convertLanIdToLangCode(String lanId) {
         if ("1".equals(lanId)) return "en";
         if ("2".equals(lanId)) return "fr";
@@ -122,7 +117,6 @@ public class LocaleManager {
         SharedPreferences.Editor editor = preferences.edit();
         editor.putString(SELECTED_LANGUAGE, language);
         editor.apply();
-        Log.d(TAG, "Language persisted: " + language);
     }
 
     @TargetApi(Build.VERSION_CODES.N)

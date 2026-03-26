@@ -46,15 +46,13 @@ public class GuestHomeFragment extends Fragment {
             };
     private String keyWord = "";
 
-    private int currentIndex = 0;
-    private ArrayList<Fragment> mNewFragmentList =new ArrayList<>();
+    private ArrayList<Fragment> mNewFragmentList = new ArrayList<>();
 
-    ViewPagerAdapter adapter;
+    private ViewPagerAdapter adapter;
     private boolean isPageRefreshSearch = false;
     private boolean isPageRefreshFilter = false;
 
     private String address = "", latitude = "", longitude = "", strAsc = "", strDesc = "", strSearch = "", strRating = "";
-
 
     @Nullable
     @Override
@@ -68,10 +66,13 @@ public class GuestHomeFragment extends Fragment {
         activity.setSupportActionBar(binding.toolbar);
 
         binding.pagerHome.setAdapter(createCardAdapter());
-        binding.pagerHome.setOffscreenPageLimit(tabString.length);
+        
+        // Riduce animazioni pesanti pre-caricando meno pagine se ci sono problemi di memoria
+        // ma per il tablayout 3 pagine vanno bene
+        binding.pagerHome.setOffscreenPageLimit(1); 
+        
         new TabLayoutMediator(binding.tabLayoutHome, binding.pagerHome,
                 (tab, position) -> tab.setText(tabString[position])).attach();
-        //binding.pagerHome.setUserInputEnabled(false);
 
         ((GuestHomeActivity) getActivity()).setOnHomeFilterData((address, latitude, longitude, strAsc, strDesc, strSearch, strRating) -> {
             this.address = address;
@@ -83,7 +84,6 @@ public class GuestHomeFragment extends Fragment {
             this.strRating = strRating;
 
             Fragment fragment = mNewFragmentList.get(binding.pagerHome.getCurrentItem());
-            // Check fragment type to make sure it is one we know has an updateView Method
             if (fragment instanceof GuestDeliveryTypeFragment) {
                 GuestDeliveryTypeFragment deliveryTypeFragment = (GuestDeliveryTypeFragment) fragment;
                 deliveryTypeFragment.filterDataUpdate(address, latitude, longitude, strAsc, strDesc, strSearch, strRating,binding.pagerHome.getCurrentItem());
@@ -94,44 +94,43 @@ public class GuestHomeFragment extends Fragment {
 
         binding.pagerHome.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
-            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-                super.onPageScrolled(position, positionOffset, positionOffsetPixels);
-            }
-
-            @Override
             public void onPageSelected(int position) {
                 super.onPageSelected(position);
-                guestHomeFragmentListener.setCurrentPosition(position);
-                if (isPageRefreshSearch) {
-                    Utils.hideSoftKeyboard(activity);
-                    Fragment fragment = mNewFragmentList.get(binding.pagerHome.getCurrentItem());
-                    // Check fragment type to make sure it is one we know has an updateView Method
-                    if (fragment instanceof GuestDeliveryTypeFragment) {
-                        GuestDeliveryTypeFragment deliveryTypeFragment = (GuestDeliveryTypeFragment) fragment;
-                        deliveryTypeFragment.searchDataUpdate(keyWord,binding.pagerHome.getCurrentItem());
-                    }
-                } else if (isPageRefreshFilter) {
-                    Fragment fragment = mNewFragmentList.get(binding.pagerHome.getCurrentItem());
-                    // Check fragment type to make sure it is one we know has an updateView Method
-                    if (fragment instanceof GuestDeliveryTypeFragment) {
-                        GuestDeliveryTypeFragment deliveryTypeFragment = (GuestDeliveryTypeFragment) fragment;
-                        deliveryTypeFragment.filterDataUpdate(address, latitude, longitude, strAsc, strDesc, strSearch, strRating,binding.pagerHome.getCurrentItem());
-                    }
+                
+                if (guestHomeFragmentListener != null) {
+                    guestHomeFragmentListener.setCurrentPosition(position);
                 }
-                Log.e("onPageSelected", String.valueOf(position));
-            }
 
-            @Override
-            public void onPageScrollStateChanged(int state) {
-                super.onPageScrollStateChanged(state);
+                // FIX PERFORMANCE TABLAYOUT: Avvolgi l'aggiornamento dati nel post
+                binding.pagerHome.post(() -> {
+                    if (!isAdded()) return;
+
+                    if (isPageRefreshSearch) {
+                        Utils.hideSoftKeyboard(activity);
+                        if (mNewFragmentList.size() > position) {
+                            Fragment fragment = mNewFragmentList.get(position);
+                            if (fragment instanceof GuestDeliveryTypeFragment) {
+                                ((GuestDeliveryTypeFragment) fragment).searchDataUpdate(keyWord, position);
+                            }
+                        }
+                    } else if (isPageRefreshFilter) {
+                        if (mNewFragmentList.size() > position) {
+                            Fragment fragment = mNewFragmentList.get(position);
+                            if (fragment instanceof GuestDeliveryTypeFragment) {
+                                ((GuestDeliveryTypeFragment) fragment).filterDataUpdate(address, latitude, longitude, strAsc, strDesc, strSearch, strRating, position);
+                            }
+                        }
+                    }
+                });
             }
         });
 
         binding.imgFilter.setOnClickListener(v -> {
-            guestHomeFragmentListener.onFilterClick();
+            if (guestHomeFragmentListener != null) {
+                guestHomeFragmentListener.onFilterClick();
+            }
             binding.edtSearch.setText("");
         });
-
 
         binding.edtSearch.setOnEditorActionListener((v, actionId, event) -> {
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
@@ -143,9 +142,7 @@ public class GuestHomeFragment extends Fragment {
 
         binding.edtSearch.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -153,16 +150,12 @@ public class GuestHomeFragment extends Fragment {
             }
 
             @Override
-            public void afterTextChanged(Editable s) {
-
-            }
+            public void afterTextChanged(Editable s) {}
         });
-
 
         binding.imgSearch.setOnClickListener(v -> {
             Utils.hideSoftKeyboard(activity);
             Fragment fragment = mNewFragmentList.get(binding.pagerHome.getCurrentItem());
-            // Check fragment type to make sure it is one we know has an updateView Method
             if (fragment instanceof GuestDeliveryTypeFragment) {
                 GuestDeliveryTypeFragment deliveryTypeFragment = (GuestDeliveryTypeFragment) fragment;
                 deliveryTypeFragment.searchDataUpdate(keyWord,binding.pagerHome.getCurrentItem());
@@ -170,6 +163,7 @@ public class GuestHomeFragment extends Fragment {
                 isPageRefreshFilter = false;
             }
         });
+        
         return binding.getRoot();
     }
 
@@ -180,7 +174,7 @@ public class GuestHomeFragment extends Fragment {
             guestHomeFragmentListener = (GuestHomeFragmentListener) context;
         } else {
             throw new RuntimeException(context.toString()
-                    + " must implement customerHomeFragmentListener");
+                    + " must implement GuestHomeFragmentListener");
         }
     }
 
@@ -206,7 +200,12 @@ public class GuestHomeFragment extends Fragment {
         @Override
         public Fragment createFragment(int position) {
             Fragment fragment = GuestDeliveryTypeFragment.newInstance(position);
-            mNewFragmentList.add(fragment);
+            // Sicurezza: Evitiamo che mNewFragmentList sfasi con il reciclo del ViewPager
+            if (position >= mNewFragmentList.size()) {
+                mNewFragmentList.add(fragment);
+            } else {
+                mNewFragmentList.set(position, fragment);
+            }
             return fragment;
         }
 
@@ -215,6 +214,4 @@ public class GuestHomeFragment extends Fragment {
             return CARD_ITEM_SIZE;
         }
     }
-
-
 }
