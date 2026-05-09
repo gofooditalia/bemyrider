@@ -29,8 +29,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_centerInParent="true"
-                android:layout_toLeftOf="@+id/view"
-                android:layout_toRightOf="@+id/imgBack"
                 android:gravity="center"
                 android:includeFontPadding="false"
                 android:maxLines="1"
@@ -46,9 +44,7 @@
             android:id="@+id/activity_home"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@+id/toolbar"
-            android:background="@color/white"
-            android:gravity="center">
+            android:background="@color/white">
 
             <!-- our tablayout to display tabs  -->
             <com.google.android.material.tabs.TabLayout
@@ -71,6 +67,21 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_below="@+id/tabLayoutHome" />
+
+            <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+                android:id="@+id/fab_bulk_invoice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentBottom="true"
+                android:layout_margin="16dp"
+                android:text="@string/download_invoices_bulk"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                app:icon="@drawable/ic_download_white"
+                app:iconTint="@color/white"
+                app:backgroundTint="@color/button"
+                app:elevation="6dp" />
 
         </RelativeLayout>
 

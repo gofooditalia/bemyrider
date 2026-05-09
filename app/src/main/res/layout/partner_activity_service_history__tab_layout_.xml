@@ -31,5 +31,16 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_bulk_invoice"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_margin="16dp"
+        android:contentDescription="@string/download_invoices_bulk"
+        android:src="@drawable/ic_download_white"
+        app:backgroundTint="@color/button"
+        app:elevation="6dp" />
 
 </RelativeLayout>
