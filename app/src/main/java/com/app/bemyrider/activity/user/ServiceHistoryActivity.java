@@ -1,12 +1,17 @@
 package com.app.bemyrider.activity.user;
 
+import android.app.DownloadManager;
 import android.content.Context;
 import android.graphics.PorterDuff;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.text.Html;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.core.text.HtmlCompat;
@@ -15,14 +20,21 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
+import com.app.bemyrider.AsyncTask.WebServiceCall;
+import com.app.bemyrider.R;
+import com.app.bemyrider.WebServices.WebServiceUrl;
 import com.app.bemyrider.fragment.user.OngoingServiceFragment;
 import com.app.bemyrider.fragment.user.PreviousServiceFragment;
 import com.app.bemyrider.fragment.user.UpcomingServiceFragment;
-import com.app.bemyrider.R;
+import com.app.bemyrider.model.BulkInvoicePojo;
 import com.app.bemyrider.model.EventBusMessage;
 import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.LocaleManager;
+import com.app.bemyrider.utils.PrefsUtil;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
+
+import java.util.LinkedHashMap;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -78,7 +90,6 @@ public class ServiceHistoryActivity extends AppCompatActivity implements TabLayo
     private void initViews() {
         context = ServiceHistoryActivity.this;
 
-        /*Init Internet Connection Class For No Internet Banner*/
         connectionManager = new ConnectionManager(context);
         connectionManager.registerInternetCheckReceiver();
         connectionManager.checkConnection(context);
@@ -89,6 +100,60 @@ public class ServiceHistoryActivity extends AppCompatActivity implements TabLayo
         upcomingServiceFragment = new UpcomingServiceFragment();
         ongoingServiceFragment = new OngoingServiceFragment();
         previousServiceFragment = new PreviousServiceFragment();
+
+        FloatingActionButton fab = findViewById(R.id.fab_bulk_invoice);
+        fab.setOnClickListener(v -> showBulkDownloadDialog());
+    }
+
+    private void showBulkDownloadDialog() {
+        String[] periods = {
+            getString(R.string.period_last_week),
+            getString(R.string.period_last_month)
+        };
+        new AlertDialog.Builder(this)
+            .setTitle(R.string.download_period_title)
+            .setItems(periods, (dialog, which) -> {
+                String period = (which == 0) ? "last_week" : "last_month";
+                callBulkInvoiceApi(period);
+            })
+            .show();
+    }
+
+    private void callBulkInvoiceApi(String period) {
+        LinkedHashMap<String, String> params = new LinkedHashMap<>();
+        params.put("user_id", PrefsUtil.with(this).readString("UserId"));
+        params.put("user_type", PrefsUtil.with(this).readString("UserType"));
+        params.put("period", period);
+
+        new WebServiceCall(this, WebServiceUrl.URL_BULK_INVOICES, params,
+            BulkInvoicePojo.class, true, new WebServiceCall.OnResultListener() {
+                @Override
+                public void onResult(boolean status, Object obj) {
+                    if (status) {
+                        BulkInvoicePojo pojo = (BulkInvoicePojo) obj;
+                        startZipDownload(pojo.getData().getFileName(), pojo.getData().getCount());
+                    } else {
+                        Toast.makeText(context, obj.toString(), Toast.LENGTH_LONG).show();
+                    }
+                }
+                @Override public void onAsync(Object obj) {}
+                @Override public void onCancelled() {}
+            });
+    }
+
+    private void startZipDownload(String url, int count) {
+        String fileName = "ricevute-bemyrider-" + System.currentTimeMillis() + ".zip";
+        DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
+        request.setTitle(getString(R.string.download_invoices_bulk));
+        request.setDescription(count + " ricevute");
+        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+        request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName);
+        request.allowScanningByMediaScanner();
+        DownloadManager dm = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
+        if (dm != null) {
+            dm.enqueue(request);
+            Toast.makeText(context, getString(R.string.download_started), Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override

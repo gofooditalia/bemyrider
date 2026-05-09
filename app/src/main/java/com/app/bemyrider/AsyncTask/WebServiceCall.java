@@ -152,6 +152,7 @@ public class WebServiceCall {
 
             long duration = System.currentTimeMillis() - startTime;
             Log.i(TAG, "Request completed in " + duration + "ms: " + url);
+            Log.i(TAG, "Response: " + result);
             
             final String finalResult = result;
             final boolean finalSuccess = success;
@@ -232,7 +233,14 @@ public class WebServiceCall {
             if (isCancelled) return "";
             conn.connect();
             
-            InputStream in = new BufferedInputStream(conn.getInputStream());
+            InputStream in;
+            int status = conn.getResponseCode();
+            if (status >= HttpURLConnection.HTTP_BAD_REQUEST) {
+                in = new BufferedInputStream(conn.getErrorStream());
+            } else {
+                in = new BufferedInputStream(conn.getInputStream());
+            }
+            
             String response = getStringFromInputStream(in);
             return response;
 
@@ -244,6 +252,7 @@ public class WebServiceCall {
     }
 
     public static String getStringFromInputStream(InputStream stream) throws IOException {
+        if (stream == null) return "";
         int n = 0;
         char[] buffer = new char[1024 * 4];
         InputStreamReader reader = new InputStreamReader(stream, "UTF8");
@@ -255,6 +264,11 @@ public class WebServiceCall {
 
     private void handleSuccessResponse(String result) {
         try {
+            if (result == null || result.trim().isEmpty()) {
+                if (OnResultListener != null) OnResultListener.onResult(false, "Empty Response from server");
+                return;
+            }
+
             String cleanResult = result.trim().replace("\"", "");
             if (cleanResult.equalsIgnoreCase("s")) {
                 if (model == CommonPojo.class) {
@@ -284,7 +298,10 @@ public class WebServiceCall {
             }
 
         } catch (Exception e) {
-            if (OnResultListener != null) OnResultListener.onResult(false, "Parsing Error");
+            Log.e(TAG, "Parsing Error: " + e.getMessage());
+            Log.e(TAG, "Raw Response: " + result);
+            String snippet = result != null && result.length() > 50 ? result.substring(0, 50) + "..." : result;
+            if (OnResultListener != null) OnResultListener.onResult(false, "Parsing Error: " + e.getMessage() + "\nResponse: " + snippet);
         }
     }
 

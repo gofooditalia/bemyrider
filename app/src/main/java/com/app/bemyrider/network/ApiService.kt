@@ -1,5 +1,6 @@
 package com.app.bemyrider.network
 
+import com.app.bemyrider.model.BulkInvoicePojo
 import com.app.bemyrider.model.CheckStripeConnectedPojo
 import com.app.bemyrider.model.CommonPojo
 import com.app.bemyrider.model.LanguagePojo
@@ -169,4 +170,14 @@ interface ApiServiceKt {
             @Field("delivery_type") deliveryType: String,
             @Field("request_type") requestType: String
     ): Response<ResponseBody>
+
+    @FormUrlEncoded
+    @POST("bulk-invoices")
+    suspend fun bulkInvoices(
+        @Field("user_id") userId: String,
+        @Field("user_type") userType: String,
+        @Field("period") period: String,
+        @Field("date_from") dateFrom: String? = null,
+        @Field("date_to") dateTo: String? = null
+    ): Response<BulkInvoicePojo>
 }

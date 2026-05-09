@@ -628,4 +628,15 @@
         <item>Motivi personali</item>
         <item>Altro</item>
     </string-array>
+
+    <!-- Bulk Invoice Download -->
+    <string name="download_invoices_bulk">Download Ricevute</string>
+    <string name="download_period_title">Seleziona periodo</string>
+    <string name="period_last_week">Ultima settimana</string>
+    <string name="period_last_month">Ultimo mese</string>
+    <string name="period_custom">Periodo personalizzato</string>
+    <string name="select_date_from">Seleziona data inizio</string>
+    <string name="select_date_to">Seleziona data fine</string>
+    <string name="download_started">Download avviato. Controlla le notifiche.</string>
+    <string name="no_invoices_period">Nessuna prenotazione completata nel periodo selezionato.</string>
 </resources>

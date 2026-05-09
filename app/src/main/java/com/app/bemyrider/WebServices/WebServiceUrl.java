@@ -85,6 +85,7 @@ public class WebServiceUrl {
     public final static String URL_GETSITESETTINGDATA = baseUrl + "other/getSiteSettingData/";
     public final static String URL_PAYPALBUTTON = baseUrl + "payment-nct/paypal-button.php?user_id=";
     public final static String URL_DOWNLOAD_INVOICE = hostname + "download-invoice";
+    public final static String URL_BULK_INVOICES = baseUrl + "bulk-invoices";
     public final static String URL_SERVICE_REQUEST_LIST = baseUrl + "services/providertasks";
     public final static String URL_RASEDISPUTE = baseUrl + "disputes/raisedispute";
     public final static String URL_GETDISPUTELIST = baseUrl + "disputes/getdisputelist";

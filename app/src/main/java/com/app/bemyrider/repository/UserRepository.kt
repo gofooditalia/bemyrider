@@ -1,6 +1,7 @@
 package com.app.bemyrider.repository
 
 import android.util.Log
+import com.app.bemyrider.model.BulkInvoicePojo
 import com.app.bemyrider.model.CheckStripeConnectedPojo
 import com.app.bemyrider.model.CommonPojo
 import com.app.bemyrider.model.LanguagePojo
@@ -124,6 +125,10 @@ class AppRepository {
     suspend fun resendActivationMail(email: String): NewLoginPojo {
         val response = apiService.resendActivationMail(email)
         return parseGenericResponse(response, NewLoginPojo::class.java)
+    }
+
+    suspend fun bulkInvoices(userId: String, userType: String, period: String, dateFrom: String? = null, dateTo: String? = null): Response<BulkInvoicePojo> {
+        return apiService.bulkInvoices(userId, userType, period, dateFrom, dateTo)
     }
 
     // --- Helpers per il parsing (Porting dal Java) ---

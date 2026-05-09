@@ -191,7 +191,7 @@
     <string name="email_noti1">Notify me when merchant accept/reject my requested service</string>
     <string name="email_noti2">Notify me when requested service is cancelled by the merchant/salon owner</string>
     <string name="email_noti3">Notify me for my upcoming booked service</string>
-    <string name="partial_book">Partial Booked Dates</string>
+    <string name="partial_book">Booked Dates</string>
     <string name="booked_date">Booked Dates</string>
     <string name="free_date">Free Dates</string>
     <string name="str_and"> &amp; </string>
@@ -651,4 +651,15 @@
     <string name="job_board">Bacheca Annunci</string>
     <string name="create_job_post">Crea Annuncio Ingaggio</string>
     <string name="my_job_posts">Bacheca Annunci</string>
+
+    <!-- Bulk Invoice Download -->
+    <string name="download_invoices_bulk">Download Receipts</string>
+    <string name="download_period_title">Select Period</string>
+    <string name="period_last_week">Last week</string>
+    <string name="period_last_month">Last month</string>
+    <string name="period_custom">Custom period</string>
+    <string name="select_date_from">Select start date</string>
+    <string name="select_date_to">Select end date</string>
+    <string name="download_started">Download started. Check notifications.</string>
+    <string name="no_invoices_period">No completed bookings found in the selected period.</string>
 </resources>
