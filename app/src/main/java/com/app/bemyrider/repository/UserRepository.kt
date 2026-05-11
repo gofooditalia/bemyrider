@@ -7,6 +7,9 @@ import com.app.bemyrider.model.CommonPojo
 import com.app.bemyrider.model.LanguagePojo
 import com.app.bemyrider.model.NewLoginPojo
 import com.app.bemyrider.model.InfoPagePojo
+import com.app.bemyrider.model.MessageDetailPojo
+import com.app.bemyrider.model.MessageListPojo
+import com.app.bemyrider.model.SendMessagePojo
 import com.app.bemyrider.model.NotificationDataPOJO
 import com.app.bemyrider.model.NotificationListPojo
 import com.app.bemyrider.model.ProfilePojo
@@ -244,6 +247,31 @@ class AppRepository {
 
     suspend fun getNotifications(userId: String, userType: String, page: Int): Response<NotificationDataPOJO> {
         return apiService.getNotifications(userId, userType, page)
+    }
+
+    suspend fun getMessageList(userId: String, page: Int): Response<MessageListPojo> =
+        apiService.getMessageList(userId, page)
+
+    suspend fun getMessageDetail(
+        fromUserId: String, toUserId: String, masterServiceId: String,
+        page: Int, lastMessageId: String? = null, bookingId: String? = null
+    ): Response<MessageDetailPojo> =
+        apiService.getMessageDetail(fromUserId, toUserId, masterServiceId, page, lastMessageId, bookingId)
+
+    suspend fun sendMessage(
+        userId: String, toUserId: String, serviceId: String,
+        masterServiceId: String, messageText: String?, attachmentPath: String?
+    ): Response<SendMessagePojo> {
+        val toBody = { s: String -> s.toRequestBody(MultipartBody.FORM) }
+        val textPart = if (attachmentPath.isNullOrEmpty() && messageText != null)
+            messageText.toRequestBody(MultipartBody.FORM) else null
+        val filePart = if (!attachmentPath.isNullOrEmpty()) {
+            val file = File(attachmentPath)
+            if (file.exists()) MultipartBody.Part.createFormData("attachment", file.name,
+                file.asRequestBody("image/*".toMediaTypeOrNull())) else null
+        } else null
+        return apiService.sendMessage(toBody(userId), toBody(toUserId), toBody(serviceId),
+            toBody(masterServiceId), textPart, filePart)
     }
 
     suspend fun getInfoList(): Response<InfoPagePojo> {

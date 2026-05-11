@@ -6,6 +6,9 @@ import com.app.bemyrider.model.CommonPojo
 import com.app.bemyrider.model.LanguagePojo
 import com.app.bemyrider.model.NewLoginPojo
 import com.app.bemyrider.model.InfoPagePojo
+import com.app.bemyrider.model.MessageDetailPojo
+import com.app.bemyrider.model.MessageListPojo
+import com.app.bemyrider.model.SendMessagePojo
 import com.app.bemyrider.model.NotificationDataPOJO
 import com.app.bemyrider.model.NotificationListPojo
 import com.app.bemyrider.model.ProfilePojo
@@ -206,6 +209,35 @@ interface ApiServiceKt {
         @Field("user_type") userType: String,
         @Field("page") page: Int
     ): Response<NotificationDataPOJO>
+
+    @FormUrlEncoded
+    @POST("messages/getmessagelist")
+    suspend fun getMessageList(
+        @Field("user_id") userId: String,
+        @Field("page") page: Int
+    ): Response<MessageListPojo>
+
+    @FormUrlEncoded
+    @POST("messages/getmessage")
+    suspend fun getMessageDetail(
+        @Field("from_user_id") fromUserId: String,
+        @Field("to_user_id") toUserId: String,
+        @Field("service_master_id") masterServiceId: String,
+        @Field("page") page: Int,
+        @Field("last_message_id") lastMessageId: String? = null,
+        @Field("service_booking_id") bookingId: String? = null
+    ): Response<MessageDetailPojo>
+
+    @Multipart
+    @POST("messages/sendmessage")
+    suspend fun sendMessage(
+        @Part("user_id") userId: RequestBody,
+        @Part("to_user_id") toUserId: RequestBody,
+        @Part("service_id") serviceId: RequestBody,
+        @Part("service_master_id") masterServiceId: RequestBody,
+        @Part("message_text") messageText: RequestBody?,
+        @Part attachment: MultipartBody.Part?
+    ): Response<SendMessagePojo>
 
     @POST("cms/getcmslist")
     suspend fun getInfoList(): Response<InfoPagePojo>
