@@ -249,12 +249,9 @@ public class ProviderListActivity extends AppCompatActivity implements OnMapRead
         params.put("fvrt_val", "1".equals(img_fav.getTag()) ? "0" : "1");
 
         viewModel.getToggleResult().observe(this, result -> {
-            public void onResult(boolean status, Object obj) {
-                progress.setVisibility(View.GONE);
-                img_fav.setVisibility(View.VISIBLE);
+            progress.setVisibility(View.GONE);
+            img_fav.setVisibility(View.VISIBLE);
             if (result != null) {
-                progress.setVisibility(View.GONE);
-                img_fav.setVisibility(View.VISIBLE);
                 if (result.isStatus()) {
                     Toast.makeText(context, result.getMessage(), Toast.LENGTH_SHORT).show();
                     if ("1".equals(img_fav.getTag())) {

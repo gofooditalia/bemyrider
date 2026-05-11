@@ -5,7 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.app.bemyrider.model.CommonPojo
-import com.app.bemyrider.model.ProviderListPOJO
+import com.app.bemyrider.model.user.ProviderListPOJO
 import com.app.bemyrider.repository.AppRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

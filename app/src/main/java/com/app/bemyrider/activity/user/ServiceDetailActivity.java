@@ -297,8 +297,6 @@ public class ServiceDetailActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        Utils.cancelAsyncTask(serviceDetailAsync);
-        Utils.cancelAsyncTask(actionFavouriteAsync);
     }
     
     private class ViewPagerAdapter extends FragmentStateAdapter {

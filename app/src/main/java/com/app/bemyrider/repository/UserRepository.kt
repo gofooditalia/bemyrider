@@ -7,8 +7,8 @@ import com.app.bemyrider.model.CommonPojo
 import com.app.bemyrider.model.LanguagePojo
 import com.app.bemyrider.model.NewLoginPojo
 import com.app.bemyrider.model.CustomerHistoryPojo
-import com.app.bemyrider.model.FavoriteServiceListPojo
-import com.app.bemyrider.model.ProviderListPOJO
+import com.app.bemyrider.model.user.FavoriteServiceListPojo
+import com.app.bemyrider.model.user.ProviderListPOJO
 import com.app.bemyrider.model.ProviderServiceDetailPOJO
 import com.app.bemyrider.model.ServiceListPOJO
 import com.app.bemyrider.model.partner.SubCategoryListPojo
