@@ -31,9 +31,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.text.HtmlCompat;
 import androidx.databinding.DataBindingUtil;
 
-import com.app.bemyrider.AsyncTask.WebServiceCall;
 import com.app.bemyrider.R;
-import com.app.bemyrider.WebServices.WebServiceUrl;
 import com.app.bemyrider.databinding.ActivityFilterProviderBinding;
 import com.app.bemyrider.model.MinMaxPricePojo;
 import com.app.bemyrider.model.ServiceDataItem;
@@ -47,6 +45,8 @@ import com.app.bemyrider.utils.Log;
 import com.app.bemyrider.utils.PrefsUtil;
 import com.app.bemyrider.utils.Utils;
 import com.app.bemyrider.utils.LocaleManager;
+import com.app.bemyrider.viewmodel.FilterProviderViewModel;
+import androidx.lifecycle.ViewModelProvider;
 import com.google.android.gms.common.api.Status;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
@@ -84,7 +84,7 @@ public class FilterProviderActivity extends AppCompatActivity {
             minprice = "", maxprice = "";
     private Date currentDate;
     private int year, month, day;
-    private WebServiceCall minMaxPriceAsync, subCatAsync, providerListAsync, serviceListAsync;
+    private FilterProviderViewModel viewModel;
     private Context context;
     private ConnectionManager connectionManager;
     ActivityResultLauncher<Intent> locationActivityResultLauncher;
@@ -251,6 +251,8 @@ public class FilterProviderActivity extends AppCompatActivity {
     private void init() {
         context = FilterProviderActivity.this;
         setupToolBar();
+        viewModel = new ViewModelProvider(this).get(FilterProviderViewModel.class);
+        observeViewModel();
 
         connectionManager = new ConnectionManager(context);
         connectionManager.registerInternetCheckReceiver();
@@ -329,90 +331,166 @@ public class FilterProviderActivity extends AppCompatActivity {
         }
     }
 
+    private void observeViewModel() {
+        viewModel.getMinMaxPrice().observe(this, pojo -> {
+            binding.progress.setVisibility(View.GONE);
+            binding.rangeSeekbar5.setVisibility(View.VISIBLE);
+            if (pojo != null && pojo.isStatus() && pojo.getData() != null) {
+                minprice = String.valueOf((Float.parseFloat(pojo.getData().getMinPrice()) - 10.0f));
+                if ((Float.parseFloat(pojo.getData().getMinPrice()) - 10.0f) < 0) minprice = "0";
+                maxprice = String.valueOf((Float.parseFloat(pojo.getData().getMaxPrice()) + 10.0f));
+                binding.txtShowPrize.setText(String.format("%s%s - %s%s",
+                        PrefsUtil.with(this).readString("CurrencySign"), minprice,
+                        PrefsUtil.with(this).readString("CurrencySign"), maxprice));
+                binding.rangeSeekbar5.setValueFrom(Float.parseFloat(minprice));
+                binding.rangeSeekbar5.setValueTo(Float.parseFloat(maxprice));
+            }
+        });
+
+        viewModel.getFilterList().observe(this, pojo -> {
+            binding.pgCat.setVisibility(View.GONE);
+            binding.pgSubCat.setVisibility(View.GONE);
+            binding.pgService.setVisibility(View.GONE);
+            binding.spSelectCat.setVisibility(View.VISIBLE);
+            binding.spSelectSubcat.setVisibility(View.VISIBLE);
+            binding.spSelectService.setVisibility(View.VISIBLE);
+            if (pojo != null && pojo.isStatus() && pojo.getFilterData() != null) {
+                FilterDataPOJO filterDataPOJO = pojo;
+                categoryDataItems.addAll(filterDataPOJO.getFilterData().getCategoryList());
+                catadapter.notifyDataSetChanged();
+
+                for (int i = 0; i < filterDataPOJO.getFilterData().getCategoryList().size(); i++) {
+                    if (filterDataPOJO.getFilterData().getCategoryList().get(i).getSelected().equalsIgnoreCase("y")) {
+                        selectedCatId = filterDataPOJO.getFilterData().getCategoryList().get(i).getCategoryId();
+                        Log.e("Filter ", filterDataPOJO.getFilterData().getCategoryList().get(i).getCategoryId());
+                        binding.spSelectCat.setSelection(i + 1, false);
+                        break;
+                    }
+                }
+
+                subCategoryItems.clear();
+                subCategoryItems.add(new SubCategoryItem("0", getString(R.string.select_subcategory)));
+                subCategoryItems.addAll(filterDataPOJO.getFilterData().getSubCategoryList());
+                subCatadapter.notifyDataSetChanged();
+                binding.spSelectSubcat.setSelection(0, false);
+
+                for (int i = 0; i < filterDataPOJO.getFilterData().getSubCategoryList().size(); i++) {
+                    if (filterDataPOJO.getFilterData().getSubCategoryList().get(i).getSelected().equalsIgnoreCase("y")) {
+                        selectedSubCatId = filterDataPOJO.getFilterData().getSubCategoryList().get(i).getCategoryId();
+                        binding.spSelectSubcat.setSelection(i + 1, false);
+                        break;
+                    }
+                }
+
+                serviceDataItems.clear();
+                serviceDataItems.add(new ServiceDataItem("0", "Select Service*"));
+                serviceDataItems.addAll(filterDataPOJO.getFilterData().getServicesList());
+                serviceadapter.notifyDataSetChanged();
+                binding.spSelectService.setSelection(0, false);
+
+                for (int i = 0; i < filterDataPOJO.getFilterData().getServicesList().size(); i++) {
+                    if (filterDataPOJO.getFilterData().getServicesList().get(i).getSelected().equalsIgnoreCase("y")) {
+                        selectedServiceId = serviceDataItems.get(i).getServiceId();
+                        selectedServiceName = serviceDataItems.get(i).getServiceName();
+                        binding.spSelectService.setSelection(i + 1, false);
+                        break;
+                    }
+                }
+
+                binding.spSelectCat.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                    @Override
+                    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                        selectedCatId = categoryDataItems.get(position).getCategoryId();
+                        if (categoryDataItems.get(position).getCategoryId().equals("0")) {
+                            subCategoryItems.clear();
+                            subCategoryItems.add(new SubCategoryItem("0", getString(R.string.select_subcategory)));
+                            subCatadapter.notifyDataSetChanged();
+                        } else {
+                            getSubCatId();
+                        }
+                    }
+                    @Override public void onNothingSelected(AdapterView<?> parent) {}
+                });
+
+                binding.spSelectSubcat.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                    @Override
+                    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                        selectedSubCatId = subCategoryItems.get(position).getCategoryId();
+                        if (subCategoryItems.get(position).getCategoryId().equals("0")) {
+                            serviceDataItems.clear();
+                            serviceDataItems.add(new ServiceDataItem("0", getString(R.string.select_service)));
+                            serviceadapter.notifyDataSetChanged();
+                        } else {
+                            getService();
+                        }
+                    }
+                    @Override public void onNothingSelected(AdapterView<?> parent) {}
+                });
+
+                binding.spSelectService.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                    @Override
+                    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                        if (binding.spSelectService.getSelectedItemPosition() != 0) {
+                            selectedServiceId = serviceDataItems.get(position).getServiceId();
+                            selectedServiceName = serviceDataItems.get(position).getServiceName();
+                        }
+                    }
+                    @Override public void onNothingSelected(AdapterView<?> parent) {}
+                });
+            }
+        });
+
+        viewModel.getSubCategoryList().observe(this, pojo -> {
+            binding.pgSubCat.setVisibility(View.GONE);
+            binding.spSelectSubcat.setVisibility(View.VISIBLE);
+            if (pojo != null && pojo.isStatus() && pojo.getData() != null) {
+                subCategoryItems.clear();
+                subCategoryItems.add(new SubCategoryItem("0", getString(R.string.select_subcategory)));
+                subCategoryItems.addAll(pojo.getData());
+                subCatadapter.notifyDataSetChanged();
+                binding.spSelectSubcat.setSelection(0);
+                for (int i = 0; i < pojo.getData().size(); i++) {
+                    if (pojo.getData().get(i).getCategoryId().equalsIgnoreCase(PrefsUtil.with(this).readString("search_subcatId"))) {
+                        binding.spSelectSubcat.setSelection(i + 1);
+                        break;
+                    }
+                }
+            }
+        });
+
+        viewModel.getServiceList().observe(this, pojo -> {
+            binding.pgService.setVisibility(View.GONE);
+            binding.spSelectService.setVisibility(View.VISIBLE);
+            if (pojo != null && pojo.isStatus() && pojo.getData() != null) {
+                serviceDataItems.clear();
+                serviceDataItems.add(new ServiceDataItem("0", "Select Service*"));
+                serviceDataItems.addAll(pojo.getData());
+                serviceadapter.notifyDataSetChanged();
+                binding.spSelectService.setSelection(0);
+                for (int i = 0; i < pojo.getData().size(); i++) {
+                    if (pojo.getData().get(i).getServiceId().equalsIgnoreCase(PrefsUtil.with(this).readString("search_serviceId"))) {
+                        binding.spSelectService.setSelection(i + 1);
+                        break;
+                    }
+                }
+            }
+        });
+
+        viewModel.getError().observe(this, msg -> {
+            if (msg != null) Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
+        });
+    }
+
     private void serviceCallMinMaxPrice() {
         binding.rangeSeekbar5.setVisibility(View.GONE);
         binding.progress.setVisibility(View.VISIBLE);
-
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-
-        new WebServiceCall(FilterProviderActivity.this,
-                WebServiceUrl.URL_SERVICE_MIN_MAX_PRICE, textParams, MinMaxPricePojo.class, false,
-                new WebServiceCall.OnResultListener() {
-                    @Override
-                    public void onResult(boolean status, Object obj) {
-                        binding.progress.setVisibility(View.GONE);
-                        binding.rangeSeekbar5.setVisibility(View.VISIBLE);
-                        if (status) {
-                            MinMaxPricePojo minMaxPricePojo = (MinMaxPricePojo) obj;
-                            minprice = String.valueOf((Float.parseFloat(minMaxPricePojo.getData().getMinPrice()) - 10.0f));
-                            if ((Float.parseFloat(minMaxPricePojo.getData().getMinPrice()) - 10.0f) < 0) {
-                                minprice = "0";
-                            }
-                            maxprice = String.valueOf((Float.parseFloat(minMaxPricePojo.getData().getMaxPrice()) + 10.0f));
-                            binding.txtShowPrize.setText(String.format("%s%s - %s%s", PrefsUtil.with(FilterProviderActivity.this).readString("CurrencySign"), minprice, PrefsUtil.with(FilterProviderActivity.this).readString("CurrencySign"), maxprice));
-                            binding.rangeSeekbar5.setValueFrom(Float.parseFloat(minprice));
-                            binding.rangeSeekbar5.setValueTo(Float.parseFloat(maxprice));
-                        } else {
-                            Toast.makeText(context, obj.toString(), Toast.LENGTH_SHORT).show();
-                        }
-                    }
-
-                    @Override
-                    public void onAsync(Object asyncTask) {
-                        minMaxPriceAsync = null;
-                    }
-
-                    @Override
-                    public void onCancelled() {
-                        minMaxPriceAsync = null;
-                    }
-                });
+        viewModel.loadMinMaxPrice();
     }
 
     private void getSubCatId() {
         binding.spSelectSubcat.setVisibility(View.GONE);
         binding.pgSubCat.setVisibility(View.VISIBLE);
-
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-
-        textParams.put("category_id", selectedCatId);
-
-        new WebServiceCall(FilterProviderActivity.this, WebServiceUrl.URL_SUBCATEGORYLIST,
-                textParams, SubCategoryListPojo.class, false, new WebServiceCall.OnResultListener() {
-            @Override
-            public void onResult(boolean status, Object obj) {
-                binding.pgSubCat.setVisibility(View.GONE);
-                binding.spSelectSubcat.setVisibility(View.VISIBLE);
-                if (status) {
-                    subCategoryItems.clear();
-                    SubCategoryListPojo subCategoryListPojo = (SubCategoryListPojo) obj;
-                    subCategoryItems.add(new SubCategoryItem("0", getString(R.string.select_subcategory)));
-                    subCategoryItems.addAll(subCategoryListPojo.getData());
-                    subCatadapter.notifyDataSetChanged();
-                    binding.spSelectSubcat.setSelection(0);
-
-                    for (int i = 0; i < subCategoryListPojo.getData().size(); i++) {
-                        if (subCategoryListPojo.getData().get(i).getCategoryId().equalsIgnoreCase(PrefsUtil.with(FilterProviderActivity.this).readString("search_subcatId"))) {
-                            binding.spSelectSubcat.setSelection(i + 1);
-                            break;
-                        }
-                    }
-                } else {
-                    Toast.makeText(FilterProviderActivity.this, (String) obj, Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onAsync(Object asyncTask) {
-                subCatAsync = null;
-            }
-
-            @Override
-            public void onCancelled() {
-                subCatAsync = null;
-            }
-        });
-
+        viewModel.loadSubCategories(selectedCatId);
     }
 
     private void getList() {
@@ -423,184 +501,15 @@ public class FilterProviderActivity extends AppCompatActivity {
         binding.pgSubCat.setVisibility(View.VISIBLE);
         binding.pgService.setVisibility(View.VISIBLE);
 
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-
-        textParams.put("serviceId", getIntent().getStringExtra("serviceId"));
-
-        new WebServiceCall(this, WebServiceUrl.URL_GETLIST, textParams, FilterDataPOJO.class,
-                false, new WebServiceCall.OnResultListener() {
-            @Override
-            public void onResult(boolean status, Object obj) {
-                binding.pgCat.setVisibility(View.GONE);
-                binding.pgSubCat.setVisibility(View.GONE);
-                binding.pgService.setVisibility(View.GONE);
-                binding.spSelectCat.setVisibility(View.VISIBLE);
-                binding.spSelectSubcat.setVisibility(View.VISIBLE);
-                binding.spSelectService.setVisibility(View.VISIBLE);
-                if (status) {
-                    FilterDataPOJO filterDataPOJO = (FilterDataPOJO) obj;
-                    categoryDataItems.addAll(filterDataPOJO.getFilterData().getCategoryList());
-                    catadapter.notifyDataSetChanged();
-
-                    for (int i = 0; i < filterDataPOJO.getFilterData().getCategoryList().size(); i++) {
-                        if (filterDataPOJO.getFilterData().getCategoryList().get(i).getSelected().equalsIgnoreCase("y")) {
-                            selectedCatId = filterDataPOJO.getFilterData().getCategoryList().get(i).getCategoryId();
-                            Log.e("Filter ", filterDataPOJO.getFilterData().getCategoryList().get(i).getCategoryId());
-                            binding.spSelectCat.setSelection(i + 1, false);
-                            break;
-                        }
-                    }
-
-                    subCategoryItems.clear();
-                    subCategoryItems.add(new SubCategoryItem("0", getString(R.string.select_subcategory)));
-                    subCategoryItems.addAll(filterDataPOJO.getFilterData().getSubCategoryList());
-                    subCatadapter.notifyDataSetChanged();
-                    binding.spSelectSubcat.setSelection(0, false);
-
-                    for (int i = 0; i < filterDataPOJO.getFilterData().getSubCategoryList().size(); i++) {
-                        if (filterDataPOJO.getFilterData().getSubCategoryList().get(i).getSelected().equalsIgnoreCase("y")) {
-                            selectedSubCatId = filterDataPOJO.getFilterData().getSubCategoryList().get(i).getCategoryId();
-                            binding.spSelectSubcat.setSelection(i + 1, false);
-                            break;
-                        }
-                    }
-
-
-                    serviceDataItems.clear();
-                    serviceDataItems.add(new ServiceDataItem("0", "Select Service*"));
-                    serviceDataItems.addAll(filterDataPOJO.getFilterData().getServicesList());
-                    serviceadapter.notifyDataSetChanged();
-                    binding.spSelectService.setSelection(0, false);
-
-                    for (int i = 0; i < filterDataPOJO.getFilterData().getServicesList().size(); i++) {
-                        if (filterDataPOJO.getFilterData().getServicesList().get(i).getSelected().equalsIgnoreCase("y")) {
-                            selectedServiceId = serviceDataItems.get(i).getServiceId();
-                            selectedServiceName = serviceDataItems.get(i).getServiceName();
-                            binding.spSelectService.setSelection(i + 1, false);
-                            break;
-                        }
-                    }
-
-                    binding.spSelectCat.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-
-                        @Override
-                        public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                            selectedCatId = categoryDataItems.get(position).getCategoryId();
-
-                            if (categoryDataItems.get(position).getCategoryId().equals("0")) {
-                                subCategoryItems.clear();
-                                subCategoryItems.add(new SubCategoryItem("0", getString(R.string.select_subcategory)));
-                                subCatadapter.notifyDataSetChanged();
-                            } else {
-                                getSubCatId();
-
-                            }
-                        }
-
-                        @Override
-                        public void onNothingSelected(AdapterView<?> parent) {
-
-                        }
-                    });
-
-                    binding.spSelectSubcat.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                        @Override
-                        public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-
-                            selectedSubCatId = subCategoryItems.get(position).getCategoryId();
-                            if (subCategoryItems.get(position).getCategoryId().equals("0")) {
-                                serviceDataItems.clear();
-                                serviceDataItems.add(new ServiceDataItem("0", getString(R.string.select_service)));
-                                serviceadapter.notifyDataSetChanged();
-                            } else {
-                                getService();
-                            }
-
-                        }
-
-                        @Override
-                        public void onNothingSelected(AdapterView<?> parent) {
-
-                        }
-                    });
-
-                    binding.spSelectService.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-
-                        @Override
-                        public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                            if (binding.spSelectService.getSelectedItemPosition() != 0) {
-                                selectedServiceId = serviceDataItems.get(position).getServiceId();
-                                selectedServiceName = serviceDataItems.get(position).getServiceName();
-                            }
-                        }
-
-                        @Override
-                        public void onNothingSelected(AdapterView<?> parent) {
-
-                        }
-                    });
-
-                } else {
-                    Toast.makeText(FilterProviderActivity.this, (String) obj,
-                            Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onAsync(Object asyncTask) {
-                providerListAsync = null;
-            }
-
-            @Override
-            public void onCancelled() {
-                providerListAsync = null;
-            }
-        });
+        java.util.LinkedHashMap<String, String> params = new java.util.LinkedHashMap<>();
+        params.put("serviceId", getIntent().getStringExtra("serviceId"));
+        viewModel.loadFilterList(params);
     }
 
     private void getService() {
         binding.spSelectService.setVisibility(View.GONE);
         binding.pgService.setVisibility(View.VISIBLE);
-
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-
-        textParams.put("subcategory_id", selectedSubCatId);
-
-        new WebServiceCall(this, WebServiceUrl.URL_SERVICELIST, textParams,
-                ServiceListPOJO.class, false, new WebServiceCall.OnResultListener() {
-            @Override
-            public void onResult(boolean status, Object obj) {
-                binding.pgService.setVisibility(View.GONE);
-                binding.spSelectService.setVisibility(View.VISIBLE);
-                if (status) {
-                    ServiceListPOJO serviceListPojo = (ServiceListPOJO) obj;
-                    serviceDataItems.clear();
-                    serviceDataItems.add(new ServiceDataItem("0", "Select Service*"));
-                    serviceDataItems.addAll(serviceListPojo.getData());
-                    serviceadapter.notifyDataSetChanged();
-                    binding.spSelectService.setSelection(0);
-
-                    for (int i = 0; i < serviceListPojo.getData().size(); i++) {
-                        if (serviceListPojo.getData().get(i).getServiceId().equalsIgnoreCase(PrefsUtil.with(FilterProviderActivity.this).readString("search_serviceId"))) {
-                            binding.spSelectService.setSelection(i + 1);
-                            break;
-                        }
-                    }
-                } else {
-                    Toast.makeText(context, obj.toString(), Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onAsync(Object asyncTask) {
-                serviceListAsync = null;
-            }
-
-            @Override
-            public void onCancelled() {
-                serviceListAsync = null;
-            }
-        });
+        viewModel.loadServices(selectedSubCatId);
     }
 
     @Override
@@ -614,15 +523,7 @@ public class FilterProviderActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        try {
-            connectionManager.unregisterReceiver();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        Utils.cancelAsyncTask(minMaxPriceAsync);
-        Utils.cancelAsyncTask(subCatAsync);
-        Utils.cancelAsyncTask(providerListAsync);
-        Utils.cancelAsyncTask(serviceListAsync);
+        try { connectionManager.unregisterReceiver(); } catch (Exception e) { e.printStackTrace(); }
         super.onDestroy();
     }
 

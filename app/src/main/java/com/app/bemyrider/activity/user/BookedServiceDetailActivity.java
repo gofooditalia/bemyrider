@@ -43,9 +43,10 @@ import com.app.bemyrider.fragment.user.BookedDetailFragment;
 import com.app.bemyrider.fragment.user.ImageFragment;
 import com.app.bemyrider.fragment.user.ReviewFragment;
 import com.app.bemyrider.fragment.user.UserDetailFragment;
-import com.app.bemyrider.AsyncTask.WebServiceCall;
 import com.app.bemyrider.R;
 import com.app.bemyrider.WebServices.WebServiceUrl;
+import com.app.bemyrider.viewmodel.BookedServiceDetailViewModel;
+import androidx.lifecycle.ViewModelProvider;
 import com.app.bemyrider.databinding.ActivityBookedServiceDetailBinding;
 import com.app.bemyrider.model.CommonPojo;
 import com.app.bemyrider.model.DownloadInvoicePojo;
@@ -53,7 +54,6 @@ import com.app.bemyrider.model.ProviderServiceDetailPOJO;
 import com.app.bemyrider.model.ProviderServiceDetailsItem;
 import com.app.bemyrider.model.ProviderServiceReviewDataItem;
 import com.app.bemyrider.model.WithoutBalancePojo;
-import com.app.bemyrider.model.partner.EditProfilePojo;
 import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.LocaleManager;
 import com.app.bemyrider.utils.Log;
@@ -92,11 +92,12 @@ public class BookedServiceDetailActivity extends AppCompatActivity implements Ta
             R.drawable.tabicon_review_style,
             R.drawable.tabicon_images_style
     };
-    private WebServiceCall extendPaymentAsync, cancelServiceAsync, downloadInvoiceAsync,
-            extendServiceAsync, giveReviewAsync, bookNowAsync, serviceDetailAsync,
-            actionFavouriteAsync;
+    private BookedServiceDetailViewModel viewModel;
     private Context context;
     private ConnectionManager connectionManager;
+    private DialogInterface pendingCancelDialog;
+    private Dialog pendingExtendDialog;
+    private Dialog pendingReviewDialog;
 
     ActivityResultLauncher<Intent> myActivityResultLauncher;
 
@@ -108,154 +109,204 @@ public class BookedServiceDetailActivity extends AppCompatActivity implements Ta
         this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 
         init();
-
+        observeViewModel();
         getDetails();
     }
 
-    protected void getDetails() {
-        binding.rlMain.setVisibility(View.GONE);
-        binding.progress.setVisibility(View.VISIBLE);
+    private void observeViewModel() {
+        viewModel.getServiceDetail().observe(this, pojo -> {
+            binding.progress.setVisibility(View.GONE);
+            binding.rlMain.setVisibility(View.VISIBLE);
+            if (pojo != null && pojo.isStatus() && pojo.getData() != null) {
+                serviceDetailData = pojo.getData();
+                reviewArrayList.clear();
+                reviewArrayList.addAll(pojo.getData().getReviewData());
+                setData();
+            }
+        });
 
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-        textParams.put("provider_service_id", getIntent().getStringExtra("providerServiceId"));
-        textParams.put("service_request_id", getIntent().getStringExtra("serviceRequestId"));
-        textParams.put("user_id", PrefsUtil.with(this).readString("UserId"));
-
-        new WebServiceCall(this, WebServiceUrl.MY_SERVICE_DETAILS, textParams,
-                ProviderServiceDetailPOJO.class, false, new WebServiceCall.OnResultListener() {
-            @Override
-            public void onResult(boolean status, Object obj) {
-                binding.progress.setVisibility(View.GONE);
-                binding.rlMain.setVisibility(View.VISIBLE);
-                if (status) {
-                    ProviderServiceDetailPOJO mainDetail = (ProviderServiceDetailPOJO) obj;
-                    serviceDetailData = mainDetail.getData();
-                    reviewArrayList.clear();
-                    reviewArrayList.addAll(mainDetail.getData().getReviewData());
-                    setData();
-                } else {
-                    Toast.makeText(BookedServiceDetailActivity.this, (String) obj, Toast.LENGTH_LONG).show();
+        viewModel.getFavouriteResult().observe(this, pojo -> {
+            binding.pgFavourite.setVisibility(View.GONE);
+            binding.imgFav.setVisibility(View.VISIBLE);
+            if (pojo != null && pojo.isStatus()) {
+                Toast.makeText(context, pojo.getMessage(), Toast.LENGTH_SHORT).show();
+                if (binding.imgFav.getTag().equals("1")) {
+                    ImageRequest request = new ImageRequest.Builder(context).data(R.mipmap.ic_heart_fill).placeholder(R.drawable.loading).target(binding.imgFav).build();
+                    Coil.imageLoader(context).enqueue(request);
+                    binding.imgFav.setTag("0");
+                } else if (binding.imgFav.getTag().equals("0")) {
+                    ImageRequest request = new ImageRequest.Builder(context).data(R.mipmap.ic_heart_empty).placeholder(R.drawable.loading).target(binding.imgFav).build();
+                    Coil.imageLoader(context).enqueue(request);
+                    binding.imgFav.setTag("1");
                 }
             }
-            @Override public void onAsync(Object obj) { serviceDetailAsync = null; }
-            @Override public void onCancelled() { serviceDetailAsync = null; }
         });
-    }
 
-    protected void favouriteToggle() {
-        binding.imgFav.setVisibility(View.GONE);
-        binding.pgFavourite.setVisibility(View.VISIBLE);
-
-        String url = WebServiceUrl.URL_FAVOURITETOGGLE;
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-        textParams.put("service_id", getIntent().getStringExtra("providerServiceId"));
-        textParams.put("provider_id", serviceDetailData.getProviderId());
-        textParams.put("user_id", PrefsUtil.with(this).readString("UserId"));
-        textParams.put("delivery_type", serviceDetailData.getDeliveryType());
-        textParams.put("request_type", serviceDetailData.getRequestType());
-
-        if (binding.imgFav.getTag().equals("1")) textParams.put("fvrt_val", "0");
-        else if (binding.imgFav.getTag().equals("0")) textParams.put("fvrt_val", "1");
-        else return;
-
-        new WebServiceCall(this, url, textParams, EditProfilePojo.class, false,
-                new WebServiceCall.OnResultListener() {
-                    @Override
-                    public void onResult(boolean status, Object obj) {
-                        binding.pgFavourite.setVisibility(View.GONE);
-                        binding.imgFav.setVisibility(View.VISIBLE);
-                        if (status) {
-                            Toast.makeText(context, ((EditProfilePojo) obj).getMessage(), Toast.LENGTH_SHORT).show();
-                            if (binding.imgFav.getTag().equals("1")) {
-                                ImageRequest request = new ImageRequest.Builder(context).data(R.mipmap.ic_heart_fill).placeholder(R.drawable.loading).target(binding.imgFav).build();
-                                Coil.imageLoader(context).enqueue(request);
-                                binding.imgFav.setTag("0");
-                            } else if (binding.imgFav.getTag().equals("0")) {
-                                ImageRequest request = new ImageRequest.Builder(context).data(R.mipmap.ic_heart_empty).placeholder(R.drawable.loading).target(binding.imgFav).build();
-                                Coil.imageLoader(context).enqueue(request);
-                                binding.imgFav.setTag("1");
-                            }
-                        } else {
-                            Toast.makeText(BookedServiceDetailActivity.this, (String) obj, Toast.LENGTH_LONG).show();
-                        }
-                    }
-                    @Override public void onAsync(Object obj) { actionFavouriteAsync = null; }
-                    @Override public void onCancelled() { actionFavouriteAsync = null; }
-                });
-    }
-
-    private void serviceCallExtendPayment() {
-        binding.btnExtendPayment.setClickable(false);
-        binding.pgExtendPayment.setVisibility(View.VISIBLE);
-
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-        textParams.put("extend_id", serviceDetailData.getExtendServiceData().get(0).getExtendId());
-        try {
-            MessageDigest digest = java.security.MessageDigest.getInstance("MD5");
-            digest.update(serviceDetailData.getServiceRequestId().getBytes());
-            byte messageDigest[] = digest.digest();
-            StringBuilder hexString = new StringBuilder();
-            for (byte aMessageDigest : messageDigest) {
-                String h = Integer.toHexString(0xFF & aMessageDigest);
-                while (h.length() < 2) h = "0" + h;
-                hexString.append(h);
+        viewModel.getCancelResult().observe(this, pojo -> {
+            binding.pgCancel.setVisibility(View.GONE);
+            binding.btnCancel.setClickable(true);
+            if (pojo == null) return;
+            if (pojo.isStatus()) {
+                if (pendingCancelDialog != null) pendingCancelDialog.dismiss();
+                PrefsUtil.with(context).write("service", "true");
+                Intent intent = new Intent(context, CustomerHomeActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+                finish();
+            } else {
+                if (pendingCancelDialog instanceof Dialog) {
+                    Dialog d = (Dialog) pendingCancelDialog;
+                    d.findViewById(R.id.pg_confirm).setVisibility(View.GONE);
+                    d.findViewById(R.id.btn_yes).setVisibility(View.VISIBLE);
+                    d.findViewById(R.id.btn_no).setEnabled(true);
+                }
             }
-            textParams.put("service_request_token", hexString.toString());
-        } catch (NoSuchAlgorithmException e) { e.printStackTrace(); }
+        });
 
-        new WebServiceCall(this, WebServiceUrl.URL_EXTEND_SERVICE_PAYMENT, textParams, CommonPojo.class, false, new WebServiceCall.OnResultListener() {
-            @Override
-            public void onResult(boolean status, Object obj) {
-                binding.pgExtendPayment.setVisibility(View.GONE);
-                binding.btnExtendPayment.setClickable(true);
-                if (status) {
+        viewModel.getExtendPaymentResult().observe(this, pojo -> {
+            binding.pgExtendPayment.setVisibility(View.GONE);
+            binding.btnExtendPayment.setClickable(true);
+            if (pojo != null && pojo.isStatus()) {
+                PrefsUtil.with(context).write("service", "true");
+                Intent intent = new Intent(context, CustomerHomeActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+                finish();
+            }
+        });
+
+        viewModel.getExtendServiceResult().observe(this, pojo -> {
+            if (pendingExtendDialog != null) {
+                pendingExtendDialog.findViewById(R.id.pgSend).setVisibility(View.GONE);
+                pendingExtendDialog.findViewById(R.id.btn_extend_send).setClickable(true);
+            }
+            if (pojo != null && pojo.isStatus()) {
+                if (pendingExtendDialog != null) pendingExtendDialog.dismiss();
+                PrefsUtil.with(context).write("service", "true");
+                Intent intent = new Intent(context, CustomerHomeActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+                finish();
+            }
+        });
+
+        viewModel.getReviewResult().observe(this, pojo -> {
+            if (pendingReviewDialog != null) {
+                pendingReviewDialog.findViewById(R.id.pgSaveRating).setVisibility(View.GONE);
+                pendingReviewDialog.findViewById(R.id.btn_save_rating).setClickable(true);
+            }
+            if (pojo != null && pojo.isStatus()) {
+                if (pendingReviewDialog != null) pendingReviewDialog.dismiss();
+                binding.llBtnAddReview.setVisibility(View.GONE);
+                defaultTab = 2;
+                getDetails();
+            }
+        });
+
+        viewModel.getBookResult().observe(this, pojo -> {
+            binding.pgBookNow.setVisibility(View.GONE);
+            binding.btnBook.setClickable(true);
+            if (pojo != null && pojo.isStatus() && pojo.getData() != null) {
+                if (pojo.getData().getCustomerCommission().equals("")) {
                     PrefsUtil.with(context).write("service", "true");
                     Intent intent = new Intent(context, CustomerHomeActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     startActivity(intent);
                     finish();
                 } else {
-                    Toast.makeText(BookedServiceDetailActivity.this, (String) obj, Toast.LENGTH_SHORT).show();
+                    if (serviceDetailData.getServiceMasterType().equalsIgnoreCase("hourly")) {
+                        PrefsUtil.with(BookedServiceDetailActivity.this).write("sel_hours_wallet", serviceDetailData.getBookingHours());
+                    }
+                    Intent intent = new Intent(BookedServiceDetailActivity.this, StripePaymentActivity.class);
+                    intent.putExtra("sub_total", pojo.getData().getSubTotal());
+                    intent.putExtra("fees", pojo.getData().getTotalFees());
+                    intent.putExtra("booking_amount", pojo.getData().getBookingAmount());
+                    intent.putExtra("customer_commission_wallet", pojo.getData().getCustomerCommission());
+                    intent.putExtra("provider_commission", pojo.getData().getProviderCommission());
+                    intent.putExtra("total_amount_to_charge", pojo.getData().getTotalAmountToCharge());
+                    intent.putExtra("total_amount_to_charge_full", pojo.getData().getTotalAmountToChargeFull());
+                    intent.putExtra("paymentIntentClientSecret", pojo.getData().getPaymentIntentClientSecret());
+                    intent.putExtra("serviceId", getIntent().getStringExtra("serviceRequestId"));
+                    intent.putExtra("serviceMasterType", serviceDetailData.getServiceMasterType());
+                    myActivityResultLauncher.launch(intent);
                 }
             }
-            @Override public void onAsync(Object obj) { extendPaymentAsync = null; }
-            @Override public void onCancelled() { extendPaymentAsync = null; }
+        });
+
+        viewModel.getInvoiceResult().observe(this, pojo -> {
+            binding.pgDownloadInvoice.setVisibility(View.GONE);
+            binding.btnDownloadInvoice.setClickable(true);
+            if (pojo != null && pojo.isStatus() && pojo.getData() != null) {
+                Intent i = new Intent(Intent.ACTION_VIEW);
+                i.setData(Uri.parse(pojo.getData().getFileName()));
+                startActivity(i);
+            }
+        });
+
+        viewModel.getError().observe(this, msg -> {
+            if (msg != null) Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
         });
     }
 
-    private void serviceCallCancelService(final DialogInterface dialogInterface, String reason) {
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-        textParams.put("service_id", getIntent().getStringExtra("serviceRequestId"));
-        textParams.put("user_id", PrefsUtil.with(this).readString("UserId"));
-        textParams.put("cancel_reason", reason);
-        textParams.put("user_type", "c");
+    protected void getDetails() {
+        binding.rlMain.setVisibility(View.GONE);
+        binding.progress.setVisibility(View.VISIBLE);
 
-        new WebServiceCall(this, WebServiceUrl.URL_CANCEL_SERVICE, textParams, CommonPojo.class, false,
-                new WebServiceCall.OnResultListener() {
-                    @Override
-                    public void onResult(boolean status, Object obj) {
-                        binding.pgCancel.setVisibility(View.GONE);
-                        binding.btnCancel.setClickable(true);
-                        if (status) {
-                            dialogInterface.dismiss();
-                            PrefsUtil.with(context).write("service", "true");
-                            Intent intent = new Intent(context, CustomerHomeActivity.class);
-                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                            startActivity(intent);
-                            finish();
-                        } else {
-                            if (dialogInterface instanceof Dialog) {
-                                Dialog d = (Dialog) dialogInterface;
-                                d.findViewById(R.id.pg_confirm).setVisibility(View.GONE);
-                                d.findViewById(R.id.btn_yes).setVisibility(View.VISIBLE);
-                                d.findViewById(R.id.btn_no).setEnabled(true);
-                            }
-                            Toast.makeText(BookedServiceDetailActivity.this, (String) obj, Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                    @Override public void onAsync(Object obj) { cancelServiceAsync = null; }
-                    @Override public void onCancelled() { cancelServiceAsync = null; }
-                });
+        LinkedHashMap<String, String> params = new LinkedHashMap<>();
+        params.put("provider_service_id", getIntent().getStringExtra("providerServiceId"));
+        params.put("service_request_id", getIntent().getStringExtra("serviceRequestId"));
+        params.put("user_id", PrefsUtil.with(this).readString("UserId"));
+        viewModel.loadServiceDetail(params);
+    }
+
+    protected void favouriteToggle() {
+        binding.imgFav.setVisibility(View.GONE);
+        binding.pgFavourite.setVisibility(View.VISIBLE);
+
+        LinkedHashMap<String, String> params = new LinkedHashMap<>();
+        params.put("service_id", getIntent().getStringExtra("providerServiceId"));
+        params.put("provider_id", serviceDetailData.getProviderId());
+        params.put("user_id", PrefsUtil.with(this).readString("UserId"));
+        params.put("delivery_type", serviceDetailData.getDeliveryType());
+        params.put("request_type", serviceDetailData.getRequestType());
+
+        if (binding.imgFav.getTag().equals("1")) params.put("fvrt_val", "0");
+        else if (binding.imgFav.getTag().equals("0")) params.put("fvrt_val", "1");
+        else return;
+
+        viewModel.toggleFavourite(params);
+    }
+
+    private void serviceCallExtendPayment() {
+        binding.btnExtendPayment.setClickable(false);
+        binding.pgExtendPayment.setVisibility(View.VISIBLE);
+
+        String extendId = serviceDetailData.getExtendServiceData().get(0).getExtendId();
+        String token = "";
+        try {
+            java.security.MessageDigest digest = java.security.MessageDigest.getInstance("MD5");
+            digest.update(serviceDetailData.getServiceRequestId().getBytes());
+            byte[] messageDigest = digest.digest();
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : messageDigest) {
+                String h = Integer.toHexString(0xFF & b);
+                while (h.length() < 2) h = "0" + h;
+                hexString.append(h);
+            }
+            token = hexString.toString();
+        } catch (java.security.NoSuchAlgorithmException e) { e.printStackTrace(); }
+
+        viewModel.extendServicePayment(extendId, token);
+    }
+
+    private void serviceCallCancelService(final DialogInterface dialogInterface, String reason) {
+        pendingCancelDialog = dialogInterface;
+        viewModel.cancelService(
+            getIntent().getStringExtra("serviceRequestId"),
+            PrefsUtil.with(this).readString("UserId"),
+            reason,
+            "c"
+        );
     }
 
     private void serviceCallDownloadInvoice() {
@@ -263,148 +314,53 @@ public class BookedServiceDetailActivity extends AppCompatActivity implements Ta
         binding.pgDownloadInvoice.setVisibility(View.VISIBLE);
 
         String url = WebServiceUrl.URL_DOWNLOAD_INVOICE + "/" + serviceDetailData.getServiceRequestId();
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-        textParams.put("user_id", PrefsUtil.with(this).readString("UserId"));
-        textParams.put("user_type", PrefsUtil.with(this).readString("UserType"));
-        textParams.put("request_type", "app");
-        textParams.put("invoice", getString(R.string.invoice));
-        textParams.put("service_start_time", getString(R.string.service_s_time));
-        textParams.put("service_end_time", getString(R.string.service_e_time));
-        textParams.put("booking_id", getString(R.string.booking_id));
-        textParams.put("booking_details", getString(R.string.booking_details));
-        textParams.put("booking_amount", getString(R.string.booking_amount));
-        textParams.put("admin_fees", getString(R.string.admin_feesb));
-        textParams.put("payment_type", getString(R.string.payment_type));
-        textParams.put("total_payable_amount", getString(R.string.total_payable_amount));
-        textParams.put("total_receivable_amount", getString(R.string.total_receivable_amount));
-        textParams.put("wallet", getString(R.string.wallet));
-        textParams.put("cash", getString(R.string.cash));
-        textParams.put("complete", getString(R.string.status_completed));
-
-        new WebServiceCall(this, url, textParams, DownloadInvoicePojo.class, false, new WebServiceCall.OnResultListener() {
-            @Override
-            public void onResult(boolean status, Object obj) {
-                binding.pgDownloadInvoice.setVisibility(View.GONE);
-                binding.btnDownloadInvoice.setClickable(true);
-                if (status) {
-                    Intent i = new Intent(Intent.ACTION_VIEW);
-                    i.setData(Uri.parse(((DownloadInvoicePojo) obj).getData().getFileName()));
-                    startActivity(i);
-                } else {
-                    Toast.makeText(context, obj.toString(), Toast.LENGTH_SHORT).show();
-                }
-            }
-            @Override public void onAsync(Object obj) { downloadInvoiceAsync = null; }
-            @Override public void onCancelled() { downloadInvoiceAsync = null; }
-        });
+        LinkedHashMap<String, String> params = new LinkedHashMap<>();
+        params.put("user_id", PrefsUtil.with(this).readString("UserId"));
+        params.put("user_type", PrefsUtil.with(this).readString("UserType"));
+        params.put("request_type", "app");
+        params.put("invoice", getString(R.string.invoice));
+        params.put("service_start_time", getString(R.string.service_s_time));
+        params.put("service_end_time", getString(R.string.service_e_time));
+        params.put("booking_id", getString(R.string.booking_id));
+        params.put("booking_details", getString(R.string.booking_details));
+        params.put("booking_amount", getString(R.string.booking_amount));
+        params.put("admin_fees", getString(R.string.admin_feesb));
+        params.put("payment_type", getString(R.string.payment_type));
+        params.put("total_payable_amount", getString(R.string.total_payable_amount));
+        params.put("total_receivable_amount", getString(R.string.total_receivable_amount));
+        params.put("wallet", getString(R.string.wallet));
+        params.put("cash", getString(R.string.cash));
+        params.put("complete", getString(R.string.status_completed));
+        viewModel.downloadInvoice(url, params);
     }
 
     private void serviceCallExtendService(String selectedHours, final Dialog dialog) {
+        pendingExtendDialog = dialog;
         (dialog.findViewById(R.id.btn_extend_send)).setClickable(false);
         (dialog.findViewById(R.id.pgSend)).setVisibility(View.VISIBLE);
-
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-        textParams.put("txt_service_request_id", serviceDetailData.getServiceRequestId());
-        textParams.put("sel_hours", selectedHours);
-
-        new WebServiceCall(this, WebServiceUrl.URL_EXTEND_SERVICE, textParams, CommonPojo.class, false,
-                new WebServiceCall.OnResultListener() {
-                    @Override
-                    public void onResult(boolean status, Object obj) {
-                        (dialog.findViewById(R.id.pgSend)).setVisibility(View.GONE);
-                        (dialog.findViewById(R.id.btn_extend_send)).setClickable(true);
-                        if (status) {
-                            dialog.dismiss();
-                            PrefsUtil.with(context).write("service", "true");
-                            Intent intent = new Intent(context, CustomerHomeActivity.class);
-                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                            startActivity(intent);
-                            finish();
-                        } else {
-                            Toast.makeText(BookedServiceDetailActivity.this, (String) obj, Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                    @Override public void onAsync(Object obj) { extendServiceAsync = null; }
-                    @Override public void onCancelled() { extendServiceAsync = null; }
-                });
+        viewModel.extendService(serviceDetailData.getServiceRequestId(), selectedHours);
     }
 
     private void serviceCallGiveReview(String serviceRequestId, float rating, String desc, final Dialog dialog) {
+        pendingReviewDialog = dialog;
         dialog.setCancelable(false);
         (dialog.findViewById(R.id.btn_save_rating)).setClickable(false);
         (dialog.findViewById(R.id.pgSaveRating)).setVisibility(View.VISIBLE);
-
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-        textParams.put("user_id", PrefsUtil.with(this).readString("UserId"));
-        textParams.put("service_id", serviceRequestId);
-        textParams.put("txt_ratting", String.valueOf(rating));
-        textParams.put("txt_description", Utils.encodeEmoji(desc));
-
-        new WebServiceCall(this, WebServiceUrl.URL_ADD_REVIEW, textParams, CommonPojo.class, false, new WebServiceCall.OnResultListener() {
-            @Override
-            public void onResult(boolean status, Object obj) {
-                (dialog.findViewById(R.id.pgSaveRating)).setVisibility(View.GONE);
-                (dialog.findViewById(R.id.btn_save_rating)).setClickable(true);
-                if (status) {
-                    dialog.dismiss();
-                    binding.llBtnAddReview.setVisibility(View.GONE);
-                    defaultTab = 2;
-                    getDetails();
-                } else {
-                    Toast.makeText(BookedServiceDetailActivity.this, (String) obj, Toast.LENGTH_SHORT).show();
-                }
-            }
-            @Override public void onAsync(Object obj) { giveReviewAsync = null; }
-            @Override public void onCancelled() { giveReviewAsync = null; }
-        });
+        viewModel.addReview(
+            PrefsUtil.with(this).readString("UserId"),
+            serviceRequestId,
+            String.valueOf(rating),
+            Utils.encodeEmoji(desc)
+        );
     }
 
     private void serviceCallBookNow() {
         binding.btnBook.setClickable(false);
         binding.pgBookNow.setVisibility(View.VISIBLE);
-
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-        textParams.put("user_id", PrefsUtil.with(this).readString("UserId"));
-        textParams.put("service_id", getIntent().getStringExtra("serviceRequestId"));
-
-        new WebServiceCall(this, WebServiceUrl.URL_BOOK_SERVICE, textParams, WithoutBalancePojo.class, false,
-                new WebServiceCall.OnResultListener() {
-                    @Override
-                    public void onResult(boolean status, Object obj) {
-                        binding.pgBookNow.setVisibility(View.GONE);
-                        binding.btnBook.setClickable(true);
-                        if (status) {
-                            WithoutBalancePojo pojo = (WithoutBalancePojo) obj;
-                            if (pojo.getData().getCustomerCommission().equals("")) {
-                                PrefsUtil.with(context).write("service", "true");
-                                Intent intent = new Intent(context, CustomerHomeActivity.class);
-                                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                startActivity(intent);
-                                finish();
-                            } else {
-                                if ((serviceDetailData.getServiceMasterType().equalsIgnoreCase("hourly"))) {
-                                    PrefsUtil.with(BookedServiceDetailActivity.this).write("sel_hours_wallet", serviceDetailData.getBookingHours());
-                                }
-                                Intent intent = new Intent(BookedServiceDetailActivity.this, StripePaymentActivity.class);
-                                intent.putExtra("sub_total", pojo.getData().getSubTotal());
-                                intent.putExtra("fees", pojo.getData().getTotalFees());
-                                intent.putExtra("booking_amount", pojo.getData().getBookingAmount());
-                                intent.putExtra("customer_commission_wallet", pojo.getData().getCustomerCommission());
-                                intent.putExtra("provider_commission", pojo.getData().getProviderCommission());
-                                intent.putExtra("total_amount_to_charge", pojo.getData().getTotalAmountToCharge());
-                                intent.putExtra("total_amount_to_charge_full", pojo.getData().getTotalAmountToChargeFull());
-                                intent.putExtra("paymentIntentClientSecret", pojo.getData().getPaymentIntentClientSecret());
-                                intent.putExtra("serviceId", getIntent().getStringExtra("serviceRequestId"));
-                                intent.putExtra("serviceMasterType", serviceDetailData.getServiceMasterType());
-                                myActivityResultLauncher.launch(intent);
-                            }
-                        } else {
-                            Toast.makeText(BookedServiceDetailActivity.this, (String) obj, Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                    @Override public void onAsync(Object obj) { bookNowAsync = null; }
-                    @Override public void onCancelled() { bookNowAsync = null; }
-                });
+        viewModel.bookServiceRequest(
+            PrefsUtil.with(this).readString("UserId"),
+            getIntent().getStringExtra("serviceRequestId")
+        );
     }
 
     private void setupViewPager(ViewPager viewPager) {
@@ -441,6 +397,7 @@ public class BookedServiceDetailActivity extends AppCompatActivity implements Ta
 
     private void init() {
         context = this;
+        viewModel = new ViewModelProvider(this).get(BookedServiceDetailViewModel.class);
         try {
             String title = getIntent().getStringExtra("serviceName");
             if (getSupportActionBar() != null) {
@@ -744,14 +701,6 @@ public class BookedServiceDetailActivity extends AppCompatActivity implements Ta
     @Override
     protected void onDestroy() {
         try { connectionManager.unregisterReceiver(); } catch (Exception e) { e.printStackTrace(); }
-        Utils.cancelAsyncTask(extendPaymentAsync);
-        Utils.cancelAsyncTask(cancelServiceAsync);
-        Utils.cancelAsyncTask(downloadInvoiceAsync);
-        Utils.cancelAsyncTask(extendServiceAsync);
-        Utils.cancelAsyncTask(giveReviewAsync);
-        Utils.cancelAsyncTask(bookNowAsync);
-        Utils.cancelAsyncTask(serviceDetailAsync);
-        Utils.cancelAsyncTask(actionFavouriteAsync);
         super.onDestroy();
     }
 

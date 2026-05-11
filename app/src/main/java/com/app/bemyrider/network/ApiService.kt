@@ -37,6 +37,9 @@ import com.app.bemyrider.model.NotificationDataPOJO
 import com.app.bemyrider.model.NotificationListPojo
 import com.app.bemyrider.model.ProfilePojo
 import com.app.bemyrider.model.partner.CountryCodePojo
+import com.app.bemyrider.model.MinMaxPricePojo
+import com.app.bemyrider.model.WithoutBalancePojo
+import com.app.bemyrider.model.user.FilterDataPOJO
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import okhttp3.ResponseBody
@@ -48,6 +51,7 @@ import retrofit2.http.GET
 import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
+import retrofit2.http.PartMap
 import retrofit2.http.Url
 
 interface ApiServiceKt {
@@ -560,4 +564,77 @@ interface ApiServiceKt {
     suspend fun updateNotificationSettings(
         @FieldMap params: Map<String, String>
     ): Response<CommonPojo>
+
+    @FormUrlEncoded
+    @POST("services/cancelservice")
+    suspend fun cancelService(
+        @Field("service_id") serviceId: String,
+        @Field("user_id") userId: String,
+        @Field("cancel_reason") cancelReason: String,
+        @Field("user_type") userType: String
+    ): Response<CommonPojo>
+
+    @FormUrlEncoded
+    @POST("services/extendservice")
+    suspend fun extendService(
+        @Field("txt_service_request_id") serviceRequestId: String,
+        @Field("sel_hours") selectedHours: String
+    ): Response<CommonPojo>
+
+    @FormUrlEncoded
+    @POST("services/extendservicepayment")
+    suspend fun extendServicePayment(
+        @Field("extend_id") extendId: String,
+        @Field("service_request_token") serviceRequestToken: String
+    ): Response<CommonPojo>
+
+    @FormUrlEncoded
+    @POST("services/addproviderreview")
+    suspend fun addReview(
+        @Field("user_id") userId: String,
+        @Field("service_id") serviceId: String,
+        @Field("txt_ratting") rating: String,
+        @Field("txt_description") description: String
+    ): Response<CommonPojo>
+
+    @FormUrlEncoded
+    @POST("services/acceptproposal")
+    suspend fun acceptProposal(
+        @Field("status_type") statusType: String,
+        @Field("proposal_id") proposalId: String,
+        @Field("user_id") userId: String
+    ): Response<CommonPojo>
+
+    @FormUrlEncoded
+    @POST("services/sendproposal")
+    suspend fun sendProposal(
+        @Field("sel_message_hour") selectedHours: String,
+        @Field("txt_message") message: String,
+        @Field("txt_proposal_id") proposalId: String,
+        @Field("user_id") userId: String
+    ): Response<CommonPojo>
+
+    @FormUrlEncoded
+    @POST("services/getList")
+    suspend fun getFilterList(
+        @FieldMap params: Map<String, String>
+    ): Response<FilterDataPOJO>
+
+    @POST("services/minmaxprice")
+    suspend fun getMinMaxPrice(): Response<MinMaxPricePojo>
+
+    @FormUrlEncoded
+    @POST("finance/servicerequestpayment")
+    suspend fun bookServiceRequest(
+        @Field("user_id") userId: String,
+        @Field("service_id") serviceId: String
+    ): Response<WithoutBalancePojo>
+
+    @Multipart
+    @POST("profile/editprofile")
+    suspend fun editPartnerProfile(
+        @PartMap params: Map<String, @JvmSuppressWildcards RequestBody>,
+        @Part profilePic: MultipartBody.Part?,
+        @Part signatureImg: MultipartBody.Part?
+    ): Response<ResponseBody>
 }

@@ -34,9 +34,9 @@ import androidx.core.content.ContextCompat;
 import androidx.core.text.HtmlCompat;
 import androidx.databinding.DataBindingUtil;
 
-import com.app.bemyrider.AsyncTask.WebServiceCall;
 import com.app.bemyrider.R;
-import com.app.bemyrider.WebServices.WebServiceUrl;
+import com.app.bemyrider.viewmodel.PartnerEditProfileViewModel;
+import androidx.lifecycle.ViewModelProvider;
 import com.app.bemyrider.databinding.PartnerActivityEditProfileBinding;
 import com.app.bemyrider.helper.PermissionUtils;
 import com.app.bemyrider.helper.ToastMaster;
@@ -110,7 +110,7 @@ public class EditProfileActivity extends AppCompatActivity {
     private List<String> switches;
     private final ArrayList<CountryCodePojoItem> countrycodeArrayList = new ArrayList<>();
     private ArrayAdapter<CountryCodePojoItem> countrycodeAdapter;
-    private WebServiceCall editProfileAsync, countryCodeAsync;
+    private PartnerEditProfileViewModel viewModel;
 
     private boolean isFromEdit = false;
     private NewLoginPojoItem loginPojoData = null;
@@ -162,6 +162,8 @@ public class EditProfileActivity extends AppCompatActivity {
             // For new users, we might not have these yet
         }
 
+        viewModel = new ViewModelProvider(this).get(PartnerEditProfileViewModel.class);
+        observeViewModel();
         initView();
         fillData();
         setupDaysListeners(); // Set up listeners before checking the boxes
@@ -381,75 +383,71 @@ public class EditProfileActivity extends AppCompatActivity {
 
         for (int i = 0; i < switches.size(); i++) textParams.put("avl_dat[" + i + "]", switches.get(i));
 
-        new WebServiceCall(mContext, WebServiceUrl.URL_EDIT_PROFILE, textParams, fileParams,
-                ProfilePojo.class, false, new WebServiceCall.OnResultListener() {
-            @Override
-            public void onResult(boolean status, Object obj) {
-                if (isDestroyed || isFinishing()) return;
-                binding.progressUpdateProfile.setVisibility(View.GONE);
-                binding.btnUpdateProfile.setClickable(true);
-                if (status) {
-                    ProfilePojo pojo = (ProfilePojo) obj;
-                    PrefsUtil.with(mContext).write("isProfileCompleted", true);
-                    PrefsUtil.with(mContext).write("userAddress", String.valueOf(binding.etEditAddress.getText()).trim());
-                    PrefsUtil.with(mContext).write("countrycodeid", strselectedCountryCodeId);
-                    PrefsUtil.with(mContext).write("countrycode", countrycode);
-                    PrefsUtil.with(mActivity).write("UserName", String.valueOf(binding.etEditFname.getText()).trim() + " " + String.valueOf(binding.etEditLname.getText()).trim());
-                    PrefsUtil.with(mActivity).write("login_cust_address", String.valueOf(binding.etEditAddress.getText()).trim());
-                    
-                    if (pojo.getData() != null) {
-                        PrefsUtil.with(mActivity).write("UserImg", pojo.getData().getProfileImg());
-                        PrefsUtil.with(mContext).write("userAvalDay", pojo.getData().getAvailableDays());
-                    }
-
-                    if (isFromEdit) {
-                        EventBus.getDefault().post(new MessageEvent("provider_edit_profile", "refresh"));
-                    } else {
-                        Intent intentHome = new Intent(mContext, ProviderHomeActivity.class);
-                        Intent intentService = new Intent(mContext, Partner_MyServices_Activity.class);
-                        intentHome.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-                        startActivities(new Intent[]{intentHome, intentService});
-                    }
-                    finish();
-                } else {
-                    Toast.makeText(mContext, (String) obj, Toast.LENGTH_SHORT).show();
-                }
-            }
-            @Override public void onAsync(Object obj) { editProfileAsync = null; }
-            @Override public void onCancelled() { editProfileAsync = null; }
-        });
+        LinkedHashMap<String, String> params = new LinkedHashMap<>(textParams);
+        viewModel.updateProfile(params,
+            selectedImagePath.isEmpty() ? null : selectedImagePath,
+            selectedSignatureImagePath.isEmpty() ? null : selectedSignatureImagePath);
     }
 
     private void serviceCallCountryCode() {
         binding.progressCountryCode.setVisibility(View.VISIBLE);
         binding.spCode.setVisibility(View.GONE);
         countrycodeArrayList.clear();
-        new WebServiceCall(mContext, WebServiceUrl.URL_COUNTRY_CODE, new LinkedHashMap<>(),
-                CountryCodePojo.class, false, new WebServiceCall.OnResultListener() {
-            @Override
-            public void onResult(boolean status, Object obj) {
-                binding.progressCountryCode.setVisibility(View.GONE);
-                binding.spCode.setVisibility(View.VISIBLE);
-                if (status) {
-                    CountryCodePojo countryCodePojo = (CountryCodePojo) obj;
-                    countrycodeArrayList.addAll(countryCodePojo.getData());
-                    countrycodeAdapter.notifyDataSetChanged();
-                    
-                    String editExtra = getIntent().getStringExtra("Edit");
-                    if ("true".equals(editExtra)) {
-                        for (int i = 0; i < countrycodeArrayList.size(); i++) {
-                            if (countrycodeArrayList.get(i).getId().equals(PrefsUtil.with(mContext).readString("countrycodeid"))) {
-                                binding.spCode.setSelection(i);
-                                break;
-                            }
+        viewModel.loadCountryCodes();
+    }
+
+    private void observeViewModel() {
+        viewModel.getCountryCodes().observe(this, pojo -> {
+            binding.progressCountryCode.setVisibility(View.GONE);
+            binding.spCode.setVisibility(View.VISIBLE);
+            if (pojo != null && pojo.isStatus() && pojo.getData() != null) {
+                countrycodeArrayList.addAll(pojo.getData());
+                countrycodeAdapter.notifyDataSetChanged();
+                String editExtra = getIntent().getStringExtra("Edit");
+                if ("true".equals(editExtra)) {
+                    for (int i = 0; i < countrycodeArrayList.size(); i++) {
+                        if (countrycodeArrayList.get(i).getId().equals(PrefsUtil.with(mContext).readString("countrycodeid"))) {
+                            binding.spCode.setSelection(i);
+                            break;
                         }
                     }
-                } else {
-                    Toast.makeText(mContext, (String) obj, Toast.LENGTH_SHORT).show();
                 }
             }
-            @Override public void onAsync(Object obj) { countryCodeAsync = null; }
-            @Override public void onCancelled() { countryCodeAsync = null; }
+        });
+
+        viewModel.getUpdateResult().observe(this, pojo -> {
+            if (isDestroyed() || isFinishing()) return;
+            binding.progressUpdateProfile.setVisibility(View.GONE);
+            binding.btnUpdateProfile.setClickable(true);
+            if (pojo != null && pojo.isStatus()) {
+                PrefsUtil.with(mContext).write("isProfileCompleted", true);
+                PrefsUtil.with(mContext).write("userAddress", String.valueOf(binding.etEditAddress.getText()).trim());
+                PrefsUtil.with(mContext).write("countrycodeid", strselectedCountryCodeId);
+                PrefsUtil.with(mContext).write("countrycode", countrycode);
+                PrefsUtil.with(mActivity).write("UserName", String.valueOf(binding.etEditFname.getText()).trim() + " " + String.valueOf(binding.etEditLname.getText()).trim());
+                PrefsUtil.with(mActivity).write("login_cust_address", String.valueOf(binding.etEditAddress.getText()).trim());
+                if (pojo.getData() != null) {
+                    PrefsUtil.with(mActivity).write("UserImg", pojo.getData().getProfileImg());
+                    PrefsUtil.with(mContext).write("userAvalDay", pojo.getData().getAvailableDays());
+                }
+                if (isFromEdit) {
+                    EventBus.getDefault().post(new MessageEvent("provider_edit_profile", "refresh"));
+                } else {
+                    Intent intentHome = new Intent(mContext, ProviderHomeActivity.class);
+                    Intent intentService = new Intent(mContext, Partner_MyServices_Activity.class);
+                    intentHome.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivities(new Intent[]{intentHome, intentService});
+                }
+                finish();
+            }
+        });
+
+        viewModel.getError().observe(this, msg -> {
+            binding.progressUpdateProfile.setVisibility(View.GONE);
+            binding.btnUpdateProfile.setClickable(true);
+            binding.progressCountryCode.setVisibility(View.GONE);
+            binding.spCode.setVisibility(View.VISIBLE);
+            if (msg != null) Toast.makeText(mContext, msg, Toast.LENGTH_SHORT).show();
         });
     }
 
@@ -759,10 +757,6 @@ public class EditProfileActivity extends AppCompatActivity {
         if (connectionManager != null) {
             try { connectionManager.unregisterReceiver(); } catch (Exception e) { Log.e(TAG, "Error unregistering receiver: " + e.getMessage()); }
         }
-        Utils.cancelAsyncTask(editProfileAsync);
-        Utils.cancelAsyncTask(countryCodeAsync);
-        editProfileAsync = null;
-        countryCodeAsync = null;
         Utils.clearCameraCache(mContext);
         super.onDestroy();
     }

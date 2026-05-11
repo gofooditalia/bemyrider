@@ -19,9 +19,9 @@ import androidx.core.text.HtmlCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 
-import com.app.bemyrider.AsyncTask.WebServiceCall;
 import com.app.bemyrider.R;
-import com.app.bemyrider.WebServices.WebServiceUrl;
+import com.app.bemyrider.viewmodel.BookedDetailViewModel;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.app.bemyrider.activity.user.CustomerHomeActivity;
 import com.app.bemyrider.databinding.FragmentBookedDetailBinding;
@@ -31,8 +31,6 @@ import com.app.bemyrider.model.ProviderServiceDetailsItem;
 import com.app.bemyrider.utils.Log;
 import com.app.bemyrider.utils.PrefsUtil;
 import com.app.bemyrider.utils.Utils;
-
-import java.util.LinkedHashMap;
 
 /**
  * Modified by Hardik Talaviya on 12/12/19.
@@ -47,7 +45,7 @@ public class BookedDetailFragment extends Fragment {
             "5 Hours", "6 Hours", "7 Hours", "8 Hours", "9 Hours", "10 Hours", "11 Hours",
             "12 Hours", "13 Hours", "14 Hours", "15 Hours", "16 Hours", "17 Hours", "18 Hours",
             "19 Hours", "20 Hours", "21 Hours", "22 Hours", "23 Hours", "24 Hours"};*/
-    private WebServiceCall acceptProposalAsync, sendProposalAsync;
+    private BookedDetailViewModel viewModel;
     private Context context;
 
     @Override
@@ -145,113 +143,54 @@ public class BookedDetailFragment extends Fragment {
     private void serviceCallAcceptProposal(boolean isAccept) {
         binding.btnAcceptProposal.setClickable(false);
         binding.btnRejectProposal.setClickable(false);
-        if (isAccept) {
-            binding.pgAcceptP.setVisibility(View.VISIBLE);
-        } else {
-            binding.pgRejectP.setVisibility(View.VISIBLE);
-        }
+        if (isAccept) binding.pgAcceptP.setVisibility(View.VISIBLE);
+        else binding.pgRejectP.setVisibility(View.VISIBLE);
 
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-
-        textParams.put("status_type", isAccept ? "accepted" : "rejected");
-        textParams.put("proposal_id", serviceDetailData.getProposalServiceData().get(0).getId());
-        textParams.put("user_id", PrefsUtil.with(context).readString("UserId"));
-
-        new WebServiceCall(context, WebServiceUrl.URL_ACCEPT_PROPOSAL, textParams,
-                CommonPojo.class, false, new WebServiceCall.OnResultListener() {
-            @Override
-            public void onResult(boolean status, Object obj) {
-                if (isAccept) {
-                    binding.pgAcceptP.setVisibility(View.GONE);
-                } else {
-                    binding.pgRejectP.setVisibility(View.GONE);
-                }
-                binding.btnAcceptProposal.setClickable(true);
-                binding.btnRejectProposal.setClickable(true);
-                if (status) {
-                    if (isAccept) {
-                        PrefsUtil.with(context).write("service", "true");
-                        Intent intent = new Intent(context, CustomerHomeActivity.class);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                        startActivity(intent);
-                        ((Activity) context).finish();
-                    } else {
-                        PrefsUtil.with(context).write("service", "true");
-                        Intent intent = new Intent(context, CustomerHomeActivity.class);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                        intent.putExtra("service", true);
-                        startActivity(intent);
-                        ((Activity) context).finish();
-                    }
-
-                    /*Intent intent = new Intent(context, ServiceHistoryActivity.class);
-                    startActivity(intent);
-                    ((Activity) context).finish();*/
-                } else {
-                    Toast.makeText(context, (String) obj, Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onAsync(Object asyncTask) {
-                acceptProposalAsync = null;
-            }
-
-            @Override
-            public void onCancelled() {
-                acceptProposalAsync = null;
-            }
-        });
+        viewModel.acceptProposal(
+            isAccept ? "accepted" : "rejected",
+            serviceDetailData.getProposalServiceData().get(0).getId(),
+            PrefsUtil.with(context).readString("UserId")
+        );
     }
 
     /*----------------- Send Proposal Api Call -------------------*/
     private void serviceCallSendProposal(String selectedHours, String message, final Dialog dialog) {
         (dialog.findViewById(R.id.pgDialogSendApproval)).setVisibility(View.VISIBLE);
-
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-
-        textParams.put("sel_message_hour", selectedHours);
-        textParams.put("txt_message", Utils.encodeEmoji(message));
-        textParams.put("txt_proposal_id", serviceDetailData.getProposalServiceData().get(0).getId());
-        textParams.put("user_id", PrefsUtil.with(context).readString("UserId"));
-
-        new WebServiceCall(context, WebServiceUrl.URL_SEND_PRAPOSAL, textParams,
-                CommonPojo.class, false, new WebServiceCall.OnResultListener() {
-            @Override
-            public void onResult(boolean status, Object obj) {
-                (dialog.findViewById(R.id.pgDialogSendApproval)).setVisibility(View.GONE);
-                (dialog.findViewById(R.id.btn_proposal_send)).setClickable(true);
-                (dialog.findViewById(R.id.btn_proposal_cancle)).setClickable(true);
-                if (status) {
-                    dialog.dismiss();
-                    PrefsUtil.with(context).write("service", "true");
-                    Intent intent = new Intent(context, CustomerHomeActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    intent.putExtra("service", true);
-                    startActivity(intent);
-                    ((Activity) context).finish();
-                   /* Intent intent = new Intent(context, ServiceHistoryActivity.class);
-                    startActivity(intent);
-                    ((Activity) context).finish();*/
-                } else {
-                    Toast.makeText(context, (String) obj, Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onAsync(Object asyncTask) {
-                sendProposalAsync = null;
-            }
-
-            @Override
-            public void onCancelled() {
-                sendProposalAsync = null;
-            }
-        });
+        viewModel.sendProposal(
+            selectedHours,
+            Utils.encodeEmoji(message),
+            serviceDetailData.getProposalServiceData().get(0).getId(),
+            PrefsUtil.with(context).readString("UserId")
+        );
     }
 
     private void init() {
         context = getActivity();
+        viewModel = new ViewModelProvider(this).get(BookedDetailViewModel.class);
+        observeViewModel();
+    }
+
+    private void observeViewModel() {
+        viewModel.getProposalResult().observe(getViewLifecycleOwner(), pojo -> {
+            binding.btnAcceptProposal.setClickable(true);
+            binding.btnRejectProposal.setClickable(true);
+            binding.pgAcceptP.setVisibility(View.GONE);
+            binding.pgRejectP.setVisibility(View.GONE);
+            if (pojo != null && pojo.isStatus()) {
+                PrefsUtil.with(context).write("service", "true");
+                Intent intent = new Intent(context, CustomerHomeActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+                ((Activity) context).finish();
+            }
+        });
+        viewModel.getError().observe(getViewLifecycleOwner(), msg -> {
+            binding.btnAcceptProposal.setClickable(true);
+            binding.btnRejectProposal.setClickable(true);
+            binding.pgAcceptP.setVisibility(View.GONE);
+            binding.pgRejectP.setVisibility(View.GONE);
+            if (msg != null) Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
+        });
     }
 
     private void setdata() {
@@ -442,8 +381,6 @@ public class BookedDetailFragment extends Fragment {
 
     @Override
     public void onDestroy() {
-        Utils.cancelAsyncTask(acceptProposalAsync);
-        Utils.cancelAsyncTask(sendProposalAsync);
         super.onDestroy();
     }
 }

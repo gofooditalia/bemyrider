@@ -38,6 +38,9 @@ import com.app.bemyrider.model.NotificationDataPOJO
 import com.app.bemyrider.model.NotificationListPojo
 import com.app.bemyrider.model.ProfilePojo
 import com.app.bemyrider.model.partner.CountryCodePojo
+import com.app.bemyrider.model.MinMaxPricePojo
+import com.app.bemyrider.model.WithoutBalancePojo
+import com.app.bemyrider.model.user.FilterDataPOJO
 import com.app.bemyrider.network.ApiServiceKt
 import com.app.bemyrider.network.RetrofitClient
 import com.google.gson.Gson
@@ -434,5 +437,61 @@ class AppRepository {
 
     suspend fun updateNotificationSettings(params: Map<String, String>): Response<CommonPojo> {
         return apiService.updateNotificationSettings(params)
+    }
+
+    suspend fun cancelService(serviceId: String, userId: String, cancelReason: String, userType: String): Response<CommonPojo> =
+        apiService.cancelService(serviceId, userId, cancelReason, userType)
+
+    suspend fun extendService(serviceRequestId: String, selectedHours: String): Response<CommonPojo> =
+        apiService.extendService(serviceRequestId, selectedHours)
+
+    suspend fun extendServicePayment(extendId: String, serviceRequestToken: String): Response<CommonPojo> =
+        apiService.extendServicePayment(extendId, serviceRequestToken)
+
+    suspend fun addReview(userId: String, serviceId: String, rating: String, description: String): Response<CommonPojo> =
+        apiService.addReview(userId, serviceId, rating, description)
+
+    suspend fun acceptProposal(statusType: String, proposalId: String, userId: String): Response<CommonPojo> =
+        apiService.acceptProposal(statusType, proposalId, userId)
+
+    suspend fun sendProposal(selectedHours: String, message: String, proposalId: String, userId: String): Response<CommonPojo> =
+        apiService.sendProposal(selectedHours, message, proposalId, userId)
+
+    suspend fun getFilterList(params: Map<String, String>): Response<FilterDataPOJO> =
+        apiService.getFilterList(params)
+
+    suspend fun getMinMaxPrice(): Response<MinMaxPricePojo> =
+        apiService.getMinMaxPrice()
+
+    suspend fun bookServiceRequest(userId: String, serviceId: String): Response<WithoutBalancePojo> =
+        apiService.bookServiceRequest(userId, serviceId)
+
+    suspend fun editPartnerProfile(
+        params: Map<String, String>,
+        profileImagePath: String?,
+        signatureImagePath: String?
+    ): ProfilePojo {
+        val partMap = params.mapValues { createPartFromString(it.value) }
+
+        var profilePicPart: MultipartBody.Part? = null
+        if (!profileImagePath.isNullOrEmpty()) {
+            val file = File(profileImagePath)
+            if (file.exists()) {
+                profilePicPart = MultipartBody.Part.createFormData("profile_pic", file.name,
+                    file.asRequestBody("image/*".toMediaTypeOrNull()))
+            }
+        }
+
+        var signaturePart: MultipartBody.Part? = null
+        if (!signatureImagePath.isNullOrEmpty()) {
+            val file = File(signatureImagePath)
+            if (file.exists()) {
+                signaturePart = MultipartBody.Part.createFormData("signature_img", file.name,
+                    file.asRequestBody("image/*".toMediaTypeOrNull()))
+            }
+        }
+
+        val response = apiService.editPartnerProfile(partMap, profilePicPart, signaturePart)
+        return parseGenericResponse(response, ProfilePojo::class.java)
     }
 }
