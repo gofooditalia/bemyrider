@@ -7,6 +7,13 @@ import com.app.bemyrider.model.CommonPojo
 import com.app.bemyrider.model.LanguagePojo
 import com.app.bemyrider.model.NewLoginPojo
 import com.app.bemyrider.model.CustomerHistoryPojo
+import com.app.bemyrider.model.FavoriteServiceListPojo
+import com.app.bemyrider.model.ProviderListPOJO
+import com.app.bemyrider.model.ProviderServiceDetailPOJO
+import com.app.bemyrider.model.ServiceListPOJO
+import com.app.bemyrider.model.partner.SubCategoryListPojo
+import com.app.bemyrider.model.user.CategoryListPOJO
+import com.app.bemyrider.model.user.ProviderMainPojo
 import com.app.bemyrider.model.InfoPagePojo
 import com.app.bemyrider.model.ProviderHistoryPojo
 import com.app.bemyrider.model.MessageDetailPojo
@@ -277,6 +284,43 @@ class AppRepository {
         } else null
         return apiService.sendMessage(toBody(userId), toBody(toUserId), toBody(serviceId),
             toBody(masterServiceId), textPart, filePart)
+    }
+
+    suspend fun getServiceList(userType: String, subcategoryId: String): Response<ServiceListPOJO> =
+        apiService.getServiceList(userType, subcategoryId)
+
+    suspend fun getCategoryList(providerId: String): Response<CategoryListPOJO> =
+        apiService.getCategoryList(providerId)
+
+    suspend fun getSubCategoryList(categoryId: String, providerId: String): Response<SubCategoryListPojo> =
+        apiService.getSubCategoryList(categoryId, providerId)
+
+    suspend fun getPopularServices(subCategoryId: String, providerId: String): Response<ServiceListPOJO> =
+        apiService.getPopularServices(subCategoryId, providerId)
+
+    suspend fun getFavoriteList(params: Map<String, String>): Response<FavoriteServiceListPojo> =
+        apiService.getFavoriteList(params)
+
+    suspend fun toggleFavorite(params: Map<String, String>): Response<CommonPojo> =
+        apiService.toggleFavorite(params)
+
+    suspend fun getServiceDetail(params: Map<String, String>): Response<ProviderServiceDetailPOJO> =
+        apiService.getServiceDetail(params)
+
+    suspend fun getServiceDetailHome(params: Map<String, String>): Response<ProviderServiceDetailPOJO> =
+        apiService.getServiceDetailHome(params)
+
+    suspend fun getProviderList(params: Map<String, String>): Response<ProviderListPOJO> =
+        apiService.getProviderList(params)
+
+    suspend fun getDeliveryProviders(type: Int, sort: String, rating: String, location: String,
+                                     lat: String, lng: String, keyword: String, page: Int): Response<ProviderMainPojo> {
+        val action = when (type) { 2 -> "large"; 1 -> "medium"; else -> "small" }
+        return when (type) {
+            2 -> apiService.getLargeDelivery(action, sort, rating, location, lat, lng, keyword, page)
+            1 -> apiService.getMediumDelivery(action, sort, rating, location, lat, lng, keyword, page)
+            else -> apiService.getSmallDelivery(action, sort, rating, location, lat, lng, keyword, page)
+        }
     }
 
     suspend fun getCustomerServiceHistory(userId: String, tab: String, page: Int): Response<CustomerHistoryPojo> =

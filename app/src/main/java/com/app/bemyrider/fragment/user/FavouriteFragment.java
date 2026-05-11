@@ -27,13 +27,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.bemyrider.Adapter.User.FavoriteServiceAdapter;
 import com.app.bemyrider.AsyncTask.ConnectionCheck;
-import com.app.bemyrider.AsyncTask.WebServiceCall;
 import com.app.bemyrider.R;
-import com.app.bemyrider.WebServices.WebServiceUrl;
 import com.app.bemyrider.databinding.ActivityFavouriteServicesBinding;
-import com.app.bemyrider.model.CommonPojo;
 import com.app.bemyrider.model.MessageEvent;
 import com.app.bemyrider.model.user.FavoriteServiceListPojo;
+import com.app.bemyrider.viewmodel.FavouriteViewModel;
+
+import androidx.lifecycle.ViewModelProvider;
 import com.app.bemyrider.model.user.FavoriteServiceListPojoItem;
 import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.Log;
@@ -66,8 +66,9 @@ public class FavouriteFragment extends Fragment {
     private int total_records = 0;
     private LinearLayoutManager layoutManager;
     private boolean loading = false;
+    private boolean pendingClear = false;
     private String keyWord = "";
-    private WebServiceCall favouriteAsync, getFavouriteListAsync;
+    private FavouriteViewModel viewModel;
     private Context context;
     private AppCompatActivity activity;
     private ConnectionManager connectionManager;
@@ -82,8 +83,8 @@ public class FavouriteFragment extends Fragment {
 
         init();
 
-        // Rimuoviamo la chiamata qui per spostarla in onResume. 
-        // In questo modo, il fragment si aggiorna ogni volta che torna in primo piano.
+        viewModel = new ViewModelProvider(this).get(FavouriteViewModel.class);
+        observeViewModel();
 
         binding.rvFavouriteServices.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -153,128 +154,67 @@ public class FavouriteFragment extends Fragment {
     }
 
 
-    /*-------------- Get Favorite Service Api Call -----------------*/
-    private void serviceCallGetFavoriteList(boolean isClear) {
-        if (isClear) {
-            page = 1;
-            binding.txtNoRecordFav.setVisibility(View.GONE);
-            binding.rvFavouriteServices.scrollToPosition(0);
-        }
-        if (!binding.swipeRefresh.isRefreshing()) {
-            binding.progress.setVisibility(View.VISIBLE);
-        }
-
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-
-        textParams.put("user_id", PrefsUtil.with(activity).readString("UserId"));
-        textParams.put("txt_search", Utils.encodeEmoji(keyWord));
-        textParams.put("page", String.valueOf(page));
-        
-        // Rimosso il filtro service_id perché probabilmente filtrava la lista dei preferiti in modo errato.
-
-        new WebServiceCall(context,
-                WebServiceUrl.URL_GET_FAVORITE_LIST, textParams, FavoriteServiceListPojo.class,
-                false, new WebServiceCall.OnResultListener() {
-            @Override
-            public void onResult(boolean status, Object obj) {
-                if (binding.swipeRefresh.isRefreshing()) {
-                    binding.swipeRefresh.setRefreshing(false);
-                }
-                if (status) {
-                    FavoriteServiceListPojo favoriteServiceListPojo = (FavoriteServiceListPojo) obj;
-                    if (isClear) {
-                        favoriteServiceListPojoItems.clear();
-                    }
-                    binding.progress.setVisibility(View.GONE);
-                    binding.rvFavouriteServices.setVisibility(View.VISIBLE);
-
-                    favoriteServiceListPojoItems.addAll(favoriteServiceListPojo.getData().getServiceList());
-                    adapter.notifyDataSetChanged();
-
-                    if (favoriteServiceListPojoItems.size() > 0) {
-                        binding.txtNoRecordFav.setVisibility(View.GONE);
-                        binding.rvFavouriteServices.setVisibility(View.VISIBLE);
-                    } else {
-                        binding.rvFavouriteServices.setVisibility(View.GONE);
-                        binding.txtNoRecordFav.setVisibility(View.VISIBLE);
-                    }
-                    try {
-                        total_records = favoriteServiceListPojo.getData().getPagination().getTotalRecords();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    loading = false;
-                } else {
-                    binding.progress.setVisibility(View.GONE);
-                    if (isClear) {
-                        favoriteServiceListPojoItems.clear();
-                        adapter.notifyDataSetChanged();
-                    }
-                    binding.rvFavouriteServices.setVisibility(View.GONE);
-                    binding.txtNoRecordFav.setVisibility(View.VISIBLE);
-                    //Toast.makeText(FavouriteServicesActivity.this, (String) obj, Toast.LENGTH_SHORT).show();
-                }
+    private void observeViewModel() {
+        viewModel.getFavourites().observe(getViewLifecycleOwner(), pojo -> {
+            if (binding.swipeRefresh.isRefreshing()) binding.swipeRefresh.setRefreshing(false);
+            binding.progress.setVisibility(View.GONE);
+            if (pojo != null && pojo.getData() != null) {
+                if (pendingClear) { favoriteServiceListPojoItems.clear(); pendingClear = false; }
+                favoriteServiceListPojoItems.addAll(pojo.getData().getServiceList());
+                adapter.notifyDataSetChanged();
+                boolean hasItems = !favoriteServiceListPojoItems.isEmpty();
+                binding.txtNoRecordFav.setVisibility(hasItems ? View.GONE : View.VISIBLE);
+                binding.rvFavouriteServices.setVisibility(hasItems ? View.VISIBLE : View.GONE);
+                try { total_records = pojo.getData().getPagination().getTotalRecords(); } catch (Exception ignored) {}
+                loading = false;
             }
+        });
 
-            @Override
-            public void onAsync(Object asyncTask) {
-                getFavouriteListAsync = null;
-            }
-
-            @Override
-            public void onCancelled() {
-                getFavouriteListAsync = null;
+        viewModel.getError().observe(getViewLifecycleOwner(), errorMsg -> {
+            if (errorMsg != null) {
+                if (binding.swipeRefresh.isRefreshing()) binding.swipeRefresh.setRefreshing(false);
+                binding.progress.setVisibility(View.GONE);
+                binding.rvFavouriteServices.setVisibility(View.GONE);
+                binding.txtNoRecordFav.setVisibility(View.VISIBLE);
+                loading = false;
             }
         });
     }
 
-    /*--------------- Remove Favourite Service Api Call ------------------*/
+    private void serviceCallGetFavoriteList(boolean isClear) {
+        if (isClear) { page = 1; binding.txtNoRecordFav.setVisibility(View.GONE); binding.rvFavouriteServices.scrollToPosition(0); }
+        pendingClear = isClear;
+        if (!binding.swipeRefresh.isRefreshing()) binding.progress.setVisibility(View.VISIBLE);
+        LinkedHashMap<String, String> params = new LinkedHashMap<>();
+        params.put("user_id", PrefsUtil.with(activity).readString("UserId"));
+        params.put("txt_search", Utils.encodeEmoji(keyWord));
+        params.put("page", String.valueOf(page));
+        viewModel.loadFavourites(params);
+    }
+
     private void serviceCallToggleFavorite(final int position, String providerServiceId, ImageView imgRemove, ProgressBar progress) {
         imgRemove.setVisibility(View.GONE);
         progress.setVisibility(View.VISIBLE);
-
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-
-        textParams.put("service_id", providerServiceId);
-        textParams.put("user_id", PrefsUtil.with(activity).readString("UserId"));
-        textParams.put("fvrt_val", "1");
-        textParams.put("delivery_type", favoriteServiceListPojoItems.get(position).getDeliveryType());
-        textParams.put("request_type", favoriteServiceListPojoItems.get(position).getRequestType());
-        textParams.put("provider_id", favoriteServiceListPojoItems.get(position).getProviderId());
-
-
-        new WebServiceCall(context, WebServiceUrl.URL_FAVOURITETOGGLE, textParams,
-                CommonPojo.class, false, new WebServiceCall.OnResultListener() {
-            @Override
-            public void onResult(boolean status, Object obj) {
-                progress.setVisibility(View.GONE);
-                imgRemove.setVisibility(View.VISIBLE);
-                if (status) {
-                    Toast.makeText(context, ((CommonPojo) obj).getMessage(), Toast.LENGTH_SHORT).show();
-                    favoriteServiceListPojoItems.remove(position);
-                    adapter.notifyDataSetChanged();
-                    if (favoriteServiceListPojoItems.size() > 0) {
-                        binding.txtNoRecordFav.setVisibility(View.GONE);
-                        binding.rvFavouriteServices.setVisibility(View.VISIBLE);
-                    } else {
-                        binding.rvFavouriteServices.setVisibility(View.GONE);
-                        binding.txtNoRecordFav.setVisibility(View.VISIBLE);
-                    }
-                } else {
-                    Toast.makeText(context, (String) obj, Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onAsync(Object asyncTask) {
-                favouriteAsync = null;
-            }
-
-            @Override
-            public void onCancelled() {
-                favouriteAsync = null;
+        LinkedHashMap<String, String> params = new LinkedHashMap<>();
+        params.put("service_id", providerServiceId);
+        params.put("user_id", PrefsUtil.with(activity).readString("UserId"));
+        params.put("fvrt_val", "1");
+        params.put("delivery_type", favoriteServiceListPojoItems.get(position).getDeliveryType());
+        params.put("request_type", favoriteServiceListPojoItems.get(position).getRequestType());
+        params.put("provider_id", favoriteServiceListPojoItems.get(position).getProviderId());
+        viewModel.getToggleResult().observe(getViewLifecycleOwner(), result -> {
+            progress.setVisibility(View.GONE);
+            imgRemove.setVisibility(View.VISIBLE);
+            if (result != null && result.isStatus()) {
+                Toast.makeText(context, result.getMessage(), Toast.LENGTH_SHORT).show();
+                favoriteServiceListPojoItems.remove(position);
+                adapter.notifyDataSetChanged();
+                boolean hasItems = !favoriteServiceListPojoItems.isEmpty();
+                binding.txtNoRecordFav.setVisibility(hasItems ? View.GONE : View.VISIBLE);
+                binding.rvFavouriteServices.setVisibility(hasItems ? View.VISIBLE : View.GONE);
             }
         });
+        viewModel.toggleFavourite(params);
     }
 
     private void init() {
@@ -383,8 +323,6 @@ public class FavouriteFragment extends Fragment {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        Utils.cancelAsyncTask(favouriteAsync);
-        Utils.cancelAsyncTask(getFavouriteListAsync);
         EventBus.getDefault().unregister(this);
         super.onDestroy();
     }

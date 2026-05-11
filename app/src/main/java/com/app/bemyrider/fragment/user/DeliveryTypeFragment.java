@@ -17,17 +17,17 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.bemyrider.Adapter.User.DeliveryTypeAdapter;
-import com.app.bemyrider.AsyncTask.WebServiceCall;
 import com.app.bemyrider.R;
-import com.app.bemyrider.WebServices.WebServiceUrl;
 import com.app.bemyrider.databinding.FragmentDeliveryTypeListingBinding;
 import com.app.bemyrider.model.user.ProviderData;
 import com.app.bemyrider.model.user.ProviderItem;
 import com.app.bemyrider.model.user.ProviderMainPojo;
 import com.app.bemyrider.utils.Utils;
+import com.app.bemyrider.viewmodel.DeliveryTypeViewModel;
+
+import androidx.lifecycle.ViewModelProvider;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 
 /**
  * Optimized for Lazy Loading and Request Cancellation by Gemini - 2024.
@@ -43,7 +43,7 @@ public class DeliveryTypeFragment extends Fragment {
     private boolean isLoading = false;
     private boolean isDataLoaded = false;
     private int pastVisibleItems, visibleItemCount, totalItemCount, page = 1, total_page = 1;
-    private WebServiceCall searchListAsync;
+    private DeliveryTypeViewModel viewModel;
     private Context context;
     private Activity activity;
 
@@ -79,8 +79,9 @@ public class DeliveryTypeFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         initView();
-        
-        // Lazy Loading: Carica solo se è la prima tab e posticipa per l'ottimizzazione UI
+        viewModel = new ViewModelProvider(this).get(DeliveryTypeViewModel.class);
+        observeViewModel();
+
         if (currentIndex == 0) {
             binding.getRoot().post(this::lazyLoad);
         }
@@ -125,96 +126,51 @@ public class DeliveryTypeFragment extends Fragment {
         }
     }
 
-    private void getAllProviders(boolean isClear) {
-        // --- OPTIMIZATION: Cancel pending request before starting a new one ---
-        if (searchListAsync != null) {
-            searchListAsync.cancel();
-        }
-
-        if (isClear) {
-            page = 1;
-            binding.txtNoRecord.setVisibility(View.GONE);
-            binding.rvDeliveryList.scrollToPosition(0);
-        }
-        
-        isLoading = true;
-        if (!binding.swipeRefresh.isRefreshing()) {
-            binding.progress.setVisibility(View.VISIBLE);
-        }
-
-        String action = "small";
-        String url = WebServiceUrl.URL_SMALL;
-        if (currentIndex == 2) {
-            url = WebServiceUrl.URL_LARGE;
-            action = "large";
-        } else if (currentIndex == 1) {
-            url = WebServiceUrl.URL_MEDIUM;
-            action = "medium";
-        }
-
-        if (deliveryTypeAdapter != null) {
-            deliveryTypeAdapter.setDeliveryType(action);
-        }
-
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-        textParams.put("action", action);
-        textParams.put("sort", mStrAsc.equalsIgnoreCase("y") ? "asc" : (mStrDesc.equalsIgnoreCase("y") ? "desc" : ""));
-        textParams.put("search_rating", mStrRating);
-        textParams.put("search_location", mAddress);
-        textParams.put("search_lat", mLatitude);
-        textParams.put("search_long", mLongitude);
-        textParams.put("search_keyword", Utils.encodeEmoji(mStrSearch));
-        textParams.put("page", String.valueOf(page));
-
-        searchListAsync = new WebServiceCall(context, url, textParams, ProviderMainPojo.class, false, new WebServiceCall.OnResultListener() {
-            @Override
-            public void onResult(boolean status, Object obj) {
-                if (!isAdded()) return;
-                
-                if (binding.swipeRefresh.isRefreshing()) {
-                    binding.swipeRefresh.setRefreshing(false);
-                }
-                
-                if (status) {
-                    isDataLoaded = true;
-                    ProviderMainPojo providerData = (ProviderMainPojo) obj;
-                    ProviderData providerListData = providerData.getData();
-                    if (isClear) {
-                        arrayList.clear();
-                    }
-                    binding.progress.setVisibility(View.GONE);
-                    binding.rvDeliveryList.setVisibility(View.VISIBLE);
-                    arrayList.addAll(providerListData.getProviderList());
-
-                    if (arrayList.size() > 0) {
-                        binding.rvDeliveryList.setVisibility(View.VISIBLE);
-                        binding.txtNoRecord.setVisibility(View.GONE);
-                    } else {
-                        binding.rvDeliveryList.setVisibility(View.GONE);
-                        binding.txtNoRecord.setVisibility(View.VISIBLE);
-                    }
-                    deliveryTypeAdapter.submitList(new ArrayList<>(arrayList));
-                    total_page = providerListData.getPagination().getTotalPages();
-                    page = providerListData.getPagination().getCurrentPage();
-                } else {
-                    // Non mostrare errore se è stato cancellato dall'utente
-                    if (searchListAsync != null && !searchListAsync.isCancelled()) {
-                        Toast.makeText(context, (String) obj, Toast.LENGTH_SHORT).show();
-                    }
-                }
-                isLoading = false;
+    private void observeViewModel() {
+        viewModel.getProviders().observe(getViewLifecycleOwner(), pojo -> {
+            if (!isAdded()) return;
+            if (binding.swipeRefresh.isRefreshing()) binding.swipeRefresh.setRefreshing(false);
+            binding.progress.setVisibility(View.GONE);
+            if (pojo != null && pojo.getData() != null) {
+                isDataLoaded = true;
+                arrayList.clear(); // viewModel già gestisce la semantica clear/append via pendingClear
+                arrayList.addAll(pojo.getData().getProviderList());
+                binding.rvDeliveryList.setVisibility(View.VISIBLE);
+                boolean hasItems = !arrayList.isEmpty();
+                binding.txtNoRecord.setVisibility(hasItems ? View.GONE : View.VISIBLE);
+                binding.rvDeliveryList.setVisibility(hasItems ? View.VISIBLE : View.GONE);
+                deliveryTypeAdapter.submitList(new ArrayList<>(arrayList));
+                total_page = pojo.getData().getPagination().getTotalPages();
+                page = pojo.getData().getPagination().getCurrentPage();
             }
-
-            @Override
-            public void onAsync(Object task) {
-                // Già salvato sopra, ma manteniamo per logica
-            }
-
-            @Override
-            public void onCancelled() {
+            isLoading = false;
+        });
+        viewModel.getError().observe(getViewLifecycleOwner(), errorMsg -> {
+            if (errorMsg != null && isAdded()) {
+                if (binding.swipeRefresh.isRefreshing()) binding.swipeRefresh.setRefreshing(false);
+                binding.progress.setVisibility(View.GONE);
+                Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show();
                 isLoading = false;
             }
         });
+    }
+
+    private void getAllProviders(boolean isClear) {
+        if (isClear) {
+            page = 1;
+            arrayList.clear();
+            binding.txtNoRecord.setVisibility(View.GONE);
+            binding.rvDeliveryList.scrollToPosition(0);
+        }
+        isLoading = true;
+        if (!binding.swipeRefresh.isRefreshing()) binding.progress.setVisibility(View.VISIBLE);
+
+        String action = currentIndex == 2 ? "large" : currentIndex == 1 ? "medium" : "small";
+        if (deliveryTypeAdapter != null) deliveryTypeAdapter.setDeliveryType(action);
+
+        String sort = mStrAsc.equalsIgnoreCase("y") ? "asc" : (mStrDesc.equalsIgnoreCase("y") ? "desc" : "");
+        viewModel.loadProviders(currentIndex, sort, mStrRating, mAddress, mLatitude, mLongitude,
+                Utils.encodeEmoji(mStrSearch), page);
     }
 
     public void searchDataUpdate(String strSearch, int position) {
@@ -243,9 +199,6 @@ public class DeliveryTypeFragment extends Fragment {
 
     @Override
     public void onDestroy() {
-        if (searchListAsync != null) {
-            searchListAsync.cancel();
-        }
         super.onDestroy();
     }
 }

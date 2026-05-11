@@ -20,12 +20,12 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.bemyrider.Adapter.User.ProviderAdapter;
-import com.app.bemyrider.AsyncTask.WebServiceCall;
 import com.app.bemyrider.R;
-import com.app.bemyrider.WebServices.WebServiceUrl;
 import com.app.bemyrider.databinding.ActivityProviderlistBinding;
-import com.app.bemyrider.model.CommonPojo;
 import com.app.bemyrider.model.user.ProviderListData;
+import com.app.bemyrider.viewmodel.ProviderListViewModel;
+
+import androidx.lifecycle.ViewModelProvider;
 import com.app.bemyrider.model.user.ProviderListItem;
 import com.app.bemyrider.model.user.ProviderListPOJO;
 import com.app.bemyrider.utils.ConnectionManager;
@@ -54,8 +54,9 @@ public class ProviderListActivity extends AppCompatActivity implements OnMapRead
     private ArrayList<ProviderListItem> arrayList;
     private LinearLayoutManager layoutManager;
     private boolean isLoading = false;
+    private boolean pendingClear = false;
     private int pastVisibleItems, visibleItemCount, totalItemCount, page = 1, total_page = 1;
-    private WebServiceCall searchListAsync, favTask;
+    private ProviderListViewModel viewModel;
     private Context context;
     private ConnectionManager connectionManager;
     ActivityResultLauncher<Intent> myIntentActivityResultLauncher;
@@ -67,6 +68,9 @@ public class ProviderListActivity extends AppCompatActivity implements OnMapRead
         binding = DataBindingUtil.setContentView(ProviderListActivity.this, R.layout.activity_providerlist);
 
         init();
+
+        viewModel = new ViewModelProvider(this).get(ProviderListViewModel.class);
+        observeViewModel();
 
         binding.txtTitle.setText(getIntent().getStringExtra("serviceName"));
 
@@ -147,99 +151,74 @@ public class ProviderListActivity extends AppCompatActivity implements OnMapRead
         }
     }
 
-    private void searchProviders(boolean isClear) {
-        if (isClear) {
-            page = 1;
-            binding.txtNoRecordFav.setVisibility(View.GONE);
-            binding.rvProviders.scrollToPosition(0);
-        }
-        isLoading = true;
-        if (!binding.swipeRefresh.isRefreshing()) {
-            binding.progress.setVisibility(View.VISIBLE);
-        }
-
-        String url = WebServiceUrl.URL_PROVIDERLIST;
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-
-        textParams.put("user_id", PrefsUtil.with(ProviderListActivity.this).readString("UserId"));
-        textParams.put("service_id", getIntent().getStringExtra("serviceId"));
-        if (getIntent().hasExtra("address")) {
-            textParams.put("search_location", getIntent().getStringExtra("address"));
-        }
-        textParams.put("category_id", getIntent().getStringExtra("categoryId"));
-        textParams.put("subcategory_id", getIntent().getStringExtra("subCategoryId"));
-        if (getIntent().hasExtra("providerName")) {
-            textParams.put("search_provider_name", getIntent().getStringExtra("providerName"));
-        }
-        if (getIntent().hasExtra("searchKeyWord")) {
-            textParams.put("search_keyword", getIntent().getStringExtra("searchKeyWord"));
-        }
-        if (getIntent().hasExtra("rating")) {
-            if (!getIntent().getStringExtra("rating").equals("0.0")) {
-                textParams.put("search_rating", getIntent().getStringExtra("rating"));
-            }
-        }
-        if (getIntent().hasExtra("minRate")) {
-            textParams.put("search_min_rate", getIntent().getStringExtra("minRate"));
-        }
-        if (getIntent().hasExtra("date")) {
-            textParams.put("search_service_date", getIntent().getStringExtra("date"));
-        }
-        if (getIntent().hasExtra("maxRate")) {
-            textParams.put("search_max_rate", getIntent().getStringExtra("maxRate"));
-        }
-        if (getIntent().hasExtra("latitude") && getIntent().hasExtra("longitude")) {
-            textParams.put("search_lat", getIntent().getStringExtra("latitude"));
-            textParams.put("search_long", getIntent().getStringExtra("longitude"));
-        }
-        textParams.put("page", String.valueOf(page));
-
-        new WebServiceCall(this, url, textParams, ProviderListPOJO.class, false, new WebServiceCall.OnResultListener() {
-            @Override
-            public void onResult(boolean status, Object obj) {
-                if (binding.swipeRefresh.isRefreshing()) {
-                    binding.swipeRefresh.setRefreshing(false);
-                }
-                if (status) {
-                    ProviderListPOJO providerData = (ProviderListPOJO) obj;
-                    ProviderListData providerListData = providerData.getData();
-                    if (isClear) {
-                        arrayList.clear();
-                        if (providerListData.getServiceList().isEmpty()) {
-                            binding.txtProviderCount.setText(String.format("%s%s", getResources().getString(R.string.no), getResources().getString(R.string.provider_count)));
-                        } else {
-                            binding.txtProviderCount.setText(providerListData.getPagination().getTotalRecords() + " "
-                                    + getResources().getString(R.string.provider_count));
-                        }
-                    }
-                    binding.progress.setVisibility(View.GONE);
-                    binding.rvProviders.setVisibility(View.VISIBLE);
-
-                    arrayList.addAll(providerListData.getServiceList());
-
-                    if (arrayList.size() > 0) {
-                        binding.rvProviders.setVisibility(View.VISIBLE);
-                        binding.txtNoRecordFav.setVisibility(View.GONE);
+    private void observeViewModel() {
+        viewModel.getProviders().observe(this, pojo -> {
+            if (binding.swipeRefresh.isRefreshing()) binding.swipeRefresh.setRefreshing(false);
+            binding.progress.setVisibility(View.GONE);
+            if (pojo != null && pojo.getData() != null) {
+                ProviderListData data = pojo.getData();
+                if (pendingClear) {
+                    arrayList.clear();
+                    if (data.getServiceList().isEmpty()) {
+                        binding.txtProviderCount.setText(String.format("%s%s",
+                                getResources().getString(R.string.no), getResources().getString(R.string.provider_count)));
                     } else {
-                        binding.rvProviders.setVisibility(View.GONE);
-                        binding.txtNoRecordFav.setVisibility(View.VISIBLE);
+                        binding.txtProviderCount.setText(data.getPagination().getTotalRecords() + " "
+                                + getResources().getString(R.string.provider_count));
                     }
-
-                    providerAdapter.notifyDataSetChanged();
-
-                    total_page = providerListData.getPagination().getTotalPages();
-                    page = providerListData.getPagination().getCurrentPage();
-                } else {
-                    Toast.makeText(ProviderListActivity.this, (String) obj,
-                            Toast.LENGTH_SHORT).show();
+                    pendingClear = false;
                 }
+                binding.rvProviders.setVisibility(View.VISIBLE);
+                arrayList.addAll(data.getServiceList());
+                boolean hasItems = !arrayList.isEmpty();
+                binding.rvProviders.setVisibility(hasItems ? View.VISIBLE : View.GONE);
+                binding.txtNoRecordFav.setVisibility(hasItems ? View.GONE : View.VISIBLE);
+                providerAdapter.notifyDataSetChanged();
+                total_page = data.getPagination().getTotalPages();
+                page = data.getPagination().getCurrentPage();
+            }
+            isLoading = false;
+        });
+
+        viewModel.getToggleResult().observe(this, result -> {
+            // Handled inline in favouriteToggle — no additional action needed here
+        });
+
+        viewModel.getError().observe(this, errorMsg -> {
+            if (errorMsg != null) {
+                if (binding.swipeRefresh.isRefreshing()) binding.swipeRefresh.setRefreshing(false);
+                binding.progress.setVisibility(View.GONE);
+                Toast.makeText(this, errorMsg, Toast.LENGTH_SHORT).show();
                 isLoading = false;
             }
-
-            @Override
-            public void onAsync(Object obj) { searchListAsync = null; }
-            @Override public void onCancelled() { searchListAsync = null; }
         });
+    }
+
+    private void searchProviders(boolean isClear) {
+        if (isClear) { page = 1; binding.txtNoRecordFav.setVisibility(View.GONE); binding.rvProviders.scrollToPosition(0); }
+        isLoading = true;
+        pendingClear = isClear;
+        if (!binding.swipeRefresh.isRefreshing()) binding.progress.setVisibility(View.VISIBLE);
+
+        LinkedHashMap<String, String> params = new LinkedHashMap<>();
+        params.put("user_id", PrefsUtil.with(this).readString("UserId"));
+        params.put("service_id", getIntent().getStringExtra("serviceId"));
+        if (getIntent().hasExtra("address")) params.put("search_location", getIntent().getStringExtra("address"));
+        params.put("category_id", getIntent().getStringExtra("categoryId"));
+        params.put("subcategory_id", getIntent().getStringExtra("subCategoryId"));
+        if (getIntent().hasExtra("providerName")) params.put("search_provider_name", getIntent().getStringExtra("providerName"));
+        if (getIntent().hasExtra("searchKeyWord")) params.put("search_keyword", getIntent().getStringExtra("searchKeyWord"));
+        if (getIntent().hasExtra("rating") && !"0.0".equals(getIntent().getStringExtra("rating")))
+            params.put("search_rating", getIntent().getStringExtra("rating"));
+        if (getIntent().hasExtra("minRate")) params.put("search_min_rate", getIntent().getStringExtra("minRate"));
+        if (getIntent().hasExtra("date")) params.put("search_service_date", getIntent().getStringExtra("date"));
+        if (getIntent().hasExtra("maxRate")) params.put("search_max_rate", getIntent().getStringExtra("maxRate"));
+        if (getIntent().hasExtra("latitude") && getIntent().hasExtra("longitude")) {
+            params.put("search_lat", getIntent().getStringExtra("latitude"));
+            params.put("search_long", getIntent().getStringExtra("longitude"));
+        }
+        params.put("page", String.valueOf(page));
+        viewModel.loadProviders(params);
     }
 
     @Override
@@ -264,48 +243,36 @@ public class ProviderListActivity extends AppCompatActivity implements OnMapRead
         img_fav.setVisibility(View.GONE);
         progress.setVisibility(View.VISIBLE);
 
-        String url = WebServiceUrl.URL_FAVOURITETOGGLE;
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
+        LinkedHashMap<String, String> params = new LinkedHashMap<>();
+        params.put("service_id", providerServiceId);
+        params.put("user_id", PrefsUtil.with(this).readString("UserId"));
+        params.put("fvrt_val", "1".equals(img_fav.getTag()) ? "0" : "1");
 
-        textParams.put("service_id", getIntent().getStringExtra("providerServiceId"));
-        textParams.put("user_id", PrefsUtil.with(ProviderListActivity.this).readString("UserId"));
-        if (img_fav.getTag().equals("1")) {
-            textParams.put("fvrt_val", "0");
-        } else if (img_fav.getTag().equals("0")) {
-            textParams.put("fvrt_val", "1");
-        }
-
-        new WebServiceCall(ProviderListActivity.this, url, textParams, CommonPojo.class, false, new WebServiceCall.OnResultListener() {
-            @Override
+        viewModel.getToggleResult().observe(this, result -> {
             public void onResult(boolean status, Object obj) {
                 progress.setVisibility(View.GONE);
                 img_fav.setVisibility(View.VISIBLE);
-                if (status) {
-                    Toast.makeText(context, ((CommonPojo) obj).getMessage(), Toast.LENGTH_SHORT).show();
-                    
-                    if (img_fav.getTag().equals("1")) {
-                        ImageRequest request = new ImageRequest.Builder(context).data(R.mipmap.ic_heart_fill).placeholder(R.drawable.loading).target(img_fav).build();
-                        Coil.imageLoader(context).enqueue(request);
+            if (result != null) {
+                progress.setVisibility(View.GONE);
+                img_fav.setVisibility(View.VISIBLE);
+                if (result.isStatus()) {
+                    Toast.makeText(context, result.getMessage(), Toast.LENGTH_SHORT).show();
+                    if ("1".equals(img_fav.getTag())) {
+                        Coil.imageLoader(context).enqueue(new ImageRequest.Builder(context).data(R.mipmap.ic_heart_fill).placeholder(R.drawable.loading).target(img_fav).build());
                         img_fav.setTag("0");
-                    } else if (img_fav.getTag().equals("0")) {
-                        ImageRequest request = new ImageRequest.Builder(context).data(R.mipmap.ic_heart_empty).placeholder(R.drawable.loading).target(img_fav).build();
-                        Coil.imageLoader(context).enqueue(request);
+                    } else if ("0".equals(img_fav.getTag())) {
+                        Coil.imageLoader(context).enqueue(new ImageRequest.Builder(context).data(R.mipmap.ic_heart_empty).placeholder(R.drawable.loading).target(img_fav).build());
                         img_fav.setTag("1");
                     }
-                } else {
-                    Toast.makeText(ProviderListActivity.this, (String) obj, Toast.LENGTH_LONG).show();
                 }
             }
-            @Override public void onAsync(Object obj) { favTask = null; }
-            @Override public void onCancelled() { favTask = null; }
         });
+        viewModel.toggleFavourite(params);
     }
 
     @Override
     protected void onDestroy() {
         try { connectionManager.unregisterReceiver(); } catch (Exception e) { e.printStackTrace(); }
-        Utils.cancelAsyncTask(searchListAsync);
-        Utils.cancelAsyncTask(favTask);
         super.onDestroy();
     }
 

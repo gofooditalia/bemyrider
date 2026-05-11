@@ -6,6 +6,13 @@ import com.app.bemyrider.model.CommonPojo
 import com.app.bemyrider.model.LanguagePojo
 import com.app.bemyrider.model.NewLoginPojo
 import com.app.bemyrider.model.CustomerHistoryPojo
+import com.app.bemyrider.model.FavoriteServiceListPojo
+import com.app.bemyrider.model.ProviderListPOJO
+import com.app.bemyrider.model.ProviderServiceDetailPOJO
+import com.app.bemyrider.model.ServiceListPOJO
+import com.app.bemyrider.model.partner.SubCategoryListPojo
+import com.app.bemyrider.model.user.CategoryListPOJO
+import com.app.bemyrider.model.user.ProviderMainPojo
 import com.app.bemyrider.model.InfoPagePojo
 import com.app.bemyrider.model.ProviderHistoryPojo
 import com.app.bemyrider.model.MessageDetailPojo
@@ -240,6 +247,102 @@ interface ApiServiceKt {
         @Part("message_text") messageText: RequestBody?,
         @Part attachment: MultipartBody.Part?
     ): Response<SendMessagePojo>
+
+    @FormUrlEncoded
+    @POST("services/servicelist")
+    suspend fun getServiceList(
+        @Field("user_type") userType: String,
+        @Field("subcategory_id") subcategoryId: String
+    ): Response<ServiceListPOJO>
+
+    @FormUrlEncoded
+    @POST("services/categorylist")
+    suspend fun getCategoryList(
+        @Field("provider_id") providerId: String
+    ): Response<CategoryListPOJO>
+
+    @FormUrlEncoded
+    @POST("services/subcategorylist")
+    suspend fun getSubCategoryList(
+        @Field("category_id") categoryId: String,
+        @Field("provider_id") providerId: String
+    ): Response<SubCategoryListPojo>
+
+    @FormUrlEncoded
+    @POST("services/popularservice")
+    suspend fun getPopularServices(
+        @Field("sub_category_id") subCategoryId: String,
+        @Field("provider_id") providerId: String
+    ): Response<ServiceListPOJO>
+
+    @FormUrlEncoded
+    @POST("services/getfavoriteservice")
+    suspend fun getFavoriteList(
+        @FieldMap params: Map<String, String>
+    ): Response<FavoriteServiceListPojo>
+
+    @FormUrlEncoded
+    @POST("services/likedislikeservices")
+    suspend fun toggleFavorite(
+        @FieldMap params: Map<String, String>
+    ): Response<CommonPojo>
+
+    @FormUrlEncoded
+    @POST("services/providerservicedetail")
+    suspend fun getServiceDetail(
+        @FieldMap params: Map<String, String>
+    ): Response<ProviderServiceDetailPOJO>
+
+    @FormUrlEncoded
+    @POST("services/homeproviderservicedetail")
+    suspend fun getServiceDetailHome(
+        @FieldMap params: Map<String, String>
+    ): Response<ProviderServiceDetailPOJO>
+
+    @FormUrlEncoded
+    @POST("services/providerlist")
+    suspend fun getProviderList(
+        @FieldMap params: Map<String, String>
+    ): Response<ProviderListPOJO>
+
+    @FormUrlEncoded
+    @POST("services/small")
+    suspend fun getSmallDelivery(
+        @Field("action") action: String,
+        @Field("sort") sort: String,
+        @Field("search_rating") rating: String,
+        @Field("search_location") location: String,
+        @Field("search_lat") lat: String,
+        @Field("search_long") lng: String,
+        @Field("search_keyword") keyword: String,
+        @Field("page") page: Int
+    ): Response<ProviderMainPojo>
+
+    @FormUrlEncoded
+    @POST("services/medium")
+    suspend fun getMediumDelivery(
+        @Field("action") action: String,
+        @Field("sort") sort: String,
+        @Field("search_rating") rating: String,
+        @Field("search_location") location: String,
+        @Field("search_lat") lat: String,
+        @Field("search_long") lng: String,
+        @Field("search_keyword") keyword: String,
+        @Field("page") page: Int
+    ): Response<ProviderMainPojo>
+
+    @FormUrlEncoded
+    @POST("services/large")
+    suspend fun getLargeDelivery(
+        @Field("action") action: String,
+        @Field("sort") sort: String,
+        @Field("search_rating") rating: String,
+        @Field("search_location") location: String,
+        @Field("search_lat") lat: String,
+        @Field("search_long") lng: String,
+        @Field("search_keyword") keyword: String,
+        @Field("page") page: Int
+    ): Response<ProviderMainPojo>
 
     @FormUrlEncoded
     @POST("services/customerservices")

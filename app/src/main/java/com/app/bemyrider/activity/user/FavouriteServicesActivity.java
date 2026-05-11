@@ -23,13 +23,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.bemyrider.Adapter.User.FavoriteServiceAdapter;
 import com.app.bemyrider.AsyncTask.ConnectionCheck;
-import com.app.bemyrider.AsyncTask.WebServiceCall;
 import com.app.bemyrider.R;
-import com.app.bemyrider.WebServices.WebServiceUrl;
 import com.app.bemyrider.databinding.ActivityFavouriteServicesBinding;
-import com.app.bemyrider.model.CommonPojo;
 import com.app.bemyrider.model.MessageEvent;
 import com.app.bemyrider.model.user.FavoriteServiceListPojo;
+import com.app.bemyrider.viewmodel.FavouriteViewModel;
+
+import androidx.lifecycle.ViewModelProvider;
 import com.app.bemyrider.model.user.FavoriteServiceListPojoItem;
 import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.LocaleManager;
@@ -68,8 +68,9 @@ public class FavouriteServicesActivity extends AppCompatActivity {
     private int total_records = 0;
     private LinearLayoutManager layoutManager;
     private boolean loading = false;
+    private boolean pendingClear = false;
     private String keyWord = "";
-    private WebServiceCall favouriteAsync, getFavouriteListAsync;
+    private FavouriteViewModel viewModel;
     private Context context;
     private ConnectionManager connectionManager;
     ActivityResultLauncher<Intent> myIntentActivityResultLauncher;
@@ -80,6 +81,9 @@ public class FavouriteServicesActivity extends AppCompatActivity {
         binding = DataBindingUtil.setContentView(FavouriteServicesActivity.this, R.layout.activity_favourite_services, null);
 
         init();
+
+        viewModel = new ViewModelProvider(this).get(FavouriteViewModel.class);
+        observeViewModel();
 
         if (new ConnectionCheck().isNetworkConnected(this)) {
             serviceCallGetFavoriteList(true);
@@ -131,104 +135,74 @@ public class FavouriteServicesActivity extends AppCompatActivity {
 
     }
 
+    private void observeViewModel() {
+        viewModel.getFavourites().observe(this, pojo -> {
+            if (binding.swipeRefresh.isRefreshing()) binding.swipeRefresh.setRefreshing(false);
+            binding.progress.setVisibility(View.GONE);
+            if (pojo != null && pojo.getData() != null) {
+                if (pendingClear) { favoriteServiceListPojoItems.clear(); pendingClear = false; }
+                favoriteServiceListPojoItems.addAll(pojo.getData().getServiceList());
+                adapter.notifyDataSetChanged();
+                boolean hasItems = !favoriteServiceListPojoItems.isEmpty();
+                binding.txtNoRecordFav.setVisibility(hasItems ? View.GONE : View.VISIBLE);
+                binding.rvFavouriteServices.setVisibility(hasItems ? View.VISIBLE : View.GONE);
+                try { total_records = pojo.getData().getPagination().getTotalRecords(); } catch (Exception ignored) {}
+                loading = false;
+            }
+        });
+
+        viewModel.getError().observe(this, errorMsg -> {
+            if (errorMsg != null) {
+                if (binding.swipeRefresh.isRefreshing()) binding.swipeRefresh.setRefreshing(false);
+                binding.progress.setVisibility(View.GONE);
+                binding.rvFavouriteServices.setVisibility(View.GONE);
+                binding.txtNoRecordFav.setVisibility(View.VISIBLE);
+                loading = false;
+            }
+        });
+    }
+
     private void serviceCallGetFavoriteList(boolean isClear) {
         if (isClear) {
             page = 1;
             binding.txtNoRecordFav.setVisibility(View.GONE);
             binding.rvFavouriteServices.scrollToPosition(0);
         }
-        if (!binding.swipeRefresh.isRefreshing()) {
-            binding.progress.setVisibility(View.VISIBLE);
-        }
+        pendingClear = isClear;
+        if (!binding.swipeRefresh.isRefreshing()) binding.progress.setVisibility(View.VISIBLE);
 
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-        textParams.put("user_id", PrefsUtil.with(FavouriteServicesActivity.this).readString("UserId"));
-        textParams.put("txt_search", Utils.encodeEmoji(keyWord));
-        textParams.put("page", String.valueOf(page));
-
-        new WebServiceCall(FavouriteServicesActivity.this,
-                WebServiceUrl.URL_GET_FAVORITE_LIST, textParams, FavoriteServiceListPojo.class,
-                false, new WebServiceCall.OnResultListener() {
-            @Override
-            public void onResult(boolean status, Object obj) {
-                if (binding.swipeRefresh.isRefreshing()) {
-                    binding.swipeRefresh.setRefreshing(false);
-                }
-                if (status) {
-                    FavoriteServiceListPojo favoriteServiceListPojo = (FavoriteServiceListPojo) obj;
-                    if (isClear) {
-                        favoriteServiceListPojoItems.clear();
-                    }
-                    binding.progress.setVisibility(View.GONE);
-                    binding.rvFavouriteServices.setVisibility(View.VISIBLE);
-
-                    favoriteServiceListPojoItems.addAll(favoriteServiceListPojo.getData().getServiceList());
-                    adapter.notifyDataSetChanged();
-
-                    if (favoriteServiceListPojoItems.size() > 0) {
-                        binding.txtNoRecordFav.setVisibility(View.GONE);
-                        binding.rvFavouriteServices.setVisibility(View.VISIBLE);
-                    } else {
-                        binding.rvFavouriteServices.setVisibility(View.GONE);
-                        binding.txtNoRecordFav.setVisibility(View.VISIBLE);
-                    }
-                    try {
-                        total_records = favoriteServiceListPojo.getData().getPagination().getTotalRecords();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    loading = false;
-                } else {
-                    binding.progress.setVisibility(View.GONE);
-                    if (isClear) {
-                        favoriteServiceListPojoItems.clear();
-                        adapter.notifyDataSetChanged();
-                    }
-                    binding.rvFavouriteServices.setVisibility(View.GONE);
-                    binding.txtNoRecordFav.setVisibility(View.VISIBLE);
-                }
-            }
-            @Override public void onAsync(Object obj) { getFavouriteListAsync = null; }
-            @Override public void onCancelled() { getFavouriteListAsync = null; }
-        });
+        LinkedHashMap<String, String> params = new LinkedHashMap<>();
+        params.put("user_id", PrefsUtil.with(this).readString("UserId"));
+        params.put("txt_search", Utils.encodeEmoji(keyWord));
+        params.put("page", String.valueOf(page));
+        viewModel.loadFavourites(params);
     }
 
     private void serviceCallToggleFavorite(final int position, String providerServiceId, ImageView imgRemove, ProgressBar progress) {
         imgRemove.setVisibility(View.GONE);
         progress.setVisibility(View.VISIBLE);
 
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-        textParams.put("service_id", providerServiceId);
-        textParams.put("user_id", PrefsUtil.with(FavouriteServicesActivity.this).readString("UserId"));
-        textParams.put("fvrt_val", "1");
-        textParams.put("delivery_type", favoriteServiceListPojoItems.get(position).getDeliveryType());
-        textParams.put("request_type", favoriteServiceListPojoItems.get(position).getRequestType());
-        textParams.put("provider_id", favoriteServiceListPojoItems.get(position).getProviderId());
+        LinkedHashMap<String, String> params = new LinkedHashMap<>();
+        params.put("service_id", providerServiceId);
+        params.put("user_id", PrefsUtil.with(this).readString("UserId"));
+        params.put("fvrt_val", "1");
+        params.put("delivery_type", favoriteServiceListPojoItems.get(position).getDeliveryType());
+        params.put("request_type", favoriteServiceListPojoItems.get(position).getRequestType());
+        params.put("provider_id", favoriteServiceListPojoItems.get(position).getProviderId());
 
-        new WebServiceCall(FavouriteServicesActivity.this, WebServiceUrl.URL_FAVOURITETOGGLE, textParams,
-                CommonPojo.class, false, new WebServiceCall.OnResultListener() {
-            @Override
-            public void onResult(boolean status, Object obj) {
-                progress.setVisibility(View.GONE);
-                imgRemove.setVisibility(View.VISIBLE);
-                if (status) {
-                    Toast.makeText(context, ((CommonPojo) obj).getMessage(), Toast.LENGTH_SHORT).show();
-                    favoriteServiceListPojoItems.remove(position);
-                    adapter.notifyDataSetChanged();
-                    if (favoriteServiceListPojoItems.size() > 0) {
-                        binding.txtNoRecordFav.setVisibility(View.GONE);
-                        binding.rvFavouriteServices.setVisibility(View.VISIBLE);
-                    } else {
-                        binding.rvFavouriteServices.setVisibility(View.GONE);
-                        binding.txtNoRecordFav.setVisibility(View.VISIBLE);
-                    }
-                } else {
-                    Toast.makeText(FavouriteServicesActivity.this, (String) obj, Toast.LENGTH_SHORT).show();
-                }
+        viewModel.getToggleResult().observe(this, result -> {
+            progress.setVisibility(View.GONE);
+            imgRemove.setVisibility(View.VISIBLE);
+            if (result != null && result.isStatus()) {
+                Toast.makeText(context, result.getMessage(), Toast.LENGTH_SHORT).show();
+                favoriteServiceListPojoItems.remove(position);
+                adapter.notifyDataSetChanged();
+                boolean hasItems = !favoriteServiceListPojoItems.isEmpty();
+                binding.txtNoRecordFav.setVisibility(hasItems ? View.GONE : View.VISIBLE);
+                binding.rvFavouriteServices.setVisibility(hasItems ? View.VISIBLE : View.GONE);
             }
-            @Override public void onAsync(Object obj) { favouriteAsync = null; }
-            @Override public void onCancelled() { favouriteAsync = null; }
         });
+        viewModel.toggleFavourite(params);
     }
 
     private void init() {
@@ -338,8 +312,6 @@ public class FavouriteServicesActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         try { connectionManager.unregisterReceiver(); } catch (Exception e) { e.printStackTrace(); }
-        Utils.cancelAsyncTask(favouriteAsync);
-        Utils.cancelAsyncTask(getFavouriteListAsync);
         super.onDestroy();
     }
 

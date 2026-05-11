@@ -23,9 +23,7 @@ import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
-import com.app.bemyrider.AsyncTask.WebServiceCall;
 import com.app.bemyrider.R;
-import com.app.bemyrider.WebServices.WebServiceUrl;
 import com.app.bemyrider.databinding.ActivityServiceDetailBinding;
 import com.app.bemyrider.fragment.user.DetailFragment;
 import com.app.bemyrider.fragment.user.ImageFragment;
@@ -34,7 +32,9 @@ import com.app.bemyrider.fragment.user.UserDetailFragment;
 import com.app.bemyrider.model.ProviderServiceDetailPOJO;
 import com.app.bemyrider.model.ProviderServiceDetailsItem;
 import com.app.bemyrider.model.ProviderServiceReviewDataItem;
-import com.app.bemyrider.model.partner.EditProfilePojo;
+import com.app.bemyrider.viewmodel.ServiceDetailViewModel;
+
+import androidx.lifecycle.ViewModelProvider;
 import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.LocaleManager;
 import com.app.bemyrider.utils.PrefsUtil;
@@ -44,6 +44,7 @@ import com.google.android.material.tabs.TabLayoutMediator;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Objects;
 
 import coil.Coil;
@@ -60,7 +61,7 @@ public class ServiceDetailActivity extends AppCompatActivity {
             R.drawable.tabicon_review_style,
             R.drawable.tabicon_images_style
     };
-    private WebServiceCall serviceDetailAsync, actionFavouriteAsync;
+    private ServiceDetailViewModel viewModel;
     private final ArrayList<ProviderServiceReviewDataItem> reviewArrayList = new ArrayList<>();
     private boolean isFavRefresh = false;
     private String providerServiceId = "";
@@ -76,6 +77,9 @@ public class ServiceDetailActivity extends AppCompatActivity {
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 
         init();
+
+        viewModel = new ViewModelProvider(this).get(ServiceDetailViewModel.class);
+        observeDetailViewModel();
 
         providerServiceId = getIntent().getStringExtra("providerServiceId");
         if (providerServiceId == null) {
@@ -131,42 +135,59 @@ public class ServiceDetailActivity extends AppCompatActivity {
         }
     }
 
+    private void observeDetailViewModel() {
+        viewModel.getDetail().observe(this, pojo -> {
+            binding.progress.setVisibility(View.GONE);
+            binding.rlMain.setVisibility(View.VISIBLE);
+            if (pojo != null && pojo.getData() != null) {
+                serviceDetailData = pojo.getData();
+                reviewArrayList.clear();
+                reviewArrayList.addAll(pojo.getData().getReviewData());
+                setData();
+            }
+        });
+
+        viewModel.getFavouriteResult().observe(this, result -> {
+            binding.pgFavourite.setVisibility(View.GONE);
+            binding.imgFav.setVisibility(View.VISIBLE);
+            binding.llFavourite.setClickable(true);
+            if (result != null && result.isStatus()) {
+                isFavRefresh = true;
+                Toast.makeText(this, getTranslatedMessage(result.getMessage()), Toast.LENGTH_SHORT).show();
+                boolean wasFavorite = "0".equals(binding.imgFav.getTag());
+                boolean isNowFavorite = !wasFavorite;
+                binding.imgFav.setImageResource(isNowFavorite ? R.mipmap.ic_heart_fill : R.mipmap.ic_heart_empty);
+                binding.imgFav.setTag(isNowFavorite ? "0" : "1");
+            }
+        });
+
+        viewModel.getError().observe(this, errorMsg -> {
+            if (errorMsg != null) {
+                binding.progress.setVisibility(View.GONE);
+                binding.rlMain.setVisibility(View.VISIBLE);
+                binding.pgFavourite.setVisibility(View.GONE);
+                binding.imgFav.setVisibility(View.VISIBLE);
+                binding.llFavourite.setClickable(true);
+                Toast.makeText(this, errorMsg, Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
     protected void getDetails(boolean isFromHome) {
         binding.rlMain.setVisibility(View.GONE);
         binding.progress.setVisibility(View.VISIBLE);
 
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-        String webServiceUrl = isFromHome ? WebServiceUrl.MY_SERVICE_DETAILS_HOME : WebServiceUrl.MY_SERVICE_DETAILS;
-        
+        Map<String, String> params = new LinkedHashMap<>();
         if (isFromHome) {
-             textParams.put("provider_id", getIntent().getStringExtra(PROVIDER_ID));
+            params.put("provider_id", getIntent().getStringExtra(PROVIDER_ID));
         } else {
-            textParams.put("provider_service_id", providerServiceId);
+            params.put("provider_service_id", providerServiceId);
         }
-        textParams.put("user_id", PrefsUtil.with(this).readString("UserId"));
-        textParams.put("delivery_type", PrefsUtil.with(this).readString("delivery_type"));
-        textParams.put("request_type", PrefsUtil.with(this).readString("request_type"));
+        params.put("user_id", PrefsUtil.with(this).readString("UserId"));
+        params.put("delivery_type", PrefsUtil.with(this).readString("delivery_type"));
+        params.put("request_type", PrefsUtil.with(this).readString("request_type"));
 
-        serviceDetailAsync = new WebServiceCall(this, webServiceUrl, textParams, ProviderServiceDetailPOJO.class, false, new WebServiceCall.OnResultListener() {
-            @Override
-            public void onResult(boolean status, Object obj) {
-                binding.progress.setVisibility(View.GONE);
-                binding.rlMain.setVisibility(View.VISIBLE);
-                if (status) {
-                    ProviderServiceDetailPOJO mainDetail = (ProviderServiceDetailPOJO) obj;
-                    if (mainDetail.getData() != null) {
-                        serviceDetailData = mainDetail.getData();
-                        reviewArrayList.clear();
-                        reviewArrayList.addAll(mainDetail.getData().getReviewData());
-                        setData();
-                    }
-                } else {
-                    Toast.makeText(ServiceDetailActivity.this, Objects.toString(obj, getString(R.string.server_error)), Toast.LENGTH_LONG).show();
-                }
-            }
-            @Override public void onAsync(Object asyncTask) { serviceDetailAsync = null; }
-            @Override public void onCancelled() { serviceDetailAsync = null; }
-        });
+        viewModel.loadDetail(params, isFromHome);
     }
 
     private void setData() {
@@ -224,55 +245,21 @@ public class ServiceDetailActivity extends AppCompatActivity {
     protected void favouriteToggle() {
         if (serviceDetailData == null || serviceDetailData.getProviderId() == null || serviceDetailData.getId() == null) {
             Toast.makeText(this, getString(R.string.server_error), Toast.LENGTH_SHORT).show();
-            return; 
+            return;
         }
-
         binding.llFavourite.setClickable(false);
         binding.imgFav.setVisibility(View.GONE);
         binding.pgFavourite.setVisibility(View.VISIBLE);
 
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-        
-        // CORREZIONE FONDAMENTALE: Usiamo l'ID specifico del servizio (es. 855 o 782) invece della categoria (67)
-        textParams.put("service_id", serviceDetailData.getId());
-        
-        textParams.put("provider_id", serviceDetailData.getProviderId());
-        textParams.put("user_id", PrefsUtil.with(this).readString("UserId"));
-        
-        textParams.put("delivery_type", PrefsUtil.with(this).readString("delivery_type"));
-        textParams.put("request_type", PrefsUtil.with(this).readString("request_type"));
-        
-        // RIPRISTINO LOGICA SERVER: 0 = AGGIUNGI, 1 = RIMUOVI
-        // Se il tag è "1" (non preferito), inviamo "0" per aggiungere.
-        textParams.put("fvrt_val", binding.imgFav.getTag().equals("1") ? "0" : "1");
+        Map<String, String> params = new LinkedHashMap<>();
+        params.put("service_id", serviceDetailData.getId());
+        params.put("provider_id", serviceDetailData.getProviderId());
+        params.put("user_id", PrefsUtil.with(this).readString("UserId"));
+        params.put("delivery_type", PrefsUtil.with(this).readString("delivery_type"));
+        params.put("request_type", PrefsUtil.with(this).readString("request_type"));
+        params.put("fvrt_val", binding.imgFav.getTag().equals("1") ? "0" : "1");
 
-        actionFavouriteAsync = new WebServiceCall(this, WebServiceUrl.URL_FAVOURITETOGGLE, textParams, EditProfilePojo.class, false, new WebServiceCall.OnResultListener() {
-            @Override
-            public void onResult(boolean status, Object obj) {
-                binding.pgFavourite.setVisibility(View.GONE);
-                binding.imgFav.setVisibility(View.VISIBLE);
-                binding.llFavourite.setClickable(true);
-                
-                if (status) {
-                    isFavRefresh = true;
-                    String messageToShow = getTranslatedMessage(((EditProfilePojo) obj).getMessage());
-                    Toast.makeText(ServiceDetailActivity.this, messageToShow, Toast.LENGTH_SHORT).show();
-                    
-                    // Invertiamo il tag locale per riflettere il nuovo stato
-                    boolean wasFavorite = "0".equals(binding.imgFav.getTag());
-                    boolean isNowFavorite = !wasFavorite;
-                    
-                    binding.imgFav.setImageResource(isNowFavorite ? R.mipmap.ic_heart_fill : R.mipmap.ic_heart_empty);
-                    binding.imgFav.setTag(isNowFavorite ? "0" : "1");
-
-                } else {
-                    String messageToShow = (String) obj;
-                    Toast.makeText(ServiceDetailActivity.this, Objects.toString(messageToShow, getString(R.string.server_error)), Toast.LENGTH_LONG).show();
-                }
-            }
-            @Override public void onAsync(Object asyncTask) { actionFavouriteAsync = null; }
-            @Override public void onCancelled() { actionFavouriteAsync = null; }
-        });
+        viewModel.toggleFavourite(params);
     }
 
     private void shareProfile() {

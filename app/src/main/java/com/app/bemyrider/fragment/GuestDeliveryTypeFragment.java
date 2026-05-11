@@ -18,18 +18,17 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.bemyrider.Adapter.User.DeliveryTypeAdapter;
-import com.app.bemyrider.AsyncTask.WebServiceCall;
 import com.app.bemyrider.R;
-import com.app.bemyrider.WebServices.WebServiceUrl;
 import com.app.bemyrider.databinding.FragmentDeliveryTypeListingBinding;
 import com.app.bemyrider.model.user.ProviderData;
 import com.app.bemyrider.model.user.ProviderItem;
 import com.app.bemyrider.model.user.ProviderMainPojo;
 import com.app.bemyrider.utils.Utils;
-import com.google.android.gms.maps.GoogleMap;
+import com.app.bemyrider.viewmodel.DeliveryTypeViewModel;
+
+import androidx.lifecycle.ViewModelProvider;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 
 public class GuestDeliveryTypeFragment extends Fragment {
 
@@ -40,7 +39,7 @@ public class GuestDeliveryTypeFragment extends Fragment {
     private LinearLayoutManager layoutManager;
     private boolean isLoading = false;
     private int pastVisibleItems, visibleItemCount, totalItemCount, page = 1, total_page = 1;
-    private WebServiceCall searchListAsync;
+    private DeliveryTypeViewModel viewModel;
     private Context context;
     private Activity activity;
     private int currentIndex = 0;
@@ -72,8 +71,8 @@ public class GuestDeliveryTypeFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         initView();
-        
-        // Posticipa la chiamata API per evitare invalidazioni della UI del TabLayout
+        viewModel = new ViewModelProvider(this).get(DeliveryTypeViewModel.class);
+        observeViewModel();
         binding.getRoot().post(() -> getAllProviders(true));
         
         binding.rvDeliveryList.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -108,87 +107,50 @@ public class GuestDeliveryTypeFragment extends Fragment {
         });
     }
 
+    private void observeViewModel() {
+        viewModel.getProviders().observe(getViewLifecycleOwner(), pojo -> {
+            if (!isAdded()) return;
+            if (binding.swipeRefresh.isRefreshing()) binding.swipeRefresh.setRefreshing(false);
+            binding.progress.setVisibility(View.GONE);
+            if (pojo != null && pojo.getData() != null) {
+                arrayList.clear();
+                arrayList.addAll(pojo.getData().getProviderList());
+                boolean hasItems = !arrayList.isEmpty();
+                binding.rvDeliveryList.setVisibility(hasItems ? View.VISIBLE : View.GONE);
+                binding.txtNoRecord.setVisibility(hasItems ? View.GONE : View.VISIBLE);
+                deliveryTypeAdapter.submitList(new ArrayList<>(arrayList));
+                total_page = pojo.getData().getPagination().getTotalPages();
+                page = pojo.getData().getPagination().getCurrentPage();
+            }
+            isLoading = false;
+        });
+        viewModel.getError().observe(getViewLifecycleOwner(), errorMsg -> {
+            if (errorMsg != null && isAdded()) {
+                if (binding.swipeRefresh.isRefreshing()) binding.swipeRefresh.setRefreshing(false);
+                binding.progress.setVisibility(View.GONE);
+                Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show();
+                isLoading = false;
+            }
+        });
+    }
+
     private void getAllProviders(boolean isClear) {
         if (!isAdded()) return;
-
         if (isClear) {
             page = 1;
+            arrayList.clear();
             binding.txtNoRecord.setVisibility(View.GONE);
             binding.rvDeliveryList.scrollToPosition(0);
         }
         isLoading = true;
-        if (!binding.swipeRefresh.isRefreshing()) {
-            binding.progress.setVisibility(View.VISIBLE);
-        }
+        if (!binding.swipeRefresh.isRefreshing()) binding.progress.setVisibility(View.VISIBLE);
 
-        String url;
-        String deliveryType;
-        switch (currentIndex) {
-            case 2:
-                url = WebServiceUrl.URL_LARGE;
-                deliveryType = "large";
-                break;
-            case 1:
-                url = WebServiceUrl.URL_MEDIUM;
-                deliveryType = "medium";
-                break;
-            default:
-                url = WebServiceUrl.URL_SMALL;
-                deliveryType = "small";
-                break;
-        }
+        String deliveryType = currentIndex == 2 ? "large" : currentIndex == 1 ? "medium" : "small";
+        if (deliveryTypeAdapter != null) deliveryTypeAdapter.setDeliveryType(deliveryType);
 
-        // FIX: Set the delivery type in the adapter for the current tab
-        if (deliveryTypeAdapter != null) {
-            deliveryTypeAdapter.setDeliveryType(deliveryType);
-        }
-
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-        if ("y".equalsIgnoreCase(mStrAsc)) textParams.put("sort", "asc");
-        else if ("y".equalsIgnoreCase(mStrDesc)) textParams.put("sort", "desc");
-        
-        textParams.put("search_rating", mStrRating);
-        textParams.put("search_location", mAddress);
-        textParams.put("search_lat", mLatitude);
-        textParams.put("search_long", mLongitude);
-        textParams.put("search_keyword", Utils.encodeEmoji(mStrSearch));
-        textParams.put("page", String.valueOf(page));
-
-        searchListAsync = new WebServiceCall(context, url, textParams, ProviderMainPojo.class, false, new WebServiceCall.OnResultListener() {
-            @Override
-            public void onResult(boolean status, Object obj) {
-                if (!isAdded()) return;
-                
-                if (binding.swipeRefresh.isRefreshing()) binding.swipeRefresh.setRefreshing(false);
-                
-                if (status) {
-                    ProviderMainPojo providerData = (ProviderMainPojo) obj;
-                    if (providerData != null && providerData.getData() != null) {
-                        ProviderData providerListData = providerData.getData();
-                        if (isClear) arrayList.clear();
-                        
-                        binding.progress.setVisibility(View.GONE);
-                        arrayList.addAll(providerListData.getProviderList());
-
-                        if (arrayList.isEmpty()) {
-                            binding.rvDeliveryList.setVisibility(View.GONE);
-                            binding.txtNoRecord.setVisibility(View.VISIBLE);
-                        } else {
-                            binding.rvDeliveryList.setVisibility(View.VISIBLE);
-                            binding.txtNoRecord.setVisibility(View.GONE);
-                        }
-                        deliveryTypeAdapter.submitList(new ArrayList<>(arrayList));
-                        total_page = providerListData.getPagination().getTotalPages();
-                        page = providerListData.getPagination().getCurrentPage();
-                    }
-                } else {
-                    Toast.makeText(context, (String) obj, Toast.LENGTH_SHORT).show();
-                }
-                isLoading = false;
-            }
-            @Override public void onAsync(Object asyncTask) { /* Ignored, WebServiceCall no longer AsyncTask */ }
-            @Override public void onCancelled() { searchListAsync = null; }
-        });
+        String sort = "y".equalsIgnoreCase(mStrAsc) ? "asc" : ("y".equalsIgnoreCase(mStrDesc) ? "desc" : "");
+        viewModel.loadProviders(currentIndex, sort, mStrRating, mAddress, mLatitude, mLongitude,
+                Utils.encodeEmoji(mStrSearch), page);
     }
 
     public void searchDataUpdate(String strSearch, int position){
@@ -214,6 +176,5 @@ public class GuestDeliveryTypeFragment extends Fragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Utils.cancelAsyncTask(searchListAsync);
     }
 }

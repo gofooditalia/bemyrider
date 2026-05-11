@@ -3,7 +3,6 @@ package com.app.bemyrider.activity.user;
 import static com.app.bemyrider.utils.Utils.PROVIDER_ID;
 
 import android.content.Context;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Html;
 import android.view.MenuItem;
@@ -20,9 +19,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.bemyrider.Adapter.User.SelectSubCategoryAdapter;
-import com.app.bemyrider.AsyncTask.WebServiceCall;
 import com.app.bemyrider.R;
-import com.app.bemyrider.WebServices.WebServiceUrl;
 import com.app.bemyrider.databinding.ActivitySubCategoryBinding;
 import com.app.bemyrider.model.partner.SubCategoryItem;
 import com.app.bemyrider.model.partner.SubCategoryListPojo;
@@ -31,9 +28,11 @@ import com.app.bemyrider.model.user.CategoryListPOJO;
 import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.LocaleManager;
 import com.app.bemyrider.utils.Utils;
+import com.app.bemyrider.viewmodel.SubCategoryViewModel;
+
+import androidx.lifecycle.ViewModelProvider;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 
 /**
  * Modified by Hardik Talaviya on 9/12/19.
@@ -45,11 +44,10 @@ public class SubCategoryActivity extends AppCompatActivity {
     private ArrayList<SubCategoryItem> subCategoryItems = new ArrayList<>();
     private SelectSubCategoryAdapter subCategoryAdapter;
     private String categoryId = "", categoryName = "";
-    private WebServiceCall subCategoryAsync, categoryListAsync;
+    private SubCategoryViewModel viewModel;
     private Context context;
     private ConnectionManager connectionManager;
     private String providerId = "";
-    private ArrayList<CategoryDataItem> categoryDataItems = new ArrayList<>();
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -92,7 +90,9 @@ public class SubCategoryActivity extends AppCompatActivity {
 
         initViews();
 
-        getCategory();
+        viewModel = new ViewModelProvider(this).get(SubCategoryViewModel.class);
+        observeViewModel();
+        viewModel.loadSubcategories(providerId);
     }
 
     private void initViews() {
@@ -117,90 +117,27 @@ public class SubCategoryActivity extends AppCompatActivity {
         binding.rvSubCategories.setAdapter(subCategoryAdapter);
     }
 
-    /*----------------- Get Category Api Call -------------------*/
-    private void getCategory() {
-        binding.rvSubCategories.setVisibility(View.GONE);
-        binding.progress.setVisibility(View.VISIBLE);
-
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-        textParams.put("provider_id", providerId);
-
-        new WebServiceCall(this, WebServiceUrl.URL_CATEGORYLIST, textParams,
-                CategoryListPOJO.class, false, new WebServiceCall.OnResultListener() {
-            @Override
-            public void onResult(boolean status, Object obj) {
-                try {
-                    if (status) {
-                        CategoryListPOJO listPojo = (CategoryListPOJO) obj;
-                        categoryDataItems.clear();
-                        categoryDataItems.addAll(listPojo.getData());
-                        if (categoryDataItems.size() > 0) {
-                            categoryId = categoryDataItems.get(0).getCategoryId();
-                            categoryName = categoryDataItems.get(0).getCategoryName();
-                            if (categoryName != null && !"".equals(categoryName))
-                                setTitle(HtmlCompat.fromHtml("<font color=#FFFFFF>" + categoryName,HtmlCompat.FROM_HTML_MODE_LEGACY));
-                            else
-                                setTitle(HtmlCompat.fromHtml("<font color=#FFFFFF>" + "SubCategory",HtmlCompat.FROM_HTML_MODE_LEGACY));
-                            getSubCategory();
-                        } else {
-                            Toast.makeText(SubCategoryActivity.this,
-                                    getString(R.string.something_went_wrong), Toast.LENGTH_LONG).show();
-                            finish();
-                        }
-                    } else {
-                        Toast.makeText(context, obj.toString(), Toast.LENGTH_SHORT).show();
-                        finish();
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-
-            @Override
-            public void onAsync(Object asyncTask) {
-                categoryListAsync = (WebServiceCall) asyncTask;
-            }
-
-            @Override
-            public void onCancelled() {
-                categoryListAsync = null;
+    private void observeViewModel() {
+        viewModel.getCategoryName().observe(this, name -> {
+            if (name != null && !name.isEmpty()) {
+                setTitle(HtmlCompat.fromHtml("<font color=#FFFFFF>" + name, HtmlCompat.FROM_HTML_MODE_LEGACY));
             }
         });
-    }
 
-    /*---------------- Get Sub Category Api Call -------------------*/
-    private void getSubCategory() {
-        binding.rvSubCategories.setVisibility(View.GONE);
-        binding.progress.setVisibility(View.VISIBLE);
-
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-        textParams.put("category_id", categoryId);
-        textParams.put("provider_id", providerId);
-
-        new WebServiceCall(this, WebServiceUrl.URL_SUBCATEGORYLIST, textParams,
-                SubCategoryListPojo.class, false, new WebServiceCall.OnResultListener() {
-            @Override
-            public void onResult(boolean status, Object obj) {
-                binding.progress.setVisibility(View.GONE);
-                binding.rvSubCategories.setVisibility(View.VISIBLE);
-                if (status) {
-                    SubCategoryListPojo listPojo = (SubCategoryListPojo) obj;
-                    subCategoryItems.clear();
-                    subCategoryItems.addAll(listPojo.getData());
-                    subCategoryAdapter.notifyDataSetChanged();
-                } else {
-                    Toast.makeText(context, obj.toString(), Toast.LENGTH_SHORT).show();
-                }
+        viewModel.getSubcategories().observe(this, pojo -> {
+            binding.progress.setVisibility(View.GONE);
+            binding.rvSubCategories.setVisibility(View.VISIBLE);
+            if (pojo != null && pojo.getData() != null) {
+                subCategoryItems.clear();
+                subCategoryItems.addAll(pojo.getData());
+                subCategoryAdapter.notifyDataSetChanged();
             }
+        });
 
-            @Override
-            public void onAsync(Object asyncTask) {
-                subCategoryAsync = (WebServiceCall) asyncTask;
-            }
-
-            @Override
-            public void onCancelled() {
-                subCategoryAsync = null;
+        viewModel.getError().observe(this, errorMsg -> {
+            if (errorMsg != null) {
+                Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show();
+                finish();
             }
         });
     }
@@ -221,8 +158,6 @@ public class SubCategoryActivity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        Utils.cancelAsyncTask(subCategoryAsync);
-        Utils.cancelAsyncTask(categoryListAsync);
         super.onDestroy();
     }
 

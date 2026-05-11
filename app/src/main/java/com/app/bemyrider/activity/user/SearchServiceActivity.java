@@ -22,9 +22,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.text.HtmlCompat;
 import androidx.databinding.DataBindingUtil;
 
-import com.app.bemyrider.AsyncTask.WebServiceCall;
 import com.app.bemyrider.R;
-import com.app.bemyrider.WebServices.WebServiceUrl;
 import com.app.bemyrider.databinding.ActivitySearchServicesBinding;
 import com.app.bemyrider.model.ServiceDataItem;
 import com.app.bemyrider.model.ServiceListPOJO;
@@ -33,6 +31,9 @@ import com.app.bemyrider.utils.LocaleManager;
 import com.app.bemyrider.utils.Log;
 import com.app.bemyrider.utils.PrefsUtil;
 import com.app.bemyrider.utils.Utils;
+import com.app.bemyrider.viewmodel.ServiceSearchViewModel;
+
+import androidx.lifecycle.ViewModelProvider;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.libraries.places.api.Places;
@@ -44,7 +45,6 @@ import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
 
@@ -60,7 +60,7 @@ public class SearchServiceActivity extends AppCompatActivity {
             selectedServiceName = "", selectedSubCatId = "";
     private ArrayList<ServiceDataItem> serviceDataItems = new ArrayList<>();
     private ArrayAdapter<ServiceDataItem> serviceadapter;
-    private WebServiceCall getServiceAsync;
+    private ServiceSearchViewModel viewModel;
     private ConnectionManager connectionManager;
     private ActivityResultLauncher<Intent> locationActivityResultLauncher;
 
@@ -71,6 +71,9 @@ public class SearchServiceActivity extends AppCompatActivity {
         binding = DataBindingUtil.setContentView(this, R.layout.activity_search_services);
 
         init();
+
+        viewModel = new ViewModelProvider(this).get(ServiceSearchViewModel.class);
+        observeViewModel();
 
         if (!Objects.equals(PrefsUtil.with(this).readString("customer_address"), "")) {
             binding.txtLocation.setText(PrefsUtil.with(this).readString("customer_address"));
@@ -181,34 +184,31 @@ public class SearchServiceActivity extends AppCompatActivity {
     }
 
 
+    private void observeViewModel() {
+        viewModel.getServices().observe(this, pojo -> {
+            binding.pgService.setVisibility(View.GONE);
+            binding.spSelectService.setVisibility(View.VISIBLE);
+            if (pojo != null && pojo.getData() != null) {
+                serviceDataItems.clear();
+                serviceDataItems.add(new ServiceDataItem("0", getString(R.string.select_service)));
+                serviceDataItems.addAll(pojo.getData());
+                serviceadapter.notifyDataSetChanged();
+                binding.spSelectService.setSelection(0);
+            }
+        });
+        viewModel.getError().observe(this, errorMsg -> {
+            if (errorMsg != null) {
+                binding.pgService.setVisibility(View.GONE);
+                binding.spSelectService.setVisibility(View.VISIBLE);
+                Toast.makeText(this, errorMsg, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
     private void getService() {
         binding.spSelectService.setVisibility(View.GONE);
         binding.pgService.setVisibility(View.VISIBLE);
-
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-        textParams.put("user_type", "c");
-        textParams.put("subcategory_id", "0");
-
-        new WebServiceCall(this, WebServiceUrl.URL_SERVICELIST, textParams,
-                ServiceListPOJO.class, false, new WebServiceCall.OnResultListener() {
-            @Override
-            public void onResult(boolean status, Object obj) {
-                binding.pgService.setVisibility(View.GONE);
-                binding.spSelectService.setVisibility(View.VISIBLE);
-                if (status) {
-                    ServiceListPOJO serviceListPojo = (ServiceListPOJO) obj;
-                    serviceDataItems.clear();
-                    serviceDataItems.add(new ServiceDataItem("0", getString(R.string.select_service)));
-                    serviceDataItems.addAll(serviceListPojo.getData());
-                    serviceadapter.notifyDataSetChanged();
-                    binding.spSelectService.setSelection(0);
-                } else {
-                    Toast.makeText(SearchServiceActivity.this, obj.toString(), Toast.LENGTH_SHORT).show();
-                }
-            }
-            @Override public void onAsync(Object obj) { getServiceAsync = null; }
-            @Override public void onCancelled() { getServiceAsync = null; }
-        });
+        viewModel.loadServices("c", "0");
     }
 
     private boolean checkValidation() {
@@ -228,7 +228,6 @@ public class SearchServiceActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         try { connectionManager.unregisterReceiver(); } catch (Exception e) { Log.e("SearchServiceActivity", "Error unregistering receiver"); }
-        Utils.cancelAsyncTask(getServiceAsync);
         super.onDestroy();
     }
 
