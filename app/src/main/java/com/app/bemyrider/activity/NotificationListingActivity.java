@@ -3,9 +3,7 @@ package com.app.bemyrider.activity;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.text.Html;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -13,34 +11,26 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
 import androidx.core.text.HtmlCompat;
 import androidx.databinding.DataBindingUtil;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.app.bemyrider.AsyncTask.WebServiceCall;
-import com.app.bemyrider.WebServices.WebServiceUrl;
-import com.app.bemyrider.activity.user.NotificationActivity;
 import com.app.bemyrider.Adapter.NotificationListAdapter;
 import com.app.bemyrider.R;
+import com.app.bemyrider.activity.user.NotificationActivity;
 import com.app.bemyrider.databinding.ActivityNotificationListingBinding;
 import com.app.bemyrider.model.NotificationData;
-import com.app.bemyrider.model.NotificationDataPOJO;
 import com.app.bemyrider.model.NotificationListItem;
 import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.LocaleManager;
 import com.app.bemyrider.utils.PrefsUtil;
-import com.app.bemyrider.utils.Utils;
+import com.app.bemyrider.viewmodel.NotificationViewModel;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-
-/**
- * Modified by Hardik Talaviya on 2/12/19.
- */
 
 public class NotificationListingActivity extends AppCompatActivity {
 
@@ -51,10 +41,11 @@ public class NotificationListingActivity extends AppCompatActivity {
     private ArrayList<NotificationListItem> notifications = new ArrayList<>();
     private int pastVisibleItems, visibleItemCount, totalItemCount;
     private boolean isLoading = false;
-    private WebServiceCall notificationListAsync;
+    private boolean pendingClear = false;
     private Context context;
     private Activity activity;
     private ConnectionManager connectionManager;
+    private NotificationViewModel viewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,9 +55,10 @@ public class NotificationListingActivity extends AppCompatActivity {
 
         binding = DataBindingUtil.setContentView(activity, R.layout.activity_notification_listing, null);
 
+        viewModel = new ViewModelProvider(this).get(NotificationViewModel.class);
+        observeViewModel();
         initToolBar();
-
-        getNotificationList(true);
+        loadNotifications(true);
 
         binding.rvNotification.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -76,21 +68,55 @@ public class NotificationListingActivity extends AppCompatActivity {
                     totalItemCount = layoutManager.getItemCount();
                     pastVisibleItems = layoutManager.findFirstVisibleItemPosition();
 
-                    if ((!isLoading) && page <= totalPages) {
+                    if (!isLoading && page <= totalPages) {
                         if ((visibleItemCount + pastVisibleItems) >= totalItemCount) {
                             page++;
-                            getNotificationList(false);
+                            loadNotifications(false);
                         }
                     }
                 }
             }
         });
+    }
 
+    private void observeViewModel() {
+        viewModel.getNotifications().observe(this, pojo -> {
+            if (binding.swipeRefresh.isRefreshing()) {
+                binding.swipeRefresh.setRefreshing(false);
+            }
+            binding.progress.setVisibility(View.GONE);
+            if (pojo != null && pojo.isStatus()) {
+                NotificationData notiData = pojo.getNotificationData();
+                List<NotificationListItem> list = notiData.getNotificationList();
+                if (pendingClear) {
+                    notifications.clear();
+                    pendingClear = false;
+                }
+                notifications.addAll(list);
+                boolean hasItems = !notifications.isEmpty();
+                binding.txtNoRecordDis.setVisibility(hasItems ? View.GONE : View.VISIBLE);
+                binding.rvNotification.setVisibility(hasItems ? View.VISIBLE : View.GONE);
+                adapter.notifyDataSetChanged();
+                totalPages = notiData.getPagination().getTotalPages();
+                page = notiData.getPagination().getCurrentPage();
+            }
+            isLoading = false;
+        });
 
+        viewModel.getError().observe(this, errorMsg -> {
+            if (errorMsg != null) {
+                if (binding.swipeRefresh.isRefreshing()) {
+                    binding.swipeRefresh.setRefreshing(false);
+                }
+                binding.progress.setVisibility(View.GONE);
+                Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show();
+                isLoading = false;
+            }
+        });
     }
 
     private void initToolBar() {
-        setTitle(HtmlCompat.fromHtml("<font color=#FFFFFF>" + getResources().getString(R.string.notifications),HtmlCompat.FROM_HTML_MODE_LEGACY));
+        setTitle(HtmlCompat.fromHtml("<font color=#FFFFFF>" + getResources().getString(R.string.notifications), HtmlCompat.FROM_HTML_MODE_LEGACY));
 
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
@@ -98,7 +124,6 @@ public class NotificationListingActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
-        /*Init Internet Connection Class For No Internet Banner*/
         connectionManager = new ConnectionManager(context);
         connectionManager.registerInternetCheckReceiver();
         connectionManager.checkConnection(context);
@@ -113,79 +138,24 @@ public class NotificationListingActivity extends AppCompatActivity {
 
         binding.swipeRefresh.setOnRefreshListener(() -> {
             binding.swipeRefresh.setRefreshing(true);
-            getNotificationList(true);
+            loadNotifications(true);
         });
-
     }
 
-
-    /*-------------- Notification List Api Call -----------------*/
-    private void getNotificationList(boolean isClear) {
+    private void loadNotifications(boolean isClear) {
         if (isClear) {
             page = 1;
             binding.txtNoRecordDis.setVisibility(View.GONE);
             binding.rvNotification.scrollToPosition(0);
         }
         isLoading = true;
+        pendingClear = isClear;
         if (!binding.swipeRefresh.isRefreshing()) {
             binding.progress.setVisibility(View.VISIBLE);
         }
-
-        String url = WebServiceUrl.URL_GETNOTIFICATIONS;
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-
-        textParams.put("user_id", PrefsUtil.with(activity).readString("UserId"));
-
-        textParams.put("user_type", PrefsUtil.with(activity).readString("UserType"));
-
-        textParams.put("page", String.valueOf(page));
-
-        new WebServiceCall(this, url, textParams, NotificationDataPOJO.class, false,
-                new WebServiceCall.OnResultListener() {
-                    @Override
-                    public void onResult(boolean status, Object obj) {
-                        if (binding.swipeRefresh.isRefreshing()) {
-                            binding.swipeRefresh.setRefreshing(false);
-                        }
-                        if (status) {
-                            NotificationDataPOJO disputeListPojo = (NotificationDataPOJO) obj;
-                            NotificationData notiData = disputeListPojo.getNotificationData();
-                            List<NotificationListItem> list = notiData.getNotificationList();
-                            if (isClear) {
-                                notifications.clear();
-                            }
-                            binding.progress.setVisibility(View.GONE);
-                            binding.rvNotification.setVisibility(View.VISIBLE);
-                            notifications.addAll(list);
-                            if (!(notifications.size() > 0)) {
-                                binding.txtNoRecordDis.setVisibility(View.VISIBLE);
-                                binding.rvNotification.setVisibility(View.GONE);
-                            } else {
-                                binding.txtNoRecordDis.setVisibility(View.GONE);
-                                binding.rvNotification.setVisibility(View.VISIBLE);
-                            }
-                            adapter.notifyDataSetChanged();
-
-                            totalPages = notiData.getPagination().getTotalPages();
-                            page = notiData.getPagination().getCurrentPage();
-                        } else {
-                            binding.progress.setVisibility(View.GONE);
-                            Toast.makeText(context, (String) obj,
-                                    Toast.LENGTH_SHORT).show();
-                        }
-                        isLoading = false;
-                    }
-
-                    @Override
-                    public void onAsync(Object object) {
-                        notificationListAsync = (WebServiceCall) object;
-                    }
-
-                    @Override
-                    public void onCancelled() {
-                        notificationListAsync = null;
-                    }
-                });
+        String userId = PrefsUtil.with(activity).readString("UserId");
+        String userType = PrefsUtil.with(activity).readString("UserType");
+        viewModel.loadNotifications(userId, userType, page);
     }
 
     @Override
@@ -195,7 +165,6 @@ public class NotificationListingActivity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        Utils.cancelAsyncTask(notificationListAsync);
         super.onDestroy();
     }
 
@@ -206,7 +175,6 @@ public class NotificationListingActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_crop, menu);
         return true;
     }
@@ -218,9 +186,7 @@ public class NotificationListingActivity extends AppCompatActivity {
             onBackPressed();
             return true;
         } else if (itemId == R.id.action_settings) {
-            Intent resultIntent = new Intent(activity, NotificationActivity.class);
-            startActivity(resultIntent);
-            // finish();
+            startActivity(new Intent(activity, NotificationActivity.class));
             return true;
         }
         return super.onOptionsItemSelected(item);

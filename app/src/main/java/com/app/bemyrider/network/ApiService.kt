@@ -5,6 +5,7 @@ import com.app.bemyrider.model.CheckStripeConnectedPojo
 import com.app.bemyrider.model.CommonPojo
 import com.app.bemyrider.model.LanguagePojo
 import com.app.bemyrider.model.NewLoginPojo
+import com.app.bemyrider.model.NotificationDataPOJO
 import com.app.bemyrider.model.ProfilePojo
 import com.app.bemyrider.model.partner.CountryCodePojo
 import okhttp3.MultipartBody
@@ -180,4 +181,12 @@ interface ApiServiceKt {
         @Field("date_from") dateFrom: String? = null,
         @Field("date_to") dateTo: String? = null
     ): Response<BulkInvoicePojo>
+
+    @FormUrlEncoded
+    @POST("notifications/getNotifications")
+    suspend fun getNotifications(
+        @Field("user_id") userId: String,
+        @Field("user_type") userType: String,
+        @Field("page") page: Int
+    ): Response<NotificationDataPOJO>
 }
