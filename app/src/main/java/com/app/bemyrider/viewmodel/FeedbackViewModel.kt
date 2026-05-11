@@ -20,6 +20,7 @@ class FeedbackViewModel : ViewModel() {
     val error: LiveData<String?> = _error
 
     private val _isLoading = MutableLiveData<Boolean>(false)
+    @get:JvmName("getIsLoading")
     val isLoading: LiveData<Boolean> = _isLoading
 
     fun sendFeedback(

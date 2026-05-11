@@ -1,3 +1,4 @@
+/*
 package com.app.bemyrider.viewmodel;
 
 import androidx.lifecycle.LiveData;
@@ -18,3 +19,4 @@ public class UserProfileViewModel extends ViewModel {
         return userRepository.getProfile(profileId);
     }
 }
+*/

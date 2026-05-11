@@ -20,6 +20,7 @@ class UserProfileViewModel : ViewModel() {
     val error: LiveData<String?> = _error
 
     private val _isLoading = MutableLiveData<Boolean>(false)
+    @get:JvmName("getIsLoading")
     val isLoading: LiveData<Boolean> = _isLoading
 
     fun loadProfile(profileId: String) {
@@ -41,5 +42,11 @@ class UserProfileViewModel : ViewModel() {
                 _isLoading.postValue(false)
             }
         }
+    }
+
+    // Compatibilità per il vecchio codice Java
+    fun getProfile(profileId: String): LiveData<ProfilePojo?> {
+        loadProfile(profileId)
+        return profile
     }
 }

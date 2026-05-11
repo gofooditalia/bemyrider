@@ -41,6 +41,7 @@ import com.app.bemyrider.utils.Utils;
 import com.app.bemyrider.viewmodel.FeedbackViewModel;
 import com.yalantis.ucrop.UCrop;
 
+import java.io.File;
 import java.util.Objects;
 
 import androidx.lifecycle.ViewModelProvider;

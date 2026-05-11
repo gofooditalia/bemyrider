@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.app.bemyrider.model.CommonPojo
+import com.app.bemyrider.model.partner.CountryCodePojo
 import com.app.bemyrider.model.partner.CountryCodePojoItem
 import com.app.bemyrider.repository.AppRepository
 import kotlinx.coroutines.Dispatchers
@@ -24,9 +25,11 @@ class ContactUsViewModel : ViewModel() {
     val error: LiveData<String?> = _error
 
     private val _isLoadingCodes = MutableLiveData<Boolean>(false)
+    @get:JvmName("getIsLoadingCodes")
     val isLoadingCodes: LiveData<Boolean> = _isLoadingCodes
 
     private val _isSending = MutableLiveData<Boolean>(false)
+    @get:JvmName("getIsSending")
     val isSending: LiveData<Boolean> = _isSending
 
     fun loadCountryCodes() {

@@ -13,6 +13,7 @@ import com.app.bemyrider.model.SendMessagePojo
 import com.app.bemyrider.model.NotificationDataPOJO
 import com.app.bemyrider.model.NotificationListPojo
 import com.app.bemyrider.model.ProfilePojo
+import com.app.bemyrider.model.partner.CountryCodePojo
 import com.app.bemyrider.network.ApiServiceKt
 import com.app.bemyrider.network.RetrofitClient
 import com.google.gson.Gson
@@ -42,6 +43,8 @@ class AppRepository {
     }
 
     suspend fun getLanguages(): Response<LanguagePojo> = apiService.getLanguages()
+
+    suspend fun getCountryCodes(): Response<CountryCodePojo> = apiService.getCountryCodes()
 
     suspend fun updateAvailabilityStatus(userId: String, isAvailable: String): Response<CommonPojo> {
         return apiService.updateAvailabilityStatus(userId, isAvailable)
