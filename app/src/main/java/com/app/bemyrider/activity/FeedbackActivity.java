@@ -25,15 +25,12 @@ import androidx.core.content.ContextCompat;
 import androidx.core.text.HtmlCompat;
 import androidx.databinding.DataBindingUtil;
 
-import com.app.bemyrider.AsyncTask.WebServiceCall;
 import com.app.bemyrider.R;
-import com.app.bemyrider.WebServices.WebServiceUrl;
 import com.app.bemyrider.activity.partner.ProviderHomeActivity;
 import com.app.bemyrider.activity.user.CustomerHomeActivity;
 import com.app.bemyrider.databinding.ActivityFeedbackBinding;
 import com.app.bemyrider.helper.LogMaster;
 import com.app.bemyrider.helper.PermissionUtils;
-import com.app.bemyrider.model.CommonPojo;
 import com.app.bemyrider.model.FileUtilPOJO;
 import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.FileUtils;
@@ -41,11 +38,12 @@ import com.app.bemyrider.utils.LocaleManager;
 import com.app.bemyrider.utils.Log;
 import com.app.bemyrider.utils.PrefsUtil;
 import com.app.bemyrider.utils.Utils;
+import com.app.bemyrider.viewmodel.FeedbackViewModel;
 import com.yalantis.ucrop.UCrop;
 
-import java.io.File;
-import java.util.LinkedHashMap;
 import java.util.Objects;
+
+import androidx.lifecycle.ViewModelProvider;
 
 /**
  * Modified by Hardik Talaviya on 7/12/19.
@@ -61,7 +59,7 @@ public class FeedbackActivity extends AppCompatActivity {
     private ConnectionManager connectionManager;
 
     private ActivityFeedbackBinding binding;
-    private WebServiceCall sendFeedbackAsync;
+    private FeedbackViewModel viewModel;
     private String selectedImagePath = "";
 
     private ActivityResultLauncher<Uri> actResCamera;
@@ -74,6 +72,9 @@ public class FeedbackActivity extends AppCompatActivity {
         binding = DataBindingUtil.setContentView(FeedbackActivity.this, R.layout.activity_feedback);
 
         initViews();
+
+        viewModel = new ViewModelProvider(this).get(FeedbackViewModel.class);
+        observeViewModel();
 
         binding.edtFnameFeedback.setFilters(new InputFilter[]{EMOJI_FILTER});
         binding.edtLnameFeedback.setFilters(new InputFilter[]{EMOJI_FILTER});
@@ -129,55 +130,50 @@ public class FeedbackActivity extends AppCompatActivity {
         });
     }
 
-    private void serviceCallSendFeedback() {
-        binding.btnSubmitFeedback.setClickable(false);
-        binding.pgSubmit.setVisibility(View.VISIBLE);
-
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-        LinkedHashMap<String, File> fileParams = new LinkedHashMap<>();
-
-        textParams.put("user_id", PrefsUtil.with(FeedbackActivity.this).readString("UserId"));
-        textParams.put("email", Objects.requireNonNull(binding.edtEmailFeedback.getText()).toString().trim());
-        textParams.put("message", Utils.encodeEmoji(Objects.requireNonNull(binding.edtFeedback.getText()).toString().trim()));
-        textParams.put("firstName", Objects.requireNonNull(binding.edtFnameFeedback.getText()).toString().trim());
-        textParams.put("lastName", Objects.requireNonNull(binding.edtLnameFeedback.getText()).toString().trim());
-        if (!selectedImagePath.isEmpty()) {
-            fileParams.put("user_img", new File(selectedImagePath));
-        }
-
-        new WebServiceCall(FeedbackActivity.this, WebServiceUrl.URL_SEND_FEEDBACK, textParams,
-                fileParams, CommonPojo.class, false, new WebServiceCall.OnResultListener() {
-            @Override
-            public void onResult(boolean status, Object obj) {
-                binding.pgSubmit.setVisibility(View.GONE);
-                binding.btnSubmitFeedback.setClickable(true);
-                if (status) {
-                    Toast.makeText(FeedbackActivity.this, ((CommonPojo) obj).getMessage(), Toast.LENGTH_SHORT).show();
-                    if (PrefsUtil.with(FeedbackActivity.this).readString("UserType").equals("p")) {
-                        Intent intent = new Intent(FeedbackActivity.this, ProviderHomeActivity.class);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                        startActivity(intent);
-                    } else if (PrefsUtil.with(FeedbackActivity.this).readString("UserType").equals("c")) {
-                        Intent intent = new Intent(FeedbackActivity.this, CustomerHomeActivity.class);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                        startActivity(intent);
-                    }
-                    finish();
+    private void observeViewModel() {
+        viewModel.getResult().observe(this, result -> {
+            binding.pgSubmit.setVisibility(View.GONE);
+            binding.btnSubmitFeedback.setClickable(true);
+            if (result != null && result.isStatus()) {
+                Toast.makeText(this, result.getMessage(), Toast.LENGTH_SHORT).show();
+                String userType = PrefsUtil.with(this).readString("UserType");
+                Intent intent;
+                if ("p".equals(userType)) {
+                    intent = new Intent(this, ProviderHomeActivity.class);
                 } else {
-                    Toast.makeText(FeedbackActivity.this, (String) obj, Toast.LENGTH_SHORT).show();
+                    intent = new Intent(this, CustomerHomeActivity.class);
                 }
-            }
-
-            @Override
-            public void onAsync(Object obj) {
-                sendFeedbackAsync = null;
-            }
-
-            @Override
-            public void onCancelled() {
-                sendFeedbackAsync = null;
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+                finish();
             }
         });
+
+        viewModel.getError().observe(this, errorMsg -> {
+            if (errorMsg != null) {
+                binding.pgSubmit.setVisibility(View.GONE);
+                binding.btnSubmitFeedback.setClickable(true);
+                Toast.makeText(this, errorMsg, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        viewModel.getIsLoading().observe(this, isLoading -> {
+            if (isLoading) {
+                binding.btnSubmitFeedback.setClickable(false);
+                binding.pgSubmit.setVisibility(View.VISIBLE);
+            }
+        });
+    }
+
+    private void serviceCallSendFeedback() {
+        viewModel.sendFeedback(
+                PrefsUtil.with(this).readString("UserId"),
+                Objects.requireNonNull(binding.edtFnameFeedback.getText()).toString().trim(),
+                Objects.requireNonNull(binding.edtLnameFeedback.getText()).toString().trim(),
+                Objects.requireNonNull(binding.edtEmailFeedback.getText()).toString().trim(),
+                Utils.encodeEmoji(Objects.requireNonNull(binding.edtFeedback.getText()).toString().trim()),
+                selectedImagePath.isEmpty() ? null : selectedImagePath
+        );
     }
 
     private boolean checkValidation() {
@@ -305,7 +301,6 @@ public class FeedbackActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         try { connectionManager.unregisterReceiver(); } catch (Exception e) { e.printStackTrace(); }
-        Utils.cancelAsyncTask(sendFeedbackAsync);
         Utils.clearCameraCache(mContext);
         super.onDestroy();
     }

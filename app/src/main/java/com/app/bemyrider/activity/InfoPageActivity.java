@@ -1,9 +1,7 @@
 package com.app.bemyrider.activity;
 
 import android.content.Context;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.text.Html;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
@@ -12,36 +10,28 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.text.HtmlCompat;
 import androidx.databinding.DataBindingUtil;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.app.bemyrider.AsyncTask.WebServiceCall;
-import com.app.bemyrider.WebServices.WebServiceUrl;
-import com.app.bemyrider.utils.ConnectionManager;
-import com.app.bemyrider.utils.LocaleManager;
-import com.app.bemyrider.utils.Utils;
 import com.app.bemyrider.Adapter.InfoPageAdapter;
 import com.app.bemyrider.R;
 import com.app.bemyrider.databinding.ActivityInfoPageBinding;
-import com.app.bemyrider.model.InfoPagePojo;
 import com.app.bemyrider.model.InfoPagePojoItem;
+import com.app.bemyrider.utils.ConnectionManager;
+import com.app.bemyrider.utils.LocaleManager;
+import com.app.bemyrider.viewmodel.InfoPageViewModel;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
-
-/**
- * Created by Hardik Talaviya on 27/12/19.
- */
 
 public class InfoPageActivity extends AppCompatActivity {
 
     private ActivityInfoPageBinding binding;
     private Context context;
-    private LinearLayoutManager layoutManager;
     private InfoPageAdapter infoPageAdapter;
     private ArrayList<InfoPagePojoItem> arrayList = new ArrayList<>();
-    private WebServiceCall infoPageListAsync;
     private ConnectionManager connectionManager;
+    private InfoPageViewModel viewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,66 +40,47 @@ public class InfoPageActivity extends AppCompatActivity {
 
         initViews();
 
-        getInfoPageList();
+        viewModel = new ViewModelProvider(this).get(InfoPageViewModel.class);
+        observeViewModel();
+        viewModel.loadInfoList();
     }
 
-    /*-------------- Info Page List Api Call -----------------*/
-    private void getInfoPageList() {
-        if (!binding.swipeRefresh.isRefreshing()) {
-            binding.rvInfoPage.setVisibility(View.GONE);
-            binding.progress.setVisibility(View.VISIBLE);
-        }
+    private void observeViewModel() {
+        viewModel.getInfoList().observe(this, pojo -> {
+            if (binding.swipeRefresh.isRefreshing()) {
+                binding.swipeRefresh.setRefreshing(false);
+            }
+            binding.progress.setVisibility(View.GONE);
+            if (pojo != null && pojo.getInfoPageList() != null) {
+                arrayList.clear();
+                arrayList.addAll(pojo.getInfoPageList());
+                infoPageAdapter.notifyDataSetChanged();
+                boolean hasItems = !arrayList.isEmpty();
+                binding.rvInfoPage.setVisibility(hasItems ? View.VISIBLE : View.GONE);
+                binding.imgNoRecord.setVisibility(hasItems ? View.GONE : View.VISIBLE);
+            } else {
+                binding.imgNoRecord.setVisibility(View.VISIBLE);
+                binding.rvInfoPage.setVisibility(View.GONE);
+            }
+        });
 
-        String url = WebServiceUrl.URL_GET_CMS_INFO;
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-
-        new WebServiceCall(this, url, textParams, InfoPagePojo.class, false,
-                new WebServiceCall.OnResultListener() {
-                    @Override
-                    public void onResult(boolean status, Object obj) {
-                        if (binding.swipeRefresh.isRefreshing()) {
-                            binding.swipeRefresh.setRefreshing(false);
-                        }
-                        binding.progress.setVisibility(View.GONE);
-                        binding.rvInfoPage.setVisibility(View.VISIBLE);
-                        if (status) {
-                            InfoPagePojo infoPagePojo = (InfoPagePojo) obj;
-                            arrayList.clear();
-                            arrayList.addAll(infoPagePojo.getInfoPageList());
-                            infoPageAdapter.notifyDataSetChanged();
-
-                            if (arrayList.size() > 0) {
-                                binding.rvInfoPage.setVisibility(View.VISIBLE);
-                                binding.imgNoRecord.setVisibility(View.GONE);
-                            } else {
-                                binding.imgNoRecord.setVisibility(View.VISIBLE);
-                                binding.rvInfoPage.setVisibility(View.GONE);
-                            }
-
-                        } else {
-                            binding.imgNoRecord.setVisibility(View.VISIBLE);
-                            binding.rvInfoPage.setVisibility(View.GONE);
-                            Toast.makeText(InfoPageActivity.this, (String) obj,
-                                    Toast.LENGTH_SHORT).show();
-                        }
-                    }
-
-                    @Override
-                    public void onAsync(Object asyncTask) {
-                        infoPageListAsync = (WebServiceCall) asyncTask;
-                    }
-
-                    @Override
-                    public void onCancelled() {
-                        infoPageListAsync = null;
-                    }
-                });
+        viewModel.getError().observe(this, errorMsg -> {
+            if (errorMsg != null) {
+                if (binding.swipeRefresh.isRefreshing()) {
+                    binding.swipeRefresh.setRefreshing(false);
+                }
+                binding.progress.setVisibility(View.GONE);
+                binding.imgNoRecord.setVisibility(View.VISIBLE);
+                binding.rvInfoPage.setVisibility(View.GONE);
+                Toast.makeText(this, errorMsg, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void initViews() {
         context = InfoPageActivity.this;
 
-        setTitle(HtmlCompat.fromHtml("<font color=#FFFFFF>" + context.getResources().getString(R.string.info),HtmlCompat.FROM_HTML_MODE_LEGACY));
+        setTitle(HtmlCompat.fromHtml("<font color=#FFFFFF>" + context.getResources().getString(R.string.info), HtmlCompat.FROM_HTML_MODE_LEGACY));
 
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
@@ -117,21 +88,18 @@ public class InfoPageActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
-        /*Init Internet Connection Class For No Internet Banner*/
         connectionManager = new ConnectionManager(context);
         connectionManager.registerInternetCheckReceiver();
         connectionManager.checkConnection(context);
 
-        /*Init Recycler View*/
-        layoutManager = new LinearLayoutManager(context, RecyclerView.VERTICAL, false);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(context, RecyclerView.VERTICAL, false);
         binding.rvInfoPage.setLayoutManager(layoutManager);
         infoPageAdapter = new InfoPageAdapter(InfoPageActivity.this, arrayList);
         binding.rvInfoPage.setAdapter(infoPageAdapter);
-        infoPageAdapter.notifyDataSetChanged();
 
         binding.swipeRefresh.setOnRefreshListener(() -> {
             binding.swipeRefresh.setRefreshing(true);
-            getInfoPageList();
+            viewModel.loadInfoList();
         });
     }
 
@@ -150,7 +118,6 @@ public class InfoPageActivity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        Utils.cancelAsyncTask(infoPageListAsync);
         super.onDestroy();
     }
 

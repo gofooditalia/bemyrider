@@ -5,6 +5,7 @@ import com.app.bemyrider.model.CheckStripeConnectedPojo
 import com.app.bemyrider.model.CommonPojo
 import com.app.bemyrider.model.LanguagePojo
 import com.app.bemyrider.model.NewLoginPojo
+import com.app.bemyrider.model.InfoPagePojo
 import com.app.bemyrider.model.NotificationDataPOJO
 import com.app.bemyrider.model.NotificationListPojo
 import com.app.bemyrider.model.ProfilePojo
@@ -191,6 +192,32 @@ interface ApiServiceKt {
         @Field("user_type") userType: String,
         @Field("page") page: Int
     ): Response<NotificationDataPOJO>
+
+    @POST("cms/getcmslist")
+    suspend fun getInfoList(): Response<InfoPagePojo>
+
+    @FormUrlEncoded
+    @POST("messages/contactus")
+    suspend fun sendContactUs(
+        @Field("user_id") userId: String,
+        @Field("firstName") firstName: String,
+        @Field("lastName") lastName: String,
+        @Field("email") email: String,
+        @Field("contact_number") contactNumber: String,
+        @Field("country_code") countryCode: String,
+        @Field("message") message: String
+    ): Response<CommonPojo>
+
+    @Multipart
+    @POST("messages/feedback")
+    suspend fun sendFeedback(
+        @Part("user_id") userId: RequestBody,
+        @Part("firstName") firstName: RequestBody,
+        @Part("lastName") lastName: RequestBody,
+        @Part("email") email: RequestBody,
+        @Part("message") message: RequestBody,
+        @Part userImg: MultipartBody.Part?
+    ): Response<CommonPojo>
 
     @FormUrlEncoded
     @POST("profile/getnotificationlist")

@@ -3,7 +3,6 @@ package com.app.bemyrider.activity;
 import static com.app.bemyrider.utils.Utils.EMOJI_FILTER;
 
 import android.content.Context;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.InputFilter;
@@ -19,37 +18,30 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.text.HtmlCompat;
 import androidx.databinding.DataBindingUtil;
+import androidx.lifecycle.ViewModelProvider;
 
-import com.app.bemyrider.AsyncTask.WebServiceCall;
-import com.app.bemyrider.WebServices.WebServiceUrl;
 import com.app.bemyrider.R;
 import com.app.bemyrider.databinding.ActivityContactUsBinding;
-import com.app.bemyrider.model.CommonPojo;
-import com.app.bemyrider.model.partner.CountryCodePojo;
 import com.app.bemyrider.model.partner.CountryCodePojoItem;
 import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.LocaleManager;
 import com.app.bemyrider.utils.PrefsUtil;
 import com.app.bemyrider.utils.Utils;
+import com.app.bemyrider.viewmodel.ContactUsViewModel;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
-
-/**
- * Modified by Hardik Talaviya on 7/12/19.
- */
 
 public class ContactUsActivity extends AppCompatActivity {
 
     private ActivityContactUsBinding binding;
-    private WebServiceCall contactUsAsync, countryCodeAsync;
     private Context context;
     private ConnectionManager connectionManager;
+    private ContactUsViewModel viewModel;
 
     private ArrayList<CountryCodePojoItem> countryArrayList = new ArrayList<>();
-    private ArrayAdapter countrycodeAdapter;
-    private String selected_country_code, selected_country_code_position;
-
+    private ArrayAdapter<CountryCodePojoItem> countrycodeAdapter;
+    private String selected_country_code = "";
+    private String selected_country_code_position = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,74 +50,29 @@ public class ContactUsActivity extends AppCompatActivity {
 
         initViews();
 
-        serviceCallCountryCode();
+        viewModel = new ViewModelProvider(this).get(ContactUsViewModel.class);
+        observeViewModel();
+        viewModel.loadCountryCodes();
 
-        binding.edtFnameConus.setText(PrefsUtil.with(ContactUsActivity.this).readString("FirstName"));
-        binding.edtLnameConus.setText(PrefsUtil.with(ContactUsActivity.this).readString("LastName"));
-        binding.edtEmailConus.setText(PrefsUtil.with(ContactUsActivity.this).readString("eMail"));
-
+        binding.edtFnameConus.setText(PrefsUtil.with(this).readString("FirstName"));
+        binding.edtLnameConus.setText(PrefsUtil.with(this).readString("LastName"));
+        binding.edtEmailConus.setText(PrefsUtil.with(this).readString("eMail"));
         binding.edtFnameConus.setFilters(new InputFilter[]{EMOJI_FILTER});
-        binding.edtFnameConus.setFilters(new InputFilter[]{EMOJI_FILTER});
+        binding.edtLnameConus.setFilters(new InputFilter[]{EMOJI_FILTER});
 
-        binding.btnSubmitConus.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (checkValidation()) {
-                    Utils.hideSoftKeyboard(ContactUsActivity.this);
-                    binding.btnSubmitConus.setClickable(false);
-                    serviceCallSendContactUs();
-                }
-            }
-        });
-
-        binding.edtFnameConus.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                binding.tilFnameConus.setError("");
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-
-            }
-        });
-
-        binding.edtLnameConus.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                binding.tilLnameConus.setError("");
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-
-            }
-        });
-
-        binding.edtEmailConus.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                binding.tilEmailConus.setError("");
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-
+        binding.btnSubmitConus.setOnClickListener(v -> {
+            if (checkValidation()) {
+                Utils.hideSoftKeyboard(ContactUsActivity.this);
+                binding.btnSubmitConus.setClickable(false);
+                viewModel.sendContactUs(
+                        PrefsUtil.with(this).readString("UserId"),
+                        binding.edtFnameConus.getText().toString().trim(),
+                        binding.edtLnameConus.getText().toString().trim(),
+                        binding.edtEmailConus.getText().toString().trim(),
+                        binding.etSignupContactno.getText().toString().trim(),
+                        selected_country_code_position,
+                        Utils.encodeEmoji(binding.edtConus.getText().toString().trim())
+                );
             }
         });
 
@@ -135,160 +82,69 @@ public class ContactUsActivity extends AppCompatActivity {
                 selected_country_code = countryArrayList.get(position).getCountryCode();
                 selected_country_code_position = countryArrayList.get(position).getId();
                 ((TextView) view).setText(countryArrayList.get(position).getCountryCode());
-                //PrefsUtil.with(mContext).write("position",Integer.parseInt(String.valueOf(countrycodeAdapter.getPosition(position))));
             }
-
             @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
+            public void onNothingSelected(AdapterView<?> parent) {}
         });
 
-        binding.edtConus.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                binding.tilConus.setError("");
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-
-            }
-        });
-
-        binding.etSignupContactno.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                binding.tilSignupContact.setErrorEnabled(false);
-                binding.tilSignupContact.setError(null);
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-
-            }
+        clearErrorOnType(binding.edtFnameConus, () -> binding.tilFnameConus.setError(""));
+        clearErrorOnType(binding.edtLnameConus, () -> binding.tilLnameConus.setError(""));
+        clearErrorOnType(binding.edtEmailConus, () -> binding.tilEmailConus.setError(""));
+        clearErrorOnType(binding.edtConus, () -> binding.tilConus.setError(""));
+        clearErrorOnType(binding.etSignupContactno, () -> {
+            binding.tilSignupContact.setErrorEnabled(false);
+            binding.tilSignupContact.setError(null);
         });
     }
 
-    /*---------------- Send Contact Us Api Call -----------------*/
-    private void serviceCallSendContactUs() {
-        binding.pgSubmit.setVisibility(View.VISIBLE);
-
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-        textParams.put("user_id", PrefsUtil.with(ContactUsActivity.this).readString("UserId"));
-        textParams.put("email", binding.edtEmailConus.getText().toString().trim());
-        textParams.put("message", Utils.encodeEmoji(binding.edtConus.getText().toString().trim()));
-        textParams.put("firstName", binding.edtFnameConus.getText().toString().trim());
-        textParams.put("lastName", binding.edtLnameConus.getText().toString().trim());
-        textParams.put("contact_number", binding.etSignupContactno.getText().toString().trim());
-        textParams.put("country_code", selected_country_code_position);
-
-        new WebServiceCall(ContactUsActivity.this, WebServiceUrl.URL_SEND_CONTACTUS,
-                textParams, CommonPojo.class, false, new WebServiceCall.OnResultListener() {
-            @Override
-            public void onResult(boolean status, Object obj) {
-                binding.pgSubmit.setVisibility(View.GONE);
-                binding.btnSubmitConus.setClickable(true);
-                if (status) {
-                    Toast.makeText(ContactUsActivity.this, ((CommonPojo) obj).getMessage(), Toast.LENGTH_SHORT).show();
-                    binding.edtConus.setText("");
-                } else {
-                    Toast.makeText(ContactUsActivity.this, (String) obj, Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onAsync(Object obj) {
-                // Added implementation for the missing abstract method onAsync(Object)
-            }
-
-            @Override
-            public void onCancelled() {
-                contactUsAsync = null;
+    private void observeViewModel() {
+        viewModel.getCountryCodes().observe(this, codes -> {
+            binding.progressCountryCode.setVisibility(View.GONE);
+            binding.spinnerCountrycode.setVisibility(View.VISIBLE);
+            if (codes != null) {
+                countryArrayList.clear();
+                countryArrayList.addAll(codes);
+                countrycodeAdapter.notifyDataSetChanged();
             }
         });
-    }
 
-    /*----------------- Country Code Api Call -------------------*/
-    private void serviceCallCountryCode() {
-        binding.spinnerCountrycode.setVisibility(View.GONE);
-        binding.progressCountryCode.setVisibility(View.VISIBLE);
+        viewModel.getSendResult().observe(this, result -> {
+            binding.pgSubmit.setVisibility(View.GONE);
+            binding.btnSubmitConus.setClickable(true);
+            if (result != null && result.isStatus()) {
+                Toast.makeText(this, result.getMessage(), Toast.LENGTH_SHORT).show();
+                binding.edtConus.setText("");
+            }
+        });
 
-        countryArrayList.clear();
-        new WebServiceCall(context, WebServiceUrl.URL_COUNTRY_CODE, new LinkedHashMap<>(),
-                CountryCodePojo.class, false, new WebServiceCall.OnResultListener() {
-            @Override
-            public void onResult(boolean status, Object obj) {
+        viewModel.getError().observe(this, errorMsg -> {
+            if (errorMsg != null) {
                 binding.progressCountryCode.setVisibility(View.GONE);
                 binding.spinnerCountrycode.setVisibility(View.VISIBLE);
-                if (status) {
-                    countryArrayList.addAll(((CountryCodePojo) obj).getData());
-                    countrycodeAdapter.notifyDataSetChanged();
-                } else {
-                    Toast.makeText(context, obj.toString(), Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onAsync(Object obj) {
-                // Added implementation for the missing abstract method onAsync(Object)
-            }
-
-            @Override
-            public void onCancelled() {
-                countryCodeAsync = null;
+                binding.pgSubmit.setVisibility(View.GONE);
+                binding.btnSubmitConus.setClickable(true);
+                Toast.makeText(this, errorMsg, Toast.LENGTH_SHORT).show();
             }
         });
 
-    }
+        viewModel.getIsLoadingCodes().observe(this, isLoading -> {
+            if (isLoading) {
+                binding.spinnerCountrycode.setVisibility(View.GONE);
+                binding.progressCountryCode.setVisibility(View.VISIBLE);
+            }
+        });
 
-    private boolean checkValidation() {
-        if (binding.edtFnameConus.getText().toString().trim().equals("")) {
-            binding.tilFnameConus.setError(getString(R.string.error_required));
-            binding.edtFnameConus.requestFocus();
-            return false;
-        } else if (binding.edtLnameConus.getText().toString().trim().equals("")) {
-            binding.tilLnameConus.setError(getString(R.string.error_required));
-            binding.edtLnameConus.requestFocus();
-            return false;
-        } else if (binding.edtEmailConus.getText().toString().trim().equals("")) {
-            binding.tilEmailConus.setError(getString(R.string.error_required));
-            binding.edtEmailConus.requestFocus();
-            return false;
-        } else if (!Utils.isEmailValid(binding.edtEmailConus.getText().toString().trim())) {
-            binding.tilEmailConus.setError(getString(R.string.error_valid_email));
-            binding.edtEmailConus.requestFocus();
-            return false;
-        }  else if (binding.etSignupContactno.getText().toString().trim().isEmpty()) {
-            binding.etSignupContactno.setError(getString(R.string.error_required));
-            binding.etSignupContactno.requestFocus();
-            return false;
-        } else if (binding.etSignupContactno.getText().toString().trim().length() < 10 || binding.etSignupContactno.getText().toString().trim().length() > 15) {
-            binding.etSignupContactno.setError(getResources().getString(R.string.vali_contact_num));
-            binding.etSignupContactno.requestFocus();
-            return false;
-        } else if (binding.edtConus.getText().toString().trim().equals("")) {
-            binding.tilConus.setError(getString(R.string.error_required));
-            binding.edtConus.requestFocus();
-            return false;
-        }
-        return true;
+        viewModel.getIsSending().observe(this, isSending -> {
+            if (isSending) {
+                binding.pgSubmit.setVisibility(View.VISIBLE);
+            }
+        });
     }
 
     private void initViews() {
         context = ContactUsActivity.this;
 
-        setTitle(HtmlCompat.fromHtml("<font color=#FFFFFF>" + getString(R.string.comtact_us),HtmlCompat.FROM_HTML_MODE_LEGACY));
+        setTitle(HtmlCompat.fromHtml("<font color=#FFFFFF>" + getString(R.string.comtact_us), HtmlCompat.FROM_HTML_MODE_LEGACY));
 
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
@@ -296,15 +152,55 @@ public class ContactUsActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
-        /*Init Internet Connection Class For No Internet Banner*/
         connectionManager = new ConnectionManager(context);
         connectionManager.registerInternetCheckReceiver();
         connectionManager.checkConnection(context);
 
-        /*Init Country Code Spinner*/
-        countrycodeAdapter = new ArrayAdapter<>(ContactUsActivity.this, android.R.layout.simple_spinner_item, countryArrayList);
-        binding.spinnerCountrycode.setAdapter(countrycodeAdapter);
+        countrycodeAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, countryArrayList);
         countrycodeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        binding.spinnerCountrycode.setAdapter(countrycodeAdapter);
+    }
+
+    private void clearErrorOnType(android.widget.EditText editText, Runnable clearAction) {
+        editText.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) { clearAction.run(); }
+            @Override public void afterTextChanged(Editable s) {}
+        });
+    }
+
+    private boolean checkValidation() {
+        if (binding.edtFnameConus.getText().toString().trim().isEmpty()) {
+            binding.tilFnameConus.setError(getString(R.string.error_required));
+            binding.edtFnameConus.requestFocus();
+            return false;
+        } else if (binding.edtLnameConus.getText().toString().trim().isEmpty()) {
+            binding.tilLnameConus.setError(getString(R.string.error_required));
+            binding.edtLnameConus.requestFocus();
+            return false;
+        } else if (binding.edtEmailConus.getText().toString().trim().isEmpty()) {
+            binding.tilEmailConus.setError(getString(R.string.error_required));
+            binding.edtEmailConus.requestFocus();
+            return false;
+        } else if (!Utils.isEmailValid(binding.edtEmailConus.getText().toString().trim())) {
+            binding.tilEmailConus.setError(getString(R.string.error_valid_email));
+            binding.edtEmailConus.requestFocus();
+            return false;
+        } else if (binding.etSignupContactno.getText().toString().trim().isEmpty()) {
+            binding.etSignupContactno.setError(getString(R.string.error_required));
+            binding.etSignupContactno.requestFocus();
+            return false;
+        } else if (binding.etSignupContactno.getText().toString().trim().length() < 10
+                || binding.etSignupContactno.getText().toString().trim().length() > 15) {
+            binding.etSignupContactno.setError(getResources().getString(R.string.vali_contact_num));
+            binding.etSignupContactno.requestFocus();
+            return false;
+        } else if (binding.edtConus.getText().toString().trim().isEmpty()) {
+            binding.tilConus.setError(getString(R.string.error_required));
+            binding.edtConus.requestFocus();
+            return false;
+        }
+        return true;
     }
 
     @Override
@@ -322,8 +218,6 @@ public class ContactUsActivity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        Utils.cancelAsyncTask(contactUsAsync);
-        Utils.cancelAsyncTask(countryCodeAsync);
         super.onDestroy();
     }
 

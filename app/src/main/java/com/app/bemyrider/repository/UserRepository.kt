@@ -6,6 +6,7 @@ import com.app.bemyrider.model.CheckStripeConnectedPojo
 import com.app.bemyrider.model.CommonPojo
 import com.app.bemyrider.model.LanguagePojo
 import com.app.bemyrider.model.NewLoginPojo
+import com.app.bemyrider.model.InfoPagePojo
 import com.app.bemyrider.model.NotificationDataPOJO
 import com.app.bemyrider.model.NotificationListPojo
 import com.app.bemyrider.model.ProfilePojo
@@ -237,6 +238,35 @@ class AppRepository {
 
     suspend fun getNotifications(userId: String, userType: String, page: Int): Response<NotificationDataPOJO> {
         return apiService.getNotifications(userId, userType, page)
+    }
+
+    suspend fun getInfoList(): Response<InfoPagePojo> {
+        return apiService.getInfoList()
+    }
+
+    suspend fun sendContactUs(
+        userId: String, firstName: String, lastName: String,
+        email: String, contactNumber: String, countryCode: String, message: String
+    ): Response<CommonPojo> {
+        return apiService.sendContactUs(userId, firstName, lastName, email, contactNumber, countryCode, message)
+    }
+
+    suspend fun sendFeedback(
+        userId: String, firstName: String, lastName: String,
+        email: String, message: String, imagePath: String?
+    ): Response<CommonPojo> {
+        val toBody = { s: String -> s.toRequestBody(MultipartBody.FORM) }
+        val imagePart = if (!imagePath.isNullOrEmpty()) {
+            val file = File(imagePath)
+            if (file.exists()) {
+                val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
+                MultipartBody.Part.createFormData("user_img", file.name, requestFile)
+            } else null
+        } else null
+        return apiService.sendFeedback(
+            toBody(userId), toBody(firstName), toBody(lastName),
+            toBody(email), toBody(message), imagePart
+        )
     }
 
     suspend fun getNotificationSettings(userId: String): Response<NotificationListPojo> {
