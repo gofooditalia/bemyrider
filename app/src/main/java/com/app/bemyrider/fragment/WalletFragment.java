@@ -25,19 +25,16 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.app.bemyrider.Adapter.Partner.RedeemRequestAdapter;
 import com.app.bemyrider.Adapter.User.DepositHistoryAdapter;
 import com.app.bemyrider.AsyncTask.ConnectionCheck;
-import com.app.bemyrider.AsyncTask.WebServiceCall;
 import com.app.bemyrider.R;
-import com.app.bemyrider.WebServices.WebServiceUrl;
 import com.app.bemyrider.activity.user.DepositFundActivity;
 import com.app.bemyrider.databinding.FragmentWalletBinding;
-import com.app.bemyrider.model.CommonPojo;
 import com.app.bemyrider.model.DepositHistoryItem;
-import com.app.bemyrider.model.DepositHistoryPojo;
 import com.app.bemyrider.model.MessageEvent;
-import com.app.bemyrider.model.RedeemHistoryPojo;
 import com.app.bemyrider.model.RedeemHistoryPojoItem;
-import com.app.bemyrider.model.WalletDetailsPojo;
 import com.app.bemyrider.model.WalletDetailsPojoItem;
+import com.app.bemyrider.viewmodel.WalletViewModel;
+
+import androidx.lifecycle.ViewModelProvider;
 import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.Log;
 import com.app.bemyrider.utils.PrefsUtil;
@@ -53,7 +50,6 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 
 public class WalletFragment extends Fragment {
 
@@ -63,8 +59,7 @@ public class WalletFragment extends Fragment {
     private ArrayList<RedeemHistoryPojoItem> redeemHistoryPojoItems;
     private DepositHistoryAdapter depositHistoryAdapter;
     private RedeemRequestAdapter redeemRequestAdapter;
-    private WebServiceCall redeemHistoryAsync, depositHistoryAsync, requestRedeemAsync,
-            walletDetailAsync;
+    private WalletViewModel viewModel;
     private Context context;
     private AppCompatActivity activity;
     private ConnectionManager connectionManager;
@@ -77,6 +72,9 @@ public class WalletFragment extends Fragment {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_wallet, container, false);
 
         initViews();
+
+        viewModel = new ViewModelProvider(this).get(WalletViewModel.class);
+        observeViewModel();
 
         if (PrefsUtil.with(activity).readString("UserType").equals("c")) {
             binding.layoutRedeem.setVisibility(View.GONE);
@@ -150,166 +148,79 @@ public class WalletFragment extends Fragment {
                 });
     }
 
-    /*-------------- Get Redeem History Api Call ----------------*/
+    private void observeViewModel() {
+        String sign = PrefsUtil.with(activity).readString("CurrencySign");
+
+        viewModel.getWalletDetails().observe(getViewLifecycleOwner(), pojo -> {
+            binding.pgShowCurBal.setVisibility(View.GONE);
+            binding.pgShowFund.setVisibility(View.GONE);
+            binding.pgShowRedeemReq.setVisibility(View.GONE);
+            if (pojo != null && pojo.getData() != null) {
+                binding.TxtShowCurBal.setText(String.format("%s%s", sign, pojo.getData().getWalletAmount()));
+                binding.TxtShowFund.setText(String.format("%s%s", sign, pojo.getData().getHoldAmount()));
+                binding.TxtShowReedemRequest.setText(String.format("%s%s", sign, pojo.getData().getRedeemRequestedAmount()));
+                binding.btnDeposite.setClickable(true);
+            }
+        });
+
+        viewModel.getDepositHistory().observe(getViewLifecycleOwner(), pojo -> {
+            binding.llProgress.setVisibility(View.GONE);
+            binding.layoutDeposit.setVisibility(View.VISIBLE);
+            if (pojo != null && pojo.getData() != null) {
+                depositHistoryItems.clear();
+                depositHistoryItems.addAll(pojo.getData());
+                if (depositHistoryItems.isEmpty()) binding.layoutDeposit.setVisibility(View.GONE);
+                depositHistoryAdapter.notifyDataSetChanged();
+            }
+        });
+
+        viewModel.getRedeemHistory().observe(getViewLifecycleOwner(), pojo -> {
+            binding.llProgress.setVisibility(View.GONE);
+            binding.layoutRedeemRequest.setVisibility(View.VISIBLE);
+            if (pojo != null && pojo.getData() != null) {
+                redeemHistoryPojoItems.addAll(pojo.getData());
+                if (redeemHistoryPojoItems.isEmpty()) binding.layoutRedeemRequest.setVisibility(View.GONE);
+                redeemRequestAdapter.notifyDataSetChanged();
+            }
+        });
+
+        viewModel.getRedeemResult().observe(getViewLifecycleOwner(), result -> {
+            binding.pgRedeem.setVisibility(View.GONE);
+            binding.btnReedem.setClickable(true);
+            if (result != null) {
+                Toast.makeText(context, result.getMessage(), Toast.LENGTH_SHORT).show();
+                if (result.isStatus()) activity.onBackPressed();
+            }
+        });
+
+        viewModel.getError().observe(getViewLifecycleOwner(), errorMsg -> {
+            if (errorMsg != null) Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show();
+        });
+    }
+
     private void serviceCallGetRedeemHistory() {
         binding.layoutRedeemRequest.setVisibility(View.GONE);
         binding.llProgress.setVisibility(View.VISIBLE);
-
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-
-        textParams.put("user_id", PrefsUtil.with(activity).readString("UserId"));
-
-        new WebServiceCall(context, WebServiceUrl.URL_REDEEM_HISTORY,
-                textParams, RedeemHistoryPojo.class, false, new WebServiceCall.OnResultListener() {
-                    @Override
-                    public void onResult(boolean status, Object obj) {
-                        binding.llProgress.setVisibility(View.GONE);
-                        binding.layoutRedeemRequest.setVisibility(View.VISIBLE);
-                        if (status) {
-                            RedeemHistoryPojo redeemHistoryPojo = (RedeemHistoryPojo) obj;
-                            redeemHistoryPojoItems.addAll(redeemHistoryPojo.getData());
-                            if (redeemHistoryPojoItems.size() == 0) {
-                                binding.layoutRedeemRequest.setVisibility(View.GONE);
-                                // binding.viewSep.setVisibility(View.GONE);
-                            }
-                            redeemRequestAdapter.notifyDataSetChanged();
-                        } else {
-                            Toast.makeText(context, obj.toString(), Toast.LENGTH_SHORT).show();
-                        }
-                    }
-
-                    @Override
-                    public void onAsync(Object asyncTask) {
-                        redeemHistoryAsync = null;
-                    }
-
-                    @Override
-                    public void onCancelled() {
-                        redeemHistoryAsync = null;
-                    }
-                });
+        viewModel.loadRedeemHistory(PrefsUtil.with(activity).readString("UserId"));
     }
 
-    /*------------- Get Deposit History Api Call ---------------*/
     private void serviceCallGetDepositHistory() {
         binding.layoutDeposit.setVisibility(View.GONE);
         binding.llProgress.setVisibility(View.VISIBLE);
-
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-
-        textParams.put("user_id", PrefsUtil.with(activity).readString("UserId"));
-
-        new WebServiceCall(context, WebServiceUrl.URL_DEPOSITE_HISTORY,
-                textParams, DepositHistoryPojo.class, false, new WebServiceCall.OnResultListener() {
-                    @Override
-                    public void onResult(boolean status, Object obj) {
-                        binding.llProgress.setVisibility(View.GONE);
-                        binding.layoutDeposit.setVisibility(View.VISIBLE);
-                        if (status) {
-                            depositHistoryItems.clear();
-                            DepositHistoryPojo depositHistoryPojo = (DepositHistoryPojo) obj;
-                            depositHistoryItems.addAll(depositHistoryPojo.getData());
-                            if (depositHistoryItems.size() == 0) {
-                                binding.layoutDeposit.setVisibility(View.GONE);
-                                // binding.viewSep.setVisibility(View.GONE);
-                            }
-                            depositHistoryAdapter.notifyDataSetChanged();
-                        } else {
-                            Toast.makeText(context, obj.toString(), Toast.LENGTH_SHORT).show();
-                        }
-                    }
-
-                    @Override
-                    public void onAsync(Object asyncTask) {
-                        depositHistoryAsync = null;
-                    }
-
-                    @Override
-                    public void onCancelled() {
-                        depositHistoryAsync = null;
-                    }
-                });
+        viewModel.loadDepositHistory(PrefsUtil.with(activity).readString("UserId"));
     }
 
-    /*---------------- Redeem Request Api Call -------------------*/
     private void serviceCallRedeem() {
         binding.pgRedeem.setVisibility(View.VISIBLE);
-
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-
-        textParams.put("user_id", PrefsUtil.with(activity).readString("UserId"));
-
-        new WebServiceCall(context, WebServiceUrl.URL_REDDEMRE_REQUEST,
-                textParams, CommonPojo.class, false, new WebServiceCall.OnResultListener() {
-                    @Override
-                    public void onResult(boolean status, Object obj) {
-                        binding.pgRedeem.setVisibility(View.GONE);
-                        binding.btnReedem.setClickable(true);
-                        if (status) {
-                            Toast.makeText(context, ((CommonPojo) obj).getMessage(), Toast.LENGTH_SHORT).show();
-                            activity.onBackPressed();
-                        } else {
-                            Toast.makeText(context, (String) obj, Toast.LENGTH_SHORT).show();
-                        }
-                    }
-
-                    @Override
-                    public void onAsync(Object asyncTask) {
-                        requestRedeemAsync = null;
-                    }
-
-                    @Override
-                    public void onCancelled() {
-                        requestRedeemAsync = null;
-                    }
-                });
+        viewModel.sendRedeemRequest(PrefsUtil.with(activity).readString("UserId"));
     }
 
-    /*--------------- Get Wallet Detail Api Call -----------------*/
     private void serviceCallGetWalletDetails() {
         binding.btnDeposite.setClickable(false);
         binding.pgShowCurBal.setVisibility(View.VISIBLE);
         binding.pgShowFund.setVisibility(View.VISIBLE);
         binding.pgShowRedeemReq.setVisibility(View.VISIBLE);
-
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-
-        textParams.put("user_id", PrefsUtil.with(activity).readString("UserId"));
-
-        new WebServiceCall(context, WebServiceUrl.URL_GET_WALLET_DETAILS,
-                textParams, WalletDetailsPojo.class, false, new WebServiceCall.OnResultListener() {
-                    @Override
-                    public void onResult(boolean status, Object obj) {
-                        binding.pgShowCurBal.setVisibility(View.GONE);
-                        binding.pgShowFund.setVisibility(View.GONE);
-                        binding.pgShowRedeemReq.setVisibility(View.GONE);
-                        if (status) {
-                            WalletDetailsPojo walletDetailsPojo = (WalletDetailsPojo) obj;
-                            binding.TxtShowCurBal
-                                    .setText(String.format("%s%s", PrefsUtil.with(activity).readString("CurrencySign"),
-                                            walletDetailsPojo.getData().getWalletAmount()));
-                            binding.TxtShowFund
-                                    .setText(String.format("%s%s", PrefsUtil.with(activity).readString("CurrencySign"),
-                                            walletDetailsPojo.getData().getHoldAmount()));
-                            binding.TxtShowReedemRequest
-                                    .setText(String.format("%s%s", PrefsUtil.with(activity).readString("CurrencySign"),
-                                            walletDetailsPojo.getData().getRedeemRequestedAmount()));
-                            binding.btnDeposite.setClickable(true);
-                        } else {
-                            Toast.makeText(context, (String) obj, Toast.LENGTH_SHORT).show();
-                        }
-                    }
-
-                    @Override
-                    public void onAsync(Object asyncTask) {
-                        walletDetailAsync = null;
-                    }
-
-                    @Override
-                    public void onCancelled() {
-                        walletDetailAsync = null;
-                    }
-                });
+        viewModel.loadWalletDetails(PrefsUtil.with(activity).readString("UserId"));
     }
 
     @Override
@@ -386,10 +297,6 @@ public class WalletFragment extends Fragment {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        Utils.cancelAsyncTask(redeemHistoryAsync);
-        Utils.cancelAsyncTask(depositHistoryAsync);
-        Utils.cancelAsyncTask(requestRedeemAsync);
-        Utils.cancelAsyncTask(walletDetailAsync);
         EventBus.getDefault().unregister(this);
         super.onDestroy();
     }

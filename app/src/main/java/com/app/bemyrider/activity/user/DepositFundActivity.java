@@ -20,10 +20,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.text.HtmlCompat;
 
 import com.app.bemyrider.activity.PaypalwebviewActivity;
-import com.app.bemyrider.AsyncTask.WebServiceCall;
 import com.app.bemyrider.R;
-import com.app.bemyrider.WebServices.WebServiceUrl;
-import com.app.bemyrider.model.WalletDetailsPojo;
 import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.LocaleManager;
 import com.app.bemyrider.utils.Log;
@@ -31,7 +28,6 @@ import com.app.bemyrider.utils.PrefsUtil;
 import com.app.bemyrider.utils.Utils;
 
 import java.text.DecimalFormat;
-import java.util.LinkedHashMap;
 
 public class DepositFundActivity extends AppCompatActivity {
 
@@ -45,7 +41,6 @@ public class DepositFundActivity extends AppCompatActivity {
     private DecimalFormat df = new DecimalFormat("#.##");
 
     private float walletCommission;
-    private WebServiceCall walletDetailAsync;
     private Context context;
     private ConnectionManager connectionManager;
     ActivityResultLauncher<Intent> myActivityResultLauncher;
@@ -174,32 +169,10 @@ public class DepositFundActivity extends AppCompatActivity {
     }
 
 
-    private void getWalletDetails() {
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-        textParams.put("user_id", PrefsUtil.with(this).readString("UserId"));
-        textParams.put("lId", preferences.getString("lanId", "1"));
-
-        new WebServiceCall(this, WebServiceUrl.URL_GET_WALLET_DETAILS,
-                textParams, WalletDetailsPojo.class, true,
-                new WebServiceCall.OnResultListener() {
-                    @Override
-                    public void onResult(boolean status, Object obj) {
-                        if (status) {
-                            WalletDetailsPojo walletDetailsPojo = (WalletDetailsPojo) obj;
-                            Txt_fundvalue.setText(PrefsUtil.with(DepositFundActivity.this).readString("CurrencySign") + walletDetailsPojo.getData().getWalletAmount());
-                        } else {
-                            Toast.makeText(DepositFundActivity.this, (String) obj, Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                    @Override public void onAsync(Object obj) { walletDetailAsync = null; }
-                    @Override public void onCancelled() { walletDetailAsync = null; }
-                });
-    }
 
     @Override
     protected void onDestroy() {
         try { connectionManager.unregisterReceiver(); } catch (Exception e) { e.printStackTrace(); }
-        Utils.cancelAsyncTask(walletDetailAsync);
         super.onDestroy();
     }
 

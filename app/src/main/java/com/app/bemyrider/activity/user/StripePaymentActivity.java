@@ -15,11 +15,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.text.HtmlCompat;
 import androidx.databinding.DataBindingUtil;
 
-import com.app.bemyrider.AsyncTask.WebServiceCall;
 import com.app.bemyrider.R;
-import com.app.bemyrider.WebServices.WebServiceUrl;
 import com.app.bemyrider.databinding.ActivityStripePaymentBinding;
-import com.app.bemyrider.model.CommonPojo;
+import com.app.bemyrider.viewmodel.StripePaymentViewModel;
+
+import androidx.lifecycle.ViewModelProvider;
 import com.app.bemyrider.utils.Log;
 import com.app.bemyrider.utils.PrefsUtil;
 import com.app.bemyrider.utils.Utils;
@@ -35,7 +35,6 @@ import com.stripe.android.model.PaymentMethodCreateParams;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Objects;
 
@@ -46,7 +45,7 @@ public class StripePaymentActivity extends AppCompatActivity {
     private ActivityStripePaymentBinding binding;
     private Stripe stripe;
     private ProgressDialog progressBar;
-    private WebServiceCall getStripePaymentAsync;
+    private StripePaymentViewModel viewModel;
 
     String subTotal="",fees="";
     String bookingAmount = "", customerCommission = "", providerCommission = "", totalAmountToCharge = "", totalAmountToChargeFull = "", paymentIntentClientSecret = "", serviceId = "", serviceMasterType = "";
@@ -63,6 +62,26 @@ public class StripePaymentActivity extends AppCompatActivity {
             actionBar.setHomeButtonEnabled(true);
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
+
+        viewModel = new ViewModelProvider(this).get(StripePaymentViewModel.class);
+        viewModel.getResult().observe(this, result -> {
+            if (progressBar.isShowing()) progressBar.dismiss();
+            if (result != null) {
+                Toast.makeText(this, result.getMessage(), Toast.LENGTH_SHORT).show();
+                Intent resultIntent = new Intent();
+                if (result.isStatus()) {
+                    resultIntent.putExtra("MESSAGE", "Payment success");
+                    setResult(Activity.RESULT_OK, resultIntent);
+                } else {
+                    setResult(Activity.RESULT_CANCELED, resultIntent);
+                }
+                finish();
+            }
+        });
+        viewModel.getError().observe(this, errorMsg -> {
+            if (progressBar != null && progressBar.isShowing()) progressBar.dismiss();
+            if (errorMsg != null) displayAlert("Errore pagamento", errorMsg);
+        });
 
         getIntentData();
 
@@ -121,35 +140,13 @@ public class StripePaymentActivity extends AppCompatActivity {
     }
 
     private void setStripePaymentApi(PaymentIntent paymentIntent) {
-        LinkedHashMap<String, String> params = new LinkedHashMap<>();
-        params.put("service_id", serviceId);
-        params.put("payment_instant_id", paymentIntent.getId());
-        params.put("payment_id", paymentIntent.getPaymentMethodId());
-        params.put("amount", totalAmountToCharge);
-        params.put("user_id", PrefsUtil.with(StripePaymentActivity.this).readString("UserId"));
-
-        new WebServiceCall(StripePaymentActivity.this, WebServiceUrl.URL_STRIPE_PAYMENT, params, CommonPojo.class, false,
-                new WebServiceCall.OnResultListener() {
-                    @Override
-                    public void onResult(boolean status, Object obj) {
-                        if (progressBar.isShowing()) progressBar.dismiss();
-                        try {
-                            if (status) {
-                                Intent resultIntent = new Intent();
-                                resultIntent.putExtra("MESSAGE", "Payment success");
-                                setResult(Activity.RESULT_OK, resultIntent);
-                                finish();
-                            } else {
-                                Intent resultIntent = new Intent();
-                                setResult(Activity.RESULT_CANCELED, resultIntent);
-                                finish();
-                            }
-                            Toast.makeText(StripePaymentActivity.this, ((CommonPojo) obj).getMessage(), Toast.LENGTH_SHORT).show();
-                        } catch (Exception e) { e.printStackTrace(); }
-                    }
-                    @Override public void onAsync(Object obj) { getStripePaymentAsync = null; }
-                    @Override public void onCancelled() { getStripePaymentAsync = null; }
-                });
+        viewModel.confirmPayment(
+            PrefsUtil.with(this).readString("UserId"),
+            serviceId,
+            paymentIntent.getId(),
+            paymentIntent.getPaymentMethodId(),
+            totalAmountToCharge
+        );
     }
 
 
@@ -185,7 +182,6 @@ public class StripePaymentActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        Utils.cancelAsyncTask(getStripePaymentAsync);
         super.onDestroy();
     }
 }

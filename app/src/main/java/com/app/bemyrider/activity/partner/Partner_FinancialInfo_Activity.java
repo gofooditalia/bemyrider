@@ -14,9 +14,10 @@ import androidx.core.text.HtmlCompat;
 import androidx.databinding.DataBindingUtil;
 
 import com.app.bemyrider.AsyncTask.ConnectionCheck;
-import com.app.bemyrider.AsyncTask.WebServiceCall;
 import com.app.bemyrider.R;
-import com.app.bemyrider.WebServices.WebServiceUrl;
+import com.app.bemyrider.viewmodel.PartnerFinancialInfoViewModel;
+
+import androidx.lifecycle.ViewModelProvider;
 import com.app.bemyrider.databinding.PartnerActivityFinancialInfoBinding;
 import com.app.bemyrider.model.FinancialInfoPojo;
 import com.app.bemyrider.model.FinancialInfoPojoItem;
@@ -36,7 +37,6 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.util.LinkedHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -47,7 +47,7 @@ import java.util.concurrent.Executors;
 public class Partner_FinancialInfo_Activity extends AppCompatActivity {
 
     private PartnerActivityFinancialInfoBinding binding;
-    private WebServiceCall finincialDetailAsync;
+    private PartnerFinancialInfoViewModel viewModel;
     private Context context;
     private ConnectionManager connectionManager;
     private ExecutorService diskExecutor = Executors.newSingleThreadExecutor();
@@ -59,6 +59,9 @@ public class Partner_FinancialInfo_Activity extends AppCompatActivity {
         binding = DataBindingUtil.setContentView(Partner_FinancialInfo_Activity.this, R.layout.partner_activity_financial_info);
 
         initViews();
+
+        viewModel = new ViewModelProvider(this).get(PartnerFinancialInfoViewModel.class);
+        observeViewModel();
 
         if (new ConnectionCheck().isNetworkConnected(this)) {
             serviceCallGetFinancialDetails();
@@ -91,49 +94,35 @@ public class Partner_FinancialInfo_Activity extends AppCompatActivity {
 
     }
 
-    /*------------- Financial Details Api Call ---------------*/
-    private void serviceCallGetFinancialDetails() {
+    private void observeViewModel() {
+        viewModel.getInfo().observe(this, pojo -> {
+            if (binding.swipeRefresh.isRefreshing()) binding.swipeRefresh.setRefreshing(false);
+            binding.progress.setVisibility(View.GONE);
+            binding.llMain.setVisibility(View.VISIBLE);
+            if (pojo != null && pojo.getData() != null) {
+                String sign = PrefsUtil.with(this).readString("CurrencySign");
+                binding.txtCompleteServiceA.setText(String.valueOf(pojo.getData().getTotalCompletedService()));
+                binding.txtTotalCommision.setText(sign + pojo.getData().getTotalCommission());
+                binding.txtTotalEarned.setText(sign + pojo.getData().getTotalNetEarned());
+                binding.txtTotal.setText(sign + pojo.getData().getTotalEarned());
+            }
+        });
+        viewModel.getError().observe(this, errorMsg -> {
+            if (errorMsg != null) {
+                if (binding.swipeRefresh.isRefreshing()) binding.swipeRefresh.setRefreshing(false);
+                binding.progress.setVisibility(View.GONE);
+                binding.llMain.setVisibility(View.VISIBLE);
+                Toast.makeText(this, errorMsg, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
 
+    private void serviceCallGetFinancialDetails() {
         if (!binding.swipeRefresh.isRefreshing()) {
             binding.llMain.setVisibility(View.GONE);
             binding.progress.setVisibility(View.VISIBLE);
         }
-
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-
-        textParams.put("user_id", PrefsUtil.with(Partner_FinancialInfo_Activity.this).readString("UserId"));
-
-        new WebServiceCall(Partner_FinancialInfo_Activity.this,
-                WebServiceUrl.URL_GET_FINANCIAL_INFO, textParams, FinancialInfoPojo.class, false,
-                new WebServiceCall.OnResultListener() {
-                    @Override
-                    public void onResult(boolean status, Object obj) {
-                        if (binding.swipeRefresh.isRefreshing()) {
-                            binding.swipeRefresh.setRefreshing(false);
-                        }
-                        binding.progress.setVisibility(View.GONE);
-                        binding.llMain.setVisibility(View.VISIBLE);
-                        if (status) {
-                            FinancialInfoPojo infoPojo = (FinancialInfoPojo) obj;
-                            binding.txtCompleteServiceA.setText(String.valueOf(infoPojo.getData().getTotalCompletedService()));
-                            binding.txtTotalCommision.setText(PrefsUtil.with(Partner_FinancialInfo_Activity.this).readString("CurrencySign") + infoPojo.getData().getTotalCommission());
-                            binding.txtTotalEarned.setText(PrefsUtil.with(Partner_FinancialInfo_Activity.this).readString("CurrencySign") + infoPojo.getData().getTotalNetEarned());
-                            binding.txtTotal.setText(PrefsUtil.with(Partner_FinancialInfo_Activity.this).readString("CurrencySign") + infoPojo.getData().getTotalEarned());
-                        } else {
-                            Toast.makeText(Partner_FinancialInfo_Activity.this, (String) obj, Toast.LENGTH_SHORT).show();
-                        }
-                    }
-
-                    @Override
-                    public void onAsync(Object asyncTask) {
-                        finincialDetailAsync = (WebServiceCall) asyncTask;
-                    }
-
-                    @Override
-                    public void onCancelled() {
-                        finincialDetailAsync = null;
-                    }
-                });
+        viewModel.loadFinancialInfo(PrefsUtil.with(this).readString("UserId"));
     }
 
     @Override
@@ -240,7 +229,6 @@ public class Partner_FinancialInfo_Activity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        Utils.cancelAsyncTask(finincialDetailAsync);
         super.onDestroy();
     }
 

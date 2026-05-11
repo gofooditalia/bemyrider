@@ -9,22 +9,18 @@ import android.widget.Toast;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.text.HtmlCompat;
+import androidx.lifecycle.ViewModelProvider;
 
-import com.app.bemyrider.AsyncTask.WebServiceCall;
 import com.app.bemyrider.R;
-import com.app.bemyrider.WebServices.WebServiceUrl;
-import com.app.bemyrider.model.CommonPojo;
 import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.LocaleManager;
 import com.app.bemyrider.utils.PrefsUtil;
-import com.app.bemyrider.utils.Utils;
-
-import java.util.LinkedHashMap;
+import com.app.bemyrider.viewmodel.RedeemViewModel;
 
 public class RedeemActivity extends AppCompatActivity {
 
     private Button Btn_submit;
-    private WebServiceCall redeemRequestAsync;
+    private RedeemViewModel viewModel;
     private Context context;
     private ConnectionManager connectionManager;
 
@@ -33,7 +29,7 @@ public class RedeemActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_reedem);
 
-        setTitle(HtmlCompat.fromHtml("<font color=#FFFFFF>" + getString(R.string.redeem_request),HtmlCompat.FROM_HTML_MODE_LEGACY));
+        setTitle(HtmlCompat.fromHtml("<font color=#FFFFFF>" + getString(R.string.redeem_request), HtmlCompat.FROM_HTML_MODE_LEGACY));
 
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
@@ -43,51 +39,36 @@ public class RedeemActivity extends AppCompatActivity {
 
         initViews();
 
-        Btn_submit.setOnClickListener(view -> serviceCallRedeem());
+        viewModel = new ViewModelProvider(this).get(RedeemViewModel.class);
+        viewModel.getResult().observe(this, result -> {
+            if (result != null)
+                Toast.makeText(this, result.isStatus() ? result.getMessage() : result.getMessage(), Toast.LENGTH_SHORT).show();
+        });
+        viewModel.getError().observe(this, errorMsg -> {
+            if (errorMsg != null) Toast.makeText(this, errorMsg, Toast.LENGTH_SHORT).show();
+        });
+
+        Btn_submit.setOnClickListener(view ->
+                viewModel.sendRedeemRequest(PrefsUtil.with(this).readString("UserId")));
     }
 
     private void initViews() {
         context = RedeemActivity.this;
-
         connectionManager = new ConnectionManager(context);
         connectionManager.registerInternetCheckReceiver();
         connectionManager.checkConnection(context);
-
         Btn_submit = findViewById(R.id.Btn_submit);
-    }
-
-    private void serviceCallRedeem() {
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-        textParams.put("user_id", PrefsUtil.with(RedeemActivity.this).readString("UserId"));
-
-        new WebServiceCall(RedeemActivity.this, WebServiceUrl.URL_REDDEMRE_REQUEST,
-                textParams, CommonPojo.class, true, new WebServiceCall.OnResultListener() {
-            @Override
-            public void onResult(boolean status, Object obj) {
-                if (status) {
-                    Toast.makeText(RedeemActivity.this, ((CommonPojo) obj).getMessage(), Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(RedeemActivity.this, (String) obj, Toast.LENGTH_SHORT).show();
-                }
-            }
-            @Override public void onAsync(Object obj) { redeemRequestAsync = null; }
-            @Override public void onCancelled() { redeemRequestAsync = null; }
-        });
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
-            onBackPressed();
-            return true;
-        }
+        if (item.getItemId() == android.R.id.home) { onBackPressed(); return true; }
         return super.onOptionsItemSelected(item);
     }
 
     @Override
     protected void onDestroy() {
-        try { connectionManager.unregisterReceiver(); } catch (Exception e) { e.printStackTrace(); }
-        Utils.cancelAsyncTask(redeemRequestAsync);
+        try { connectionManager.unregisterReceiver(); } catch (Exception ignored) {}
         super.onDestroy();
     }
 

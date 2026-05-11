@@ -1,6 +1,12 @@
 package com.app.bemyrider.network
 
 import com.app.bemyrider.model.BulkInvoicePojo
+import com.app.bemyrider.model.DepositHistoryPojo
+import com.app.bemyrider.model.FinancialInfoPojo
+import com.app.bemyrider.model.PaymentHistoryPojo
+import com.app.bemyrider.model.RedeemHistoryPojo
+import com.app.bemyrider.model.WalletDetailsPojo
+import com.app.bemyrider.model.partner.PartnerPaymentHistoryPojo
 import com.app.bemyrider.model.DisputeDetailPojo
 import com.app.bemyrider.model.DisputeListPojo
 import com.app.bemyrider.model.SendDisputeMessagePojo
@@ -218,6 +224,60 @@ interface ApiServiceKt {
         @Field("date_from") dateFrom: String? = null,
         @Field("date_to") dateTo: String? = null
     ): Response<BulkInvoicePojo>
+
+    @FormUrlEncoded
+    @POST("profile/walletdetails/")
+    suspend fun getWalletDetails(
+        @Field("user_id") userId: String
+    ): Response<WalletDetailsPojo>
+
+    @FormUrlEncoded
+    @POST("finance/deposithistory")
+    suspend fun getDepositHistory(
+        @Field("user_id") userId: String
+    ): Response<DepositHistoryPojo>
+
+    @FormUrlEncoded
+    @POST("finance/redeemhistory")
+    suspend fun getRedeemHistory(
+        @Field("user_id") userId: String
+    ): Response<RedeemHistoryPojo>
+
+    @FormUrlEncoded
+    @POST("finance/sendredeemrequest")
+    suspend fun sendRedeemRequest(
+        @Field("user_id") userId: String
+    ): Response<CommonPojo>
+
+    @FormUrlEncoded
+    @POST("finance/paymenthistory")
+    suspend fun getPaymentHistory(
+        @Field("user_id") userId: String,
+        @Field("page") page: Int
+    ): Response<PaymentHistoryPojo>
+
+    @FormUrlEncoded
+    @POST("services/transectionhistory")
+    suspend fun getPartnerPaymentHistory(
+        @Field("user_id") userId: String,
+        @Field("page") page: Int
+    ): Response<PartnerPaymentHistoryPojo>
+
+    @FormUrlEncoded
+    @POST("finance/successpayment")
+    suspend fun confirmStripePayment(
+        @Field("user_id") userId: String,
+        @Field("service_id") serviceId: String,
+        @Field("payment_instant_id") paymentIntentId: String,
+        @Field("payment_id") paymentId: String,
+        @Field("amount") amount: String
+    ): Response<CommonPojo>
+
+    @FormUrlEncoded
+    @POST("finance/financialinfo")
+    suspend fun getFinancialInfo(
+        @Field("user_id") userId: String
+    ): Response<FinancialInfoPojo>
 
     @FormUrlEncoded
     @POST("disputes/getdisputelist")

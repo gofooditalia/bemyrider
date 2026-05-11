@@ -7,6 +7,12 @@ import com.app.bemyrider.model.CommonPojo
 import com.app.bemyrider.model.LanguagePojo
 import com.app.bemyrider.model.NewLoginPojo
 import com.app.bemyrider.model.CustomerHistoryPojo
+import com.app.bemyrider.model.DepositHistoryPojo
+import com.app.bemyrider.model.FinancialInfoPojo
+import com.app.bemyrider.model.PaymentHistoryPojo
+import com.app.bemyrider.model.RedeemHistoryPojo
+import com.app.bemyrider.model.WalletDetailsPojo
+import com.app.bemyrider.model.partner.PartnerPaymentHistoryPojo
 import com.app.bemyrider.model.DisputeDetailPojo
 import com.app.bemyrider.model.DisputeListPojo
 import com.app.bemyrider.model.SendDisputeMessagePojo
@@ -329,6 +335,16 @@ class AppRepository {
             else -> apiService.getSmallDelivery(action, sort, rating, location, lat, lng, keyword, page)
         }
     }
+
+    suspend fun getWalletDetails(userId: String): Response<WalletDetailsPojo> = apiService.getWalletDetails(userId)
+    suspend fun getDepositHistory(userId: String): Response<DepositHistoryPojo> = apiService.getDepositHistory(userId)
+    suspend fun getRedeemHistory(userId: String): Response<RedeemHistoryPojo> = apiService.getRedeemHistory(userId)
+    suspend fun sendRedeemRequest(userId: String): Response<CommonPojo> = apiService.sendRedeemRequest(userId)
+    suspend fun getPaymentHistory(userId: String, page: Int): Response<PaymentHistoryPojo> = apiService.getPaymentHistory(userId, page)
+    suspend fun getPartnerPaymentHistory(userId: String, page: Int): Response<PartnerPaymentHistoryPojo> = apiService.getPartnerPaymentHistory(userId, page)
+    suspend fun confirmStripePayment(userId: String, serviceId: String, paymentIntentId: String, paymentId: String, amount: String): Response<CommonPojo> =
+        apiService.confirmStripePayment(userId, serviceId, paymentIntentId, paymentId, amount)
+    suspend fun getFinancialInfo(userId: String): Response<FinancialInfoPojo> = apiService.getFinancialInfo(userId)
 
     suspend fun getDisputeList(userId: String, page: Int): Response<DisputeListPojo> =
         apiService.getDisputeList(userId, page)
