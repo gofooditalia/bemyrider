@@ -7,6 +7,7 @@ import com.app.bemyrider.model.CommonPojo
 import com.app.bemyrider.model.LanguagePojo
 import com.app.bemyrider.model.NewLoginPojo
 import com.app.bemyrider.model.NotificationDataPOJO
+import com.app.bemyrider.model.NotificationListPojo
 import com.app.bemyrider.model.ProfilePojo
 import com.app.bemyrider.network.ApiServiceKt
 import com.app.bemyrider.network.RetrofitClient
@@ -236,5 +237,13 @@ class AppRepository {
 
     suspend fun getNotifications(userId: String, userType: String, page: Int): Response<NotificationDataPOJO> {
         return apiService.getNotifications(userId, userType, page)
+    }
+
+    suspend fun getNotificationSettings(userId: String): Response<NotificationListPojo> {
+        return apiService.getNotificationSettings(userId)
+    }
+
+    suspend fun updateNotificationSettings(params: Map<String, String>): Response<CommonPojo> {
+        return apiService.updateNotificationSettings(params)
     }
 }

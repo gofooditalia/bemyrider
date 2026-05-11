@@ -6,6 +6,7 @@ import com.app.bemyrider.model.CommonPojo
 import com.app.bemyrider.model.LanguagePojo
 import com.app.bemyrider.model.NewLoginPojo
 import com.app.bemyrider.model.NotificationDataPOJO
+import com.app.bemyrider.model.NotificationListPojo
 import com.app.bemyrider.model.ProfilePojo
 import com.app.bemyrider.model.partner.CountryCodePojo
 import okhttp3.MultipartBody
@@ -13,6 +14,7 @@ import okhttp3.RequestBody
 import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.http.Field
+import retrofit2.http.FieldMap
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
 import retrofit2.http.Multipart
@@ -189,4 +191,16 @@ interface ApiServiceKt {
         @Field("user_type") userType: String,
         @Field("page") page: Int
     ): Response<NotificationDataPOJO>
+
+    @FormUrlEncoded
+    @POST("profile/getnotificationlist")
+    suspend fun getNotificationSettings(
+        @Field("user_id") userId: String
+    ): Response<NotificationListPojo>
+
+    @FormUrlEncoded
+    @POST("profile/updatenotification")
+    suspend fun updateNotificationSettings(
+        @FieldMap params: Map<String, String>
+    ): Response<CommonPojo>
 }

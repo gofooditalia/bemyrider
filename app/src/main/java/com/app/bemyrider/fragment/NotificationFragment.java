@@ -13,49 +13,48 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.bemyrider.Adapter.NotificationListAdapter;
-import com.app.bemyrider.AsyncTask.WebServiceCall;
 import com.app.bemyrider.R;
-import com.app.bemyrider.WebServices.WebServiceUrl;
 import com.app.bemyrider.activity.user.NotificationActivity;
 import com.app.bemyrider.databinding.FragmentNotificationBinding;
 import com.app.bemyrider.model.NotificationData;
-import com.app.bemyrider.model.NotificationDataPOJO;
 import com.app.bemyrider.model.NotificationListItem;
 import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.PrefsUtil;
-import com.app.bemyrider.utils.Utils;
+import com.app.bemyrider.viewmodel.NotificationViewModel;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 
 public class NotificationFragment extends Fragment {
-    FragmentNotificationBinding binding;
 
+    private FragmentNotificationBinding binding;
     private int page = 1, totalPages = 1;
     private LinearLayoutManager layoutManager;
     private NotificationListAdapter adapter;
     private ArrayList<NotificationListItem> notifications = new ArrayList<>();
     private int pastVisibleItems, visibleItemCount, totalItemCount;
     private boolean isLoading = false;
-    private WebServiceCall notificationListAsync;
+    private boolean pendingClear = false;
     private Context context;
     private AppCompatActivity activity;
     private ConnectionManager connectionManager;
+    private NotificationViewModel viewModel;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_notification, container, false);
 
+        viewModel = new ViewModelProvider(this).get(NotificationViewModel.class);
+        observeViewModel();
         initToolBar();
-
-        getNotificationList(true);
+        loadNotifications(true);
 
         binding.rvNotification.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -65,29 +64,66 @@ public class NotificationFragment extends Fragment {
                     totalItemCount = layoutManager.getItemCount();
                     pastVisibleItems = layoutManager.findFirstVisibleItemPosition();
 
-                    if ((!isLoading) && page <= totalPages) {
+                    if (!isLoading && page <= totalPages) {
                         if ((visibleItemCount + pastVisibleItems) >= totalItemCount) {
                             page++;
-                            getNotificationList(false);
+                            loadNotifications(false);
                         }
                     }
                 }
             }
         });
 
-        binding.imgSettings.setOnClickListener(v -> {
-            Intent resultIntent = new Intent(activity, NotificationActivity.class);
-            startActivity(resultIntent);
-        });
+        binding.imgSettings.setOnClickListener(v ->
+                startActivity(new Intent(activity, NotificationActivity.class)));
+
         return binding.getRoot();
+    }
+
+    private void observeViewModel() {
+        viewModel.getNotifications().observe(getViewLifecycleOwner(), pojo -> {
+            if (binding.swipeRefresh.isRefreshing()) {
+                binding.swipeRefresh.setRefreshing(false);
+            }
+            binding.progress.setVisibility(View.GONE);
+            if (pojo != null && pojo.isStatus()) {
+                NotificationData notiData = pojo.getNotificationData();
+                List<NotificationListItem> list = notiData.getNotificationList();
+                if (pendingClear) {
+                    notifications.clear();
+                    pendingClear = false;
+                }
+                notifications.addAll(list);
+                boolean hasItems = !notifications.isEmpty();
+                binding.txtNoRecordDis.setVisibility(hasItems ? View.GONE : View.VISIBLE);
+                binding.rvNotification.setVisibility(hasItems ? View.VISIBLE : View.GONE);
+                adapter.notifyDataSetChanged();
+                totalPages = notiData.getPagination().getTotalPages();
+                page = notiData.getPagination().getCurrentPage();
+            }
+            isLoading = false;
+        });
+
+        viewModel.getError().observe(getViewLifecycleOwner(), errorMsg -> {
+            if (errorMsg != null) {
+                if (binding.swipeRefresh.isRefreshing()) {
+                    binding.swipeRefresh.setRefreshing(false);
+                }
+                binding.progress.setVisibility(View.GONE);
+                Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show();
+                isLoading = false;
+            }
+        });
     }
 
     private void initToolBar() {
         context = getContext();
         activity = (AppCompatActivity) getActivity();
 
-        activity.setSupportActionBar(binding.toolbar);
-        /*Init Internet Connection Class For No Internet Banner*/
+        if (activity != null) {
+            activity.setSupportActionBar(binding.toolbar);
+        }
+
         connectionManager = new ConnectionManager(context);
         connectionManager.registerInternetCheckReceiver();
         connectionManager.checkConnection(context);
@@ -102,79 +138,24 @@ public class NotificationFragment extends Fragment {
 
         binding.swipeRefresh.setOnRefreshListener(() -> {
             binding.swipeRefresh.setRefreshing(true);
-            getNotificationList(true);
+            loadNotifications(true);
         });
     }
 
-
-    /*-------------- Notification List Api Call -----------------*/
-    private void getNotificationList(boolean isClear) {
+    private void loadNotifications(boolean isClear) {
         if (isClear) {
             page = 1;
             binding.txtNoRecordDis.setVisibility(View.GONE);
             binding.rvNotification.scrollToPosition(0);
         }
-
         isLoading = true;
+        pendingClear = isClear;
         if (!binding.swipeRefresh.isRefreshing()) {
             binding.progress.setVisibility(View.VISIBLE);
         }
-
-        String url = WebServiceUrl.URL_GETNOTIFICATIONS;
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-
-        textParams.put("user_id", PrefsUtil.with(context).readString("UserId"));
-
-        textParams.put("user_type", PrefsUtil.with(context).readString("UserType"));
-
-        textParams.put("page", String.valueOf(page));
-
-        new WebServiceCall(context, url, textParams, NotificationDataPOJO.class, false,
-                new WebServiceCall.OnResultListener() {
-                    @Override
-                    public void onResult(boolean status, Object obj) {
-                        if (binding.swipeRefresh.isRefreshing()) {
-                            binding.swipeRefresh.setRefreshing(false);
-                        }
-                        if (status) {
-                            NotificationDataPOJO disputeListPojo = (NotificationDataPOJO) obj;
-                            NotificationData notiData = disputeListPojo.getNotificationData();
-                            List<NotificationListItem> list = notiData.getNotificationList();
-                            if (isClear) {
-                                notifications.clear();
-                            }
-                            binding.progress.setVisibility(View.GONE);
-                            binding.rvNotification.setVisibility(View.VISIBLE);
-                            notifications.addAll(list);
-                            if (!(notifications.size() > 0)) {
-                                binding.txtNoRecordDis.setVisibility(View.VISIBLE);
-                                binding.rvNotification.setVisibility(View.GONE);
-                            } else {
-                                binding.txtNoRecordDis.setVisibility(View.GONE);
-                                binding.rvNotification.setVisibility(View.VISIBLE);
-                            }
-                            adapter.notifyDataSetChanged();
-
-                            totalPages = notiData.getPagination().getTotalPages();
-                            page = notiData.getPagination().getCurrentPage();
-                        } else {
-                            binding.progress.setVisibility(View.GONE);
-                            Toast.makeText(context, (String) obj,
-                                    Toast.LENGTH_SHORT).show();
-                        }
-                        isLoading = false;
-                    }
-
-                    @Override
-                    public void onAsync(Object asyncTask) {
-                        notificationListAsync = null;
-                    }
-
-                    @Override
-                    public void onCancelled() {
-                        notificationListAsync = null;
-                    }
-                });
+        String userId = PrefsUtil.with(context).readString("UserId");
+        String userType = PrefsUtil.with(context).readString("UserType");
+        viewModel.loadNotifications(userId, userType, page);
     }
 
     @Override
@@ -185,8 +166,5 @@ public class NotificationFragment extends Fragment {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        Utils.cancelAsyncTask(notificationListAsync);
     }
-
-
 }
