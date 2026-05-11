@@ -9,25 +9,18 @@ import android.widget.Toast;
 
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.bemyrider.Adapter.User.ServiceListOnGoingAdapter;
-import com.app.bemyrider.AsyncTask.WebServiceCall;
 import com.app.bemyrider.R;
-import com.app.bemyrider.WebServices.WebServiceUrl;
 import com.app.bemyrider.databinding.FragmentServiceListingBinding;
-import com.app.bemyrider.model.CustomerHistoryPojo;
 import com.app.bemyrider.model.CustomerHistoryPojoItem;
 import com.app.bemyrider.utils.PrefsUtil;
-import com.app.bemyrider.utils.Utils;
+import com.app.bemyrider.viewmodel.CustomerServiceHistoryViewModel;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
-
-/**
- * Modified by Hardik Talaviya on 10/12/19.
- */
 
 public class OngoingServiceFragment extends Fragment {
 
@@ -37,20 +30,18 @@ public class OngoingServiceFragment extends Fragment {
     private ServiceListOnGoingAdapter adapter;
     private ArrayList<CustomerHistoryPojoItem> historyPojoItems;
     private LinearLayoutManager layoutManager;
-    private boolean isLoading = false;
-    private WebServiceCall ongoingServiceAsync;
+    private boolean loading = false;
+    private boolean pendingClear = false;
+    private CustomerServiceHistoryViewModel viewModel;
     private Context context;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_service_listing, container, false);
-
         initView();
-
-        // Chiamiamo il metodo di refresh per avviare la API call
+        viewModel = new ViewModelProvider(this).get(CustomerServiceHistoryViewModel.class);
+        observeViewModel();
         refreshData();
-
         binding.rvServiceList.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
@@ -58,110 +49,61 @@ public class OngoingServiceFragment extends Fragment {
                     visibleItemCount = layoutManager.getChildCount();
                     totalItemCount = layoutManager.getItemCount();
                     pastVisibleItems = layoutManager.findFirstVisibleItemPosition();
-
-                    if ((!isLoading) && page < total_page) {
-                        if ((visibleItemCount + pastVisibleItems) >= totalItemCount) {
-                            page++;
-                            serviceCallGetOnGoingService(false);
-                        }
+                    if (!loading && page < total_page && (visibleItemCount + pastVisibleItems) >= totalItemCount) {
+                        page++;
+                        loadServices(false);
                     }
                 }
             }
         });
-
         return binding.getRoot();
     }
 
-    /*------------- Metodo pubblico per forzare l'aggiornamento dei dati ---------------*/
     public void refreshData() {
-        if (context != null) {
-            serviceCallGetOnGoingService(true);
-        }
+        if (context != null && viewModel != null) loadServices(true);
     }
 
-    /*------------- Get On Going Service Api Call ---------------*/
-    private void serviceCallGetOnGoingService(boolean isClear) {
-        if (isClear) {
-            page = 1;
-            binding.txtNoRecord.setVisibility(View.GONE);
-            binding.rvServiceList.scrollToPosition(0);
-        }
-        isLoading = true;
-        if (!binding.swipeRefresh.isRefreshing()) {
-            binding.progress.setVisibility(View.VISIBLE);
-        }
-
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-
-        textParams.put("user_id", PrefsUtil.with(context).readString("UserId"));
-        textParams.put("tab", "ongoing");
-        textParams.put("page", String.valueOf(page));
-
-        new WebServiceCall(getActivity(), WebServiceUrl.URL_GETSERVICEHISTORY, textParams,
-                CustomerHistoryPojo.class, false, new WebServiceCall.OnResultListener() {
-            @Override
-            public void onResult(boolean status, Object obj) {
-                if (binding.swipeRefresh.isRefreshing()) {
-                    binding.swipeRefresh.setRefreshing(false);
-                }
-                if (status) {
-                    CustomerHistoryPojo historyPojo = (CustomerHistoryPojo) obj;
-
-                    if (isClear) {
-                        historyPojoItems.clear();
-                    }
-                    binding.progress.setVisibility(View.GONE);
-                    binding.rvServiceList.setVisibility(View.VISIBLE);
-
-                    historyPojoItems.addAll(historyPojo.getData().getServiceList());
-                    if (historyPojoItems.size() > 0) {
-                        binding.txtNoRecord.setVisibility(View.GONE);
-                        binding.rvServiceList.setVisibility(View.VISIBLE);
-                    } else {
-                        binding.rvServiceList.setVisibility(View.GONE);
-                        binding.txtNoRecord.setVisibility(View.VISIBLE);
-                    }
-                    adapter.notifyDataSetChanged();
-
-                    total_page = historyPojo.getData().getPagination().getTotalPages();
-                    page = historyPojo.getData().getPagination().getCurrentPage();
-                } else {
-                    binding.progress.setVisibility(View.GONE);
-                    Toast.makeText(getActivity(), (String) obj, Toast.LENGTH_SHORT).show();
-                }
-                isLoading = false;
+    private void observeViewModel() {
+        viewModel.getServices().observe(getViewLifecycleOwner(), pojo -> {
+            if (binding.swipeRefresh.isRefreshing()) binding.swipeRefresh.setRefreshing(false);
+            binding.progress.setVisibility(View.GONE);
+            if (pojo != null && pojo.getData() != null) {
+                if (pendingClear) { historyPojoItems.clear(); pendingClear = false; }
+                historyPojoItems.addAll(pojo.getData().getServiceList());
+                boolean hasItems = !historyPojoItems.isEmpty();
+                binding.txtNoRecord.setVisibility(hasItems ? View.GONE : View.VISIBLE);
+                binding.rvServiceList.setVisibility(hasItems ? View.VISIBLE : View.GONE);
+                adapter.notifyDataSetChanged();
+                total_page = pojo.getData().getPagination().getTotalPages();
+                page = pojo.getData().getPagination().getCurrentPage();
             }
-
-            @Override
-            public void onAsync(Object asyncTask) {
-                ongoingServiceAsync = null;
-            }
-
-            @Override
-            public void onCancelled() {
-                ongoingServiceAsync = null;
+            loading = false;
+        });
+        viewModel.getError().observe(getViewLifecycleOwner(), errorMsg -> {
+            if (errorMsg != null) {
+                if (binding.swipeRefresh.isRefreshing()) binding.swipeRefresh.setRefreshing(false);
+                binding.progress.setVisibility(View.GONE);
+                Toast.makeText(getActivity(), errorMsg, Toast.LENGTH_SHORT).show();
+                loading = false;
             }
         });
+    }
+
+    private void loadServices(boolean isClear) {
+        if (isClear) { page = 1; binding.txtNoRecord.setVisibility(View.GONE); binding.rvServiceList.scrollToPosition(0); }
+        loading = true;
+        pendingClear = isClear;
+        if (!binding.swipeRefresh.isRefreshing()) binding.progress.setVisibility(View.VISIBLE);
+        viewModel.loadServices(PrefsUtil.with(context).readString("UserId"), "ongoing", page);
     }
 
     private void initView() {
         context = getActivity();
-
         historyPojoItems = new ArrayList<>();
         layoutManager = new LinearLayoutManager(getActivity(), RecyclerView.VERTICAL, false);
         binding.rvServiceList.setLayoutManager(layoutManager);
         adapter = new ServiceListOnGoingAdapter(getActivity(), historyPojoItems);
         binding.rvServiceList.setAdapter(adapter);
-
-        binding.swipeRefresh.setOnRefreshListener(() -> {
-            binding.swipeRefresh.setRefreshing(true);
-            serviceCallGetOnGoingService(true);
-        });
-    }
-
-    @Override
-    public void onDestroy() {
-        Utils.cancelAsyncTask(ongoingServiceAsync);
-        super.onDestroy();
+        binding.swipeRefresh.setOnRefreshListener(() -> { binding.swipeRefresh.setRefreshing(true); loadServices(true); });
     }
 }

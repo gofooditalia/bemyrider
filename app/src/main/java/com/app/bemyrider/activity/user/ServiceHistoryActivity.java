@@ -20,9 +20,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
-import com.app.bemyrider.AsyncTask.WebServiceCall;
 import com.app.bemyrider.R;
-import com.app.bemyrider.WebServices.WebServiceUrl;
 import com.app.bemyrider.fragment.user.OngoingServiceFragment;
 import com.app.bemyrider.fragment.user.PreviousServiceFragment;
 import com.app.bemyrider.fragment.user.UpcomingServiceFragment;
@@ -31,10 +29,11 @@ import com.app.bemyrider.model.EventBusMessage;
 import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.LocaleManager;
 import com.app.bemyrider.utils.PrefsUtil;
+import com.app.bemyrider.viewmodel.BulkInvoiceViewModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.tabs.TabLayout;
 
-import java.util.LinkedHashMap;
+import androidx.lifecycle.ViewModelProvider;
+import com.google.android.material.tabs.TabLayout;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -63,6 +62,7 @@ public class ServiceHistoryActivity extends AppCompatActivity implements TabLayo
             };
     private Context context;
     private ConnectionManager connectionManager;
+    private BulkInvoiceViewModel bulkViewModel;
     private UpcomingServiceFragment upcomingServiceFragment;
     private OngoingServiceFragment ongoingServiceFragment;
     private PreviousServiceFragment previousServiceFragment;
@@ -81,6 +81,9 @@ public class ServiceHistoryActivity extends AppCompatActivity implements TabLayo
         }
 
         initViews();
+
+        bulkViewModel = new ViewModelProvider(this).get(BulkInvoiceViewModel.class);
+        observeBulkViewModel();
 
         setupViewPager(viewPager);
         tabLayout.setupWithViewPager(viewPager);
@@ -119,26 +122,22 @@ public class ServiceHistoryActivity extends AppCompatActivity implements TabLayo
             .show();
     }
 
-    private void callBulkInvoiceApi(String period) {
-        LinkedHashMap<String, String> params = new LinkedHashMap<>();
-        params.put("user_id", PrefsUtil.with(this).readString("UserId"));
-        params.put("user_type", PrefsUtil.with(this).readString("UserType"));
-        params.put("period", period);
+    private void observeBulkViewModel() {
+        bulkViewModel.getResult().observe(this, pojo -> {
+            if (pojo != null && pojo.getData() != null) {
+                startZipDownload(pojo.getData().getFileName(), pojo.getData().getCount());
+            }
+        });
+        bulkViewModel.getError().observe(this, errorMsg -> {
+            if (errorMsg != null) Toast.makeText(context, errorMsg, Toast.LENGTH_LONG).show();
+        });
+    }
 
-        new WebServiceCall(this, WebServiceUrl.URL_BULK_INVOICES, params,
-            BulkInvoicePojo.class, true, new WebServiceCall.OnResultListener() {
-                @Override
-                public void onResult(boolean status, Object obj) {
-                    if (status) {
-                        BulkInvoicePojo pojo = (BulkInvoicePojo) obj;
-                        startZipDownload(pojo.getData().getFileName(), pojo.getData().getCount());
-                    } else {
-                        Toast.makeText(context, obj.toString(), Toast.LENGTH_LONG).show();
-                    }
-                }
-                @Override public void onAsync(Object obj) {}
-                @Override public void onCancelled() {}
-            });
+    private void callBulkInvoiceApi(String period) {
+        bulkViewModel.downloadBulk(
+            PrefsUtil.with(this).readString("UserId"),
+            PrefsUtil.with(this).readString("UserType"),
+            period, null, null);
     }
 
     private void startZipDownload(String url, int count) {

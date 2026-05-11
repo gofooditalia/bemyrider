@@ -21,14 +21,15 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
-import com.app.bemyrider.AsyncTask.WebServiceCall;
 import com.app.bemyrider.R;
-import com.app.bemyrider.WebServices.WebServiceUrl;
 import com.app.bemyrider.databinding.FragmentServiceHistoryBinding;
 import com.app.bemyrider.model.BulkInvoicePojo;
 import com.app.bemyrider.model.EventBusMessage;
 import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.PrefsUtil;
+import com.app.bemyrider.viewmodel.BulkInvoiceViewModel;
+
+import androidx.lifecycle.ViewModelProvider;
 import com.google.android.material.tabs.TabLayout;
 
 import org.greenrobot.eventbus.EventBus;
@@ -38,7 +39,6 @@ import org.greenrobot.eventbus.ThreadMode;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 
@@ -47,6 +47,7 @@ public class ServiceHistoryFragment extends Fragment implements TabLayout.OnTabS
     FragmentServiceHistoryBinding binding;
     private Context context;
     private AppCompatActivity activity;
+    private BulkInvoiceViewModel bulkViewModel;
     private int[] tabString =
             {
                     R.string.upcoming,
@@ -70,6 +71,9 @@ public class ServiceHistoryFragment extends Fragment implements TabLayout.OnTabS
         }
 
         initViews();
+
+        bulkViewModel = new ViewModelProvider(this).get(BulkInvoiceViewModel.class);
+        observeBulkViewModel();
 
         setupViewPager(binding.pagerHistory);
         binding.tabLayoutServiceHistory.setupWithViewPager(binding.pagerHistory);
@@ -137,28 +141,22 @@ public class ServiceHistoryFragment extends Fragment implements TabLayout.OnTabS
         fromDatePicker.show();
     }
 
-    private void callBulkInvoiceApi(String period, String dateFrom, String dateTo) {
-        LinkedHashMap<String, String> params = new LinkedHashMap<>();
-        params.put("user_id", PrefsUtil.with(context).readString("UserId"));
-        params.put("user_type", PrefsUtil.with(context).readString("UserType"));
-        params.put("period", period);
-        if (dateFrom != null) params.put("date_from", dateFrom);
-        if (dateTo != null) params.put("date_to", dateTo);
-
-        new WebServiceCall(activity, WebServiceUrl.URL_BULK_INVOICES, params,
-                BulkInvoicePojo.class, true, new WebServiceCall.OnResultListener() {
-            @Override
-            public void onResult(boolean status, Object obj) {
-                if (status) {
-                    BulkInvoicePojo pojo = (BulkInvoicePojo) obj;
-                    startZipDownload(pojo.getData().getFileName(), pojo.getData().getCount());
-                } else {
-                    Toast.makeText(context, obj.toString(), Toast.LENGTH_LONG).show();
-                }
+    private void observeBulkViewModel() {
+        bulkViewModel.getResult().observe(getViewLifecycleOwner(), pojo -> {
+            if (pojo != null && pojo.getData() != null) {
+                startZipDownload(pojo.getData().getFileName(), pojo.getData().getCount());
             }
-            @Override public void onAsync(Object obj) {}
-            @Override public void onCancelled() {}
         });
+        bulkViewModel.getError().observe(getViewLifecycleOwner(), errorMsg -> {
+            if (errorMsg != null) Toast.makeText(context, errorMsg, Toast.LENGTH_LONG).show();
+        });
+    }
+
+    private void callBulkInvoiceApi(String period, String dateFrom, String dateTo) {
+        bulkViewModel.downloadBulk(
+            PrefsUtil.with(context).readString("UserId"),
+            PrefsUtil.with(context).readString("UserType"),
+            period, dateFrom, dateTo);
     }
 
     private void startZipDownload(String url, int count) {

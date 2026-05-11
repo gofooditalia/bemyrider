@@ -5,7 +5,9 @@ import com.app.bemyrider.model.CheckStripeConnectedPojo
 import com.app.bemyrider.model.CommonPojo
 import com.app.bemyrider.model.LanguagePojo
 import com.app.bemyrider.model.NewLoginPojo
+import com.app.bemyrider.model.CustomerHistoryPojo
 import com.app.bemyrider.model.InfoPagePojo
+import com.app.bemyrider.model.ProviderHistoryPojo
 import com.app.bemyrider.model.MessageDetailPojo
 import com.app.bemyrider.model.MessageListPojo
 import com.app.bemyrider.model.SendMessagePojo
@@ -238,6 +240,23 @@ interface ApiServiceKt {
         @Part("message_text") messageText: RequestBody?,
         @Part attachment: MultipartBody.Part?
     ): Response<SendMessagePojo>
+
+    @FormUrlEncoded
+    @POST("services/customerservices")
+    suspend fun getCustomerServiceHistory(
+        @Field("user_id") userId: String,
+        @Field("tab") tab: String,
+        @Field("page") page: Int
+    ): Response<CustomerHistoryPojo>
+
+    @FormUrlEncoded
+    @POST("services/providertasks")
+    suspend fun getPartnerServiceRequests(
+        @Field("user_id") userId: String,
+        @Field("tab") tab: String,
+        @Field("keyword") keyword: String,
+        @Field("page") page: Int
+    ): Response<ProviderHistoryPojo>
 
     @POST("cms/getcmslist")
     suspend fun getInfoList(): Response<InfoPagePojo>

@@ -6,7 +6,9 @@ import com.app.bemyrider.model.CheckStripeConnectedPojo
 import com.app.bemyrider.model.CommonPojo
 import com.app.bemyrider.model.LanguagePojo
 import com.app.bemyrider.model.NewLoginPojo
+import com.app.bemyrider.model.CustomerHistoryPojo
 import com.app.bemyrider.model.InfoPagePojo
+import com.app.bemyrider.model.ProviderHistoryPojo
 import com.app.bemyrider.model.MessageDetailPojo
 import com.app.bemyrider.model.MessageListPojo
 import com.app.bemyrider.model.SendMessagePojo
@@ -276,6 +278,12 @@ class AppRepository {
         return apiService.sendMessage(toBody(userId), toBody(toUserId), toBody(serviceId),
             toBody(masterServiceId), textPart, filePart)
     }
+
+    suspend fun getCustomerServiceHistory(userId: String, tab: String, page: Int): Response<CustomerHistoryPojo> =
+        apiService.getCustomerServiceHistory(userId, tab, page)
+
+    suspend fun getPartnerServiceRequests(userId: String, tab: String, keyword: String, page: Int): Response<ProviderHistoryPojo> =
+        apiService.getPartnerServiceRequests(userId, tab, keyword, page)
 
     suspend fun getInfoList(): Response<InfoPagePojo> {
         return apiService.getInfoList()
