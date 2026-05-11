@@ -31,9 +31,10 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.app.bemyrider.Adapter.User.DrawerItemCustomAdapter;
 import com.app.bemyrider.Adapter.User.SelectCategoryAdapter;
 import com.app.bemyrider.AsyncTask.ConnectionCheck;
-import com.app.bemyrider.AsyncTask.WebServiceCall;
 import com.app.bemyrider.R;
-import com.app.bemyrider.WebServices.WebServiceUrl;
+import com.app.bemyrider.viewmodel.MainActivityViewModel;
+
+import androidx.lifecycle.ViewModelProvider;
 import com.app.bemyrider.activity.AccountSettingActivity;
 import com.app.bemyrider.activity.ContactUsActivity;
 import com.app.bemyrider.activity.FeedbackActivity;
@@ -48,7 +49,6 @@ import com.app.bemyrider.activity.user.ServiceHistoryActivity;
 import com.app.bemyrider.activity.user.UserProfileActivity;
 import com.app.bemyrider.activity.user.WalletActivity;
 import com.app.bemyrider.databinding.ActivityMainBinding;
-import com.app.bemyrider.model.CommonPojo;
 import com.app.bemyrider.model.MessageEvent;
 import com.app.bemyrider.model.ModelForDrawer;
 import com.app.bemyrider.model.user.CategoryDataItem;
@@ -64,7 +64,6 @@ import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -78,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
     private int selectedPos = 0;
     private ArrayList<CategoryDataItem> categoryDataItems = new ArrayList<>();
     private SelectCategoryAdapter categoryAdapter;
-    private WebServiceCall userLogoutAsync, categoryListAsync;
+    private MainActivityViewModel viewModel;
     private Context context;
     private Activity activity;
     private ConnectionManager connectionManager;
@@ -122,6 +121,8 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
+        viewModel = new ViewModelProvider(this).get(MainActivityViewModel.class);
+        observeViewModel();
         getCategory();
     }
 
@@ -300,84 +301,51 @@ public class MainActivity extends AppCompatActivity {
             mDrawerToggle.syncState();
     }
 
-    private void getCategory() {
-        binding.rvCategories.setVisibility(View.GONE);
-        binding.progress.setVisibility(View.VISIBLE);
+    private void observeViewModel() {
+        viewModel.getCategories().observe(this, pojo -> {
+            binding.progress.setVisibility(View.GONE);
+            binding.rvCategories.setVisibility(View.VISIBLE);
+            if (pojo != null && pojo.getData() != null) {
+                categoryDataItems.clear();
+                categoryDataItems.addAll(pojo.getData());
+                categoryAdapter.notifyDataSetChanged();
+            }
+        });
 
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-        textParams.put("provider_id", providerId);
+        viewModel.getLogoutResult().observe(this, result -> {
+            File offlineFile = new File(getFilesDir().getPath(), "/offline.json");
+            if (offlineFile.exists()) offlineFile.delete();
+            SecurePrefsUtil.with(this).clearPrefs();
+            PrefsUtil.with(this).clearPrefs();
+            Intent intent = new Intent(this, LoginActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            finish();
+        });
 
-        new WebServiceCall(this, WebServiceUrl.URL_CATEGORYLIST, textParams,
-                CategoryListPOJO.class, false, new WebServiceCall.OnResultListener() {
-            @Override
-            public void onResult(boolean status, Object obj) {
+        viewModel.getError().observe(this, errorMsg -> {
+            if (errorMsg != null) {
                 binding.progress.setVisibility(View.GONE);
                 binding.rvCategories.setVisibility(View.VISIBLE);
-                if (status) {
-                    CategoryListPOJO listPojo = (CategoryListPOJO) obj;
-                    categoryDataItems.clear();
-                    categoryDataItems.addAll(listPojo.getData());
-                    categoryAdapter.notifyDataSetChanged();
-                } else {
-                    Toast.makeText(context, obj.toString(), Toast.LENGTH_SHORT).show();
-                }
+                Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show();
             }
-            @Override public void onAsync(Object obj) { categoryListAsync = null; }
-            @Override public void onCancelled() { categoryListAsync = null; }
         });
     }
 
+    private void getCategory() {
+        binding.rvCategories.setVisibility(View.GONE);
+        binding.progress.setVisibility(View.VISIBLE);
+        viewModel.loadCategories(providerId);
+    }
+
     private void serviceCallLogout() {
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-
-        SecurePrefsUtil securePrefs = SecurePrefsUtil.with(MainActivity.this);
-        PrefsUtil prefsUtil = PrefsUtil.with(MainActivity.this);
-        
+        SecurePrefsUtil securePrefs = SecurePrefsUtil.with(this);
+        PrefsUtil prefsUtil = PrefsUtil.with(this);
         String userId = securePrefs.readString("UserId");
-        if (userId == null || userId.isEmpty()) {
-            userId = prefsUtil.readString("UserId");
-        }
-        
+        if (userId == null || userId.isEmpty()) userId = prefsUtil.readString("UserId");
         String deviceToken = securePrefs.readString("device_token");
-        if (deviceToken == null || deviceToken.isEmpty()) {
-            deviceToken = prefsUtil.readString("device_token");
-        }
-        
-        textParams.put("user_id", userId != null ? userId : "");
-        textParams.put("device_token", deviceToken != null ? deviceToken : "");
-
-
-        new WebServiceCall(MainActivity.this, WebServiceUrl.URL_LOGOUT, textParams,
-                CommonPojo.class, true, new WebServiceCall.OnResultListener() {
-            @Override
-            public void onResult(boolean status, Object obj) {
-                File offlineFile = new File(getFilesDir().getPath(), "/offline.json");
-                if (offlineFile.exists()) {
-                    Log.e(TAG, "Delete Offline File :: ");
-                    offlineFile.delete();
-                }
-                
-                SecurePrefsUtil.with(MainActivity.this).clearPrefs();
-                PrefsUtil.with(MainActivity.this).clearPrefs();
-                
-                Intent intent = new Intent(MainActivity.this, LoginActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                startActivity(intent);
-                finish();
-                
-                if (!status) {
-                    Toast.makeText(MainActivity.this, getString(R.string.logout), Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onAsync(Object obj) { userLogoutAsync = null; }
-
-            @Override
-            public void onCancelled() {
-                userLogoutAsync = null;
-            }
-        });
+        if (deviceToken == null || deviceToken.isEmpty()) deviceToken = prefsUtil.readString("device_token");
+        viewModel.logout(userId != null ? userId : "", deviceToken != null ? deviceToken : "");
     }
 
     @Override
@@ -400,8 +368,6 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        Utils.cancelAsyncTask(userLogoutAsync);
-        Utils.cancelAsyncTask(categoryListAsync);
         unregisterReceiver(mMessageReceiver);
         super.onDestroy();
     }

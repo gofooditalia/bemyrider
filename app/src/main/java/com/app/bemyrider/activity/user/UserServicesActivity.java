@@ -21,13 +21,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.app.bemyrider.activity.partner.AddNewService_Activity;
 import com.app.bemyrider.Adapter.User.ProviderServicesAdapter;
 import com.app.bemyrider.AsyncTask.ConnectionCheck;
-import com.app.bemyrider.AsyncTask.WebServiceCall;
 import com.app.bemyrider.R;
-import com.app.bemyrider.WebServices.WebServiceUrl;
+import com.app.bemyrider.viewmodel.PartnerMyServicesViewModel;
+
+import androidx.lifecycle.ViewModelProvider;
 import com.app.bemyrider.databinding.PartnerActivityMyServicesBinding;
 import com.app.bemyrider.model.MessageEvent;
 import com.app.bemyrider.model.partner.MyServiceListItem;
-import com.app.bemyrider.model.partner.MyServiceListPojo;
 import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.LocaleManager;
 import com.app.bemyrider.utils.Log;
@@ -46,7 +46,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -66,7 +65,8 @@ public class UserServicesActivity extends AppCompatActivity {
     private LinearLayoutManager layoutManager;
     private String providerId = "";
     private String keyWord = "";
-    private WebServiceCall serviceListAsync;
+    private PartnerMyServicesViewModel viewModel;
+    private boolean pendingClear = false;
     private ConnectionManager connectionManager;
     
     // Flag per evitare loop di navigazione sugli auto-redirects
@@ -109,6 +109,8 @@ public class UserServicesActivity extends AppCompatActivity {
 
         initView();
 
+        viewModel = new ViewModelProvider(this).get(PartnerMyServicesViewModel.class);
+        observeViewModel();
         serviceCall(true);
 
         binding.imgSearch.setOnClickListener(v -> {
@@ -138,88 +140,56 @@ public class UserServicesActivity extends AppCompatActivity {
         });
     }
 
-    private void serviceCall(boolean isClear) {
+    private void observeViewModel() {
+        viewModel.getServices().observe(this, pojo -> {
+            if (binding.swipeRefresh.isRefreshing()) binding.swipeRefresh.setRefreshing(false);
+            binding.progress.setVisibility(View.GONE);
+            if (pojo != null && pojo.getData() != null) {
+                if (pendingClear) { arrayList.clear(); pendingClear = false; }
+                arrayList.addAll(pojo.getData().getServiceList());
+                adapter.notifyDataSetChanged();
 
-        if (isClear) {
-            page = 1;
-            binding.layoutNoservice.setVisibility(View.GONE);
-            binding.rvMyservice.scrollToPosition(0);
-        }
-        if (!binding.swipeRefresh.isRefreshing()) {
-            binding.progress.setVisibility(View.VISIBLE);
-        }
-
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-
-        textParams.put("user_id", providerId);
-        textParams.put("keyword", Utils.encodeEmoji(keyWord));
-        textParams.put("page", String.valueOf(page));
-
-        new WebServiceCall(mContext, WebServiceUrl.URL_MYSERVICE, textParams,
-                MyServiceListPojo.class, false, new WebServiceCall.OnResultListener() {
-            @Override
-            public void onResult(boolean status, Object obj) {
-                if (binding.swipeRefresh.isRefreshing()) {
-                    binding.swipeRefresh.setRefreshing(false);
-                }
-                if (status) {
-                    MyServiceListPojo response_myservice = (MyServiceListPojo) obj;
-                    if (isClear) {
-                        arrayList.clear();
-                    }
-                    binding.progress.setVisibility(View.GONE);
-                    binding.rvMyservice.setVisibility(View.VISIBLE);
-
-                    arrayList.addAll(response_myservice.getData().getServiceList());
-                    adapter.notifyDataSetChanged();
-
-                    // --- LOGICA AUTO-REDIRECT PER DEEP LINK ---
-                    if (isFromDeepLink && arrayList.size() == 1) {
-                        isFromDeepLink = false; // Reset immediato del flag per evitare loop
-                        MyServiceListItem item = arrayList.get(0);
-                        Intent i = new Intent(mContext, ServiceDetailActivity.class);
-                        i.putExtra(Utils.PROVIDER_SERVICE_ID, item.getProviderServiceId());
-                        i.putExtra(Utils.PROVIDER_ID, item.getUserId());
-                        i.putExtra("providerImage", getIntent().getStringExtra("providerImage"));
-                        startActivity(i);
-                        finish();
-                        return;
-                    }
-                    // ------------------------------------------
-
-                    if (!(arrayList.size() > 0)) {
-                        binding.layoutNoservice.setVisibility(View.VISIBLE);
-                        binding.rvMyservice.setVisibility(View.GONE);
-                    } else {
-                        binding.layoutNoservice.setVisibility(View.GONE);
-                        binding.rvMyservice.setVisibility(View.VISIBLE);
-                    }
-                    binding.rvMyservice.addOnScrollListener(listner);
-                    loading = true;
-                    try {
-                        total_records = response_myservice.getData().getPagination().getTotalRecords();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                } else {
-                    binding.progress.setVisibility(View.GONE);
-                    Toast.makeText(mContext, obj.toString(), Toast.LENGTH_SHORT).show();
+                if (isFromDeepLink && arrayList.size() == 1) {
+                    isFromDeepLink = false;
+                    MyServiceListItem item = arrayList.get(0);
+                    Intent i = new Intent(mContext, ServiceDetailActivity.class);
+                    i.putExtra(Utils.PROVIDER_SERVICE_ID, item.getProviderServiceId());
+                    i.putExtra(Utils.PROVIDER_ID, item.getUserId());
+                    i.putExtra("providerImage", getIntent().getStringExtra("providerImage"));
+                    startActivity(i);
+                    finish();
+                    return;
                 }
 
-            }
-
-            @Override
-            public void onAsync(Object asyncTask) {
-                serviceListAsync = (WebServiceCall) asyncTask;
-            }
-
-            @Override
-            public void onCancelled() {
-                serviceListAsync = null;
+                boolean hasItems = !arrayList.isEmpty();
+                binding.layoutNoservice.setVisibility(hasItems ? View.GONE : View.VISIBLE);
+                binding.rvMyservice.setVisibility(hasItems ? View.VISIBLE : View.GONE);
+                binding.rvMyservice.addOnScrollListener(listner);
+                loading = true;
+                try { total_records = pojo.getData().getPagination().getTotalRecords(); } catch (Exception ignored) {}
             }
         });
-
+        viewModel.getError().observe(this, errorMsg -> {
+            if (errorMsg != null) {
+                if (binding.swipeRefresh.isRefreshing()) binding.swipeRefresh.setRefreshing(false);
+                binding.progress.setVisibility(View.GONE);
+                Toast.makeText(mContext, errorMsg, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
+
+    private void serviceCall(boolean isClear) {
+        if (isClear) { page = 1; binding.layoutNoservice.setVisibility(View.GONE); binding.rvMyservice.scrollToPosition(0); }
+        pendingClear = isClear;
+        if (!binding.swipeRefresh.isRefreshing()) binding.progress.setVisibility(View.VISIBLE);
+
+        java.util.LinkedHashMap<String, String> params = new java.util.LinkedHashMap<>();
+        params.put("user_id", providerId);
+        params.put("keyword", Utils.encodeEmoji(keyWord));
+        params.put("page", String.valueOf(page));
+        viewModel.loadMyServices(params);
+    }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -390,7 +360,6 @@ public class UserServicesActivity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        Utils.cancelAsyncTask(serviceListAsync);
         super.onDestroy();
     }
 

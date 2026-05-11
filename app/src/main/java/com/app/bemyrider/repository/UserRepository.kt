@@ -7,6 +7,8 @@ import com.app.bemyrider.model.CommonPojo
 import com.app.bemyrider.model.LanguagePojo
 import com.app.bemyrider.model.NewLoginPojo
 import com.app.bemyrider.model.CustomerHistoryPojo
+import com.app.bemyrider.model.VersionDataPOJO
+import com.app.bemyrider.model.user.PopularTaskerPOJO
 import com.app.bemyrider.model.DepositHistoryPojo
 import com.app.bemyrider.model.FinancialInfoPojo
 import com.app.bemyrider.model.PaymentHistoryPojo
@@ -335,6 +337,11 @@ class AppRepository {
             else -> apiService.getSmallDelivery(action, sort, rating, location, lat, lng, keyword, page)
         }
     }
+
+    suspend fun getSiteSettings(): Response<VersionDataPOJO> = apiService.getSiteSettings()
+
+    suspend fun getPopularTaskers(subcategoryId: String, latitude: String, longitude: String, userId: String): Response<PopularTaskerPOJO> =
+        apiService.getPopularTaskers(subcategoryId, latitude, longitude, userId)
 
     suspend fun getWalletDetails(userId: String): Response<WalletDetailsPojo> = apiService.getWalletDetails(userId)
     suspend fun getDepositHistory(userId: String): Response<DepositHistoryPojo> = apiService.getDepositHistory(userId)

@@ -23,12 +23,12 @@ import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.app.bemyrider.Adapter.User.PopularTaskersAdapter;
-import com.app.bemyrider.AsyncTask.WebServiceCall;
 import com.app.bemyrider.R;
-import com.app.bemyrider.WebServices.WebServiceUrl;
+import com.app.bemyrider.viewmodel.TaskersListViewModel;
+
+import androidx.lifecycle.ViewModelProvider;
 import com.app.bemyrider.databinding.FragmentTaskerListBinding;
 import com.app.bemyrider.model.user.PopularTaskerItem;
-import com.app.bemyrider.model.user.PopularTaskerPOJO;
 import com.app.bemyrider.utils.Log;
 import com.app.bemyrider.utils.PermissionManager;
 import com.app.bemyrider.utils.PrefsUtil;
@@ -50,7 +50,6 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 
 public class TaskersListFragment extends Fragment {
 
@@ -59,7 +58,7 @@ public class TaskersListFragment extends Fragment {
     private ArrayList<PopularTaskerItem> arrayList;
     private LinearLayoutManager layoutManager;
     private String categoryId = "";
-    private WebServiceCall taskerListAsync;
+    private TaskersListViewModel viewModel;
     private Context context;
     private PermissionManager permissionManager;
     private FusedLocationProviderClient client;
@@ -74,6 +73,8 @@ public class TaskersListFragment extends Fragment {
             categoryId = getArguments().getString(Utils.CATEGORY_ID);
         }
         init();
+        viewModel = new ViewModelProvider(this).get(TaskersListViewModel.class);
+        observeViewModel();
         return binding.getRoot();
     }
 
@@ -150,45 +151,39 @@ public class TaskersListFragment extends Fragment {
         }
     }
 
+    private void observeViewModel() {
+        viewModel.getTaskers().observe(getViewLifecycleOwner(), pojo -> {
+            binding.progress.setVisibility(View.GONE);
+            binding.rvTaskers.setVisibility(View.VISIBLE);
+            if (pojo != null && pojo.getData() != null) {
+                arrayList.clear();
+                arrayList.addAll(pojo.getData());
+                providerAdapter.notifyDataSetChanged();
+                if (arrayList.isEmpty()) {
+                    binding.rvTaskers.setVisibility(View.GONE);
+                    binding.txtNoRecord.setVisibility(View.VISIBLE);
+                }
+            }
+        });
+        viewModel.getError().observe(getViewLifecycleOwner(), errorMsg -> {
+            if (errorMsg != null) {
+                binding.progress.setVisibility(View.GONE);
+                binding.rvTaskers.setVisibility(View.VISIBLE);
+                Toast.makeText(getActivity(), errorMsg, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
     private void getTaskers() {
         binding.txtNoRecord.setVisibility(View.GONE);
         binding.rvTaskers.setVisibility(View.GONE);
         binding.progress.setVisibility(View.VISIBLE);
-
-        String url = WebServiceUrl.URL_POPULARTASKERS;
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-        textParams.put("subcategory_id", categoryId);
-        textParams.put("latitude", String.valueOf(curLat));
-        textParams.put("longitude", String.valueOf(curLng));
-        textParams.put("user_id", PrefsUtil.with(context).readString("UserId"));
-
-        new WebServiceCall(getActivity(), url, textParams, PopularTaskerPOJO.class, false,
-                new WebServiceCall.OnResultListener() {
-                    @Override
-                    public void onResult(boolean status, Object obj) {
-                        binding.progress.setVisibility(View.GONE);
-                        binding.rvTaskers.setVisibility(View.VISIBLE);
-                        if (status) {
-                            PopularTaskerPOJO pojo = (PopularTaskerPOJO) obj;
-                            arrayList.clear();
-                            arrayList.addAll(pojo.getData());
-                            providerAdapter.notifyDataSetChanged();
-                            if (arrayList.isEmpty()) {
-                                binding.rvTaskers.setVisibility(View.GONE);
-                                binding.txtNoRecord.setVisibility(View.VISIBLE);
-                            }
-                        } else {
-                            Toast.makeText(getActivity(), (String) obj, Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                    @Override public void onAsync(Object obj) { taskerListAsync = null; }
-                    @Override public void onCancelled() { taskerListAsync = null; }
-                });
+        viewModel.loadPopularTaskers(categoryId, String.valueOf(curLat), String.valueOf(curLng),
+                PrefsUtil.with(context).readString("UserId"));
     }
 
     @Override
     public void onDestroy() {
-        Utils.cancelAsyncTask(taskerListAsync);
         if (context != null) {
             try {
                 context.unregisterReceiver(gpsCheck);

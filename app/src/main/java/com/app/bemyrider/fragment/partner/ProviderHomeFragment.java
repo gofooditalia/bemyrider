@@ -20,11 +20,11 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
-import com.app.bemyrider.AsyncTask.WebServiceCall;
 import com.app.bemyrider.R;
-import com.app.bemyrider.WebServices.WebServiceUrl;
+import com.app.bemyrider.viewmodel.BulkInvoiceViewModel;
+
+import androidx.lifecycle.ViewModelProvider;
 import com.app.bemyrider.databinding.FragmentProviderHomeBinding;
-import com.app.bemyrider.model.BulkInvoicePojo;
 import com.app.bemyrider.model.EventBusMessage;
 import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.PrefsUtil;
@@ -37,7 +37,6 @@ import org.greenrobot.eventbus.ThreadMode;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 
@@ -53,7 +52,7 @@ public class ProviderHomeFragment extends Fragment {
                     R.string.past
             };
     private ConnectionManager connectionManager;
-
+    private BulkInvoiceViewModel bulkViewModel;
 
     @Nullable
     @Override
@@ -68,6 +67,15 @@ public class ProviderHomeFragment extends Fragment {
         }
 
         init();
+
+        bulkViewModel = new ViewModelProvider(this).get(BulkInvoiceViewModel.class);
+        bulkViewModel.getResult().observe(getViewLifecycleOwner(), pojo -> {
+            if (pojo != null && pojo.getData() != null)
+                startZipDownload(pojo.getData().getFileName(), pojo.getData().getCount());
+        });
+        bulkViewModel.getError().observe(getViewLifecycleOwner(), errorMsg -> {
+            if (errorMsg != null) Toast.makeText(context, errorMsg, Toast.LENGTH_LONG).show();
+        });
 
         /*Init Internet Connection Class For No Internet Banner*/
         connectionManager = new ConnectionManager(context);
@@ -131,27 +139,10 @@ public class ProviderHomeFragment extends Fragment {
     }
 
     private void callBulkInvoiceApi(String period, String dateFrom, String dateTo) {
-        LinkedHashMap<String, String> params = new LinkedHashMap<>();
-        params.put("user_id", PrefsUtil.with(context).readString("UserId"));
-        params.put("user_type", PrefsUtil.with(context).readString("UserType"));
-        params.put("period", period);
-        if (dateFrom != null) params.put("date_from", dateFrom);
-        if (dateTo != null) params.put("date_to", dateTo);
-
-        new WebServiceCall(activity, WebServiceUrl.URL_BULK_INVOICES, params,
-                BulkInvoicePojo.class, false, new WebServiceCall.OnResultListener() {
-            @Override
-            public void onResult(boolean status, Object obj) {
-                if (status) {
-                    BulkInvoicePojo pojo = (BulkInvoicePojo) obj;
-                    startZipDownload(pojo.getData().getFileName(), pojo.getData().getCount());
-                } else {
-                    Toast.makeText(context, obj.toString(), Toast.LENGTH_LONG).show();
-                }
-            }
-            @Override public void onAsync(Object obj) {}
-            @Override public void onCancelled() {}
-        });
+        bulkViewModel.downloadBulk(
+            PrefsUtil.with(context).readString("UserId"),
+            PrefsUtil.with(context).readString("UserType"),
+            period, dateFrom, dateTo);
     }
 
     private void startZipDownload(String url, int count) {

@@ -14,12 +14,14 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.app.bemyrider.AsyncTask.WebServiceCall;
 import com.app.bemyrider.R;
-import com.app.bemyrider.WebServices.WebServiceUrl;
+import com.app.bemyrider.viewmodel.SplashViewModel;
+
+import androidx.lifecycle.ViewModelProvider;
 import com.app.bemyrider.activity.partner.ProviderHomeActivity;
 import com.app.bemyrider.activity.user.CustomerHomeActivity;
 import com.app.bemyrider.model.VersionDataPOJO;
+import com.app.bemyrider.viewmodel.SplashViewModel;
 import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.LocaleManager;
 import com.app.bemyrider.utils.PrefsUtil;
@@ -28,7 +30,6 @@ import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.io.File;
 import java.io.FileWriter;
-import java.util.LinkedHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -45,6 +46,7 @@ public class SplashScreenActivity extends AppCompatActivity {
     private SecurePrefsUtil securePrefs;
     private ExecutorService diskExecutor = Executors.newSingleThreadExecutor();
     
+    private SplashViewModel viewModel;
     private boolean isUpdateRequired = false;
     private boolean isVersionChecked = false;
     private Handler mainHandler = new Handler(Looper.getMainLooper());
@@ -70,6 +72,12 @@ public class SplashScreenActivity extends AppCompatActivity {
         if (lanId == null || lanId.isEmpty()) {
             securePrefs.write("lanId", "4"); // Default to Italian
         }
+
+        viewModel = new ViewModelProvider(this).get(SplashViewModel.class);
+        viewModel.getSiteSettings().observe(this, this::handleVersionCheck);
+        viewModel.getOfflineData().observe(this, data -> {
+            if (data != null) saveOfflineDataToFile(data);
+        });
 
         // ==========================================================
         // Avvia i task in background
@@ -170,85 +178,56 @@ public class SplashScreenActivity extends AppCompatActivity {
     }
 
     private void checkVersionAndNavigate() {
-        Context appContext = getApplicationContext();
-        new WebServiceCall(appContext, WebServiceUrl.URL_GETSITESETTINGDATA,
-                new LinkedHashMap<>(), VersionDataPOJO.class, false, new WebServiceCall.OnResultListener() {
-            @Override
-            public void onResult(boolean status, Object obj) {
-                if (isDestroyed()) return;
-                
-                isVersionChecked = true;
-                mainHandler.removeCallbacks(fallbackNavigationTask);
+        viewModel.loadSiteSettings();
+    }
 
-                if (status) {
-                    try {
-                        VersionDataPOJO versionDataPOJO = (VersionDataPOJO) obj;
-                        if (versionDataPOJO.isStatus() && "y".equalsIgnoreCase(versionDataPOJO.getVersionData().getForcedUpdate())) {
-                            int versionCode = getPackageManager().getPackageInfo(getPackageName(), 0).versionCode;
-                            int newVersion = Integer.parseInt(versionDataPOJO.getVersionData().getAppVersion());
-                            
-                            if (versionCode < newVersion) {
-                                isUpdateRequired = true;
-                                Log.d(TAG, "⚠️ Forced update needed. Launching Play Store.");
-                                Toast.makeText(appContext, "Aggiornamento app richiesto. Reindirizzamento in corso...", Toast.LENGTH_LONG).show();
-                                
-                                final String appPackageName = getPackageName();
-                                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + appPackageName));
-                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                                try {
-                                    startActivity(intent);
-                                } catch (android.content.ActivityNotFoundException anfe) {
-                                    Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + appPackageName));
-                                    webIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                                    startActivity(webIntent);
-                                }
-                                finish();
-                                return;
-                            }
+    private void handleVersionCheck(VersionDataPOJO versionDataPOJO) {
+        if (isDestroyed()) return;
+        isVersionChecked = true;
+        mainHandler.removeCallbacks(fallbackNavigationTask);
+        if (versionDataPOJO != null) {
+            try {
+                if (versionDataPOJO.isStatus() && "y".equalsIgnoreCase(versionDataPOJO.getVersionData().getForcedUpdate())) {
+                    int versionCode = getPackageManager().getPackageInfo(getPackageName(), 0).versionCode;
+                    int newVersion = Integer.parseInt(versionDataPOJO.getVersionData().getAppVersion());
+                    if (versionCode < newVersion) {
+                        isUpdateRequired = true;
+                        Toast.makeText(this, "Aggiornamento app richiesto. Reindirizzamento in corso...", Toast.LENGTH_LONG).show();
+                        final String pkg = getPackageName();
+                        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + pkg));
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        try { startActivity(intent); }
+                        catch (android.content.ActivityNotFoundException anfe) {
+                            Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + pkg));
+                            webIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                            startActivity(webIntent);
                         }
-                    } catch (Exception e) { 
-                        Log.e(TAG, "Error checking version", e);
+                        finish();
+                        return;
                     }
                 }
-                
-                // Nessun update richiesto o API fallita, procedi
-                navigateToNextScreen();
-            }
-            @Override public void onAsync(Object obj) {}
-            @Override public void onCancelled() {}
-        });
+            } catch (Exception e) { Log.e(TAG, "Error checking version", e); }
+        }
+        navigateToNextScreen();
     }
 
     private void saveOfflineDataInBackground() {
         String userId = securePrefs.readString("UserId");
         if (userId == null || userId.isEmpty() || userId.equals("0")) return;
+        viewModel.loadOfflineData(userId);
+    }
 
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-        textParams.put("user_id", userId);
-        
-        Context appContext = getApplicationContext();
-        new WebServiceCall(appContext, WebServiceUrl.URL_GETOFFLINEDATA,
-                textParams, String.class, false, new WebServiceCall.OnResultListener() {
-            @Override
-            public void onResult(boolean status, Object obj) {
-                if (status) {
-                    diskExecutor.execute(() -> {
-                        try {
-                            File offlineFile = new File(appContext.getFilesDir().getPath(), "/offline.json");
-                            if (!offlineFile.exists()) offlineFile.createNewFile();
-                            FileWriter file = new FileWriter(offlineFile);
-                            file.write((String) obj);
-                            file.flush();
-                            file.close();
-                            Log.d(TAG, "✅ Offline data saved in background");
-                        } catch (Exception e) { 
-                            Log.e(TAG, "Error saving offline data", e);
-                        }
-                    });
-                }
-            }
-            @Override public void onAsync(Object obj) {}
-            @Override public void onCancelled() {}
+    private void saveOfflineDataToFile(String data) {
+        diskExecutor.execute(() -> {
+            try {
+                File offlineFile = new File(getFilesDir().getPath(), "/offline.json");
+                if (!offlineFile.exists()) offlineFile.createNewFile();
+                FileWriter fw = new FileWriter(offlineFile);
+                fw.write(data);
+                fw.flush();
+                fw.close();
+                Log.d(TAG, "✅ Offline data saved in background");
+            } catch (Exception e) { Log.e(TAG, "Error saving offline data", e); }
         });
     }
 

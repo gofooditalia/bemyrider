@@ -1,6 +1,8 @@
 package com.app.bemyrider.network
 
 import com.app.bemyrider.model.BulkInvoicePojo
+import com.app.bemyrider.model.VersionDataPOJO
+import com.app.bemyrider.model.user.PopularTaskerPOJO
 import com.app.bemyrider.model.DepositHistoryPojo
 import com.app.bemyrider.model.FinancialInfoPojo
 import com.app.bemyrider.model.PaymentHistoryPojo
@@ -224,6 +226,18 @@ interface ApiServiceKt {
         @Field("date_from") dateFrom: String? = null,
         @Field("date_to") dateTo: String? = null
     ): Response<BulkInvoicePojo>
+
+    @POST("other/getSiteSettingData/")
+    suspend fun getSiteSettings(): Response<VersionDataPOJO>
+
+    @FormUrlEncoded
+    @POST("services/populartasker")
+    suspend fun getPopularTaskers(
+        @Field("subcategory_id") subcategoryId: String,
+        @Field("latitude") latitude: String,
+        @Field("longitude") longitude: String,
+        @Field("user_id") userId: String
+    ): Response<PopularTaskerPOJO>
 
     @FormUrlEncoded
     @POST("profile/walletdetails/")

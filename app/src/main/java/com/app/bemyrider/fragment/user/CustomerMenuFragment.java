@@ -24,9 +24,10 @@ import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.app.bemyrider.Adapter.MenuItemAdapter;
-import com.app.bemyrider.AsyncTask.WebServiceCall;
 import com.app.bemyrider.R;
-import com.app.bemyrider.WebServices.WebServiceUrl;
+import com.app.bemyrider.viewmodel.CustomerMenuViewModel;
+
+import androidx.lifecycle.ViewModelProvider;
 import com.app.bemyrider.activity.AccountSettingActivity;
 import com.app.bemyrider.activity.ContactUsActivity;
 import com.app.bemyrider.activity.FeedbackActivity;
@@ -39,7 +40,6 @@ import com.app.bemyrider.activity.user.EditProfileActivity;
 import com.app.bemyrider.activity.user.MyJobsActivity;
 import com.app.bemyrider.activity.user.PaymentHistoryActivity;
 import com.app.bemyrider.databinding.FragmentCustomerMenuBinding;
-import com.app.bemyrider.model.CommonPojo;
 import com.app.bemyrider.model.ProfilePojo;
 import com.app.bemyrider.model.ModelForDrawer;
 import com.app.bemyrider.myinterfaces.MenuItemClickListener;
@@ -51,14 +51,13 @@ import coil.Coil;
 import coil.request.ImageRequest;
 
 import java.io.File;
-import java.util.LinkedHashMap;
 
 public class CustomerMenuFragment extends Fragment implements MenuItemClickListener {
 
     FragmentCustomerMenuBinding binding;
     private Context context;
     private AppCompatActivity activity;
-    private WebServiceCall profileDataAsync, userLogoutAsync;
+    private CustomerMenuViewModel viewModel;
     private ConnectionManager connectionManager;
     private ModelForDrawer[] drawerItem;
 
@@ -71,6 +70,9 @@ public class CustomerMenuFragment extends Fragment implements MenuItemClickListe
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_customer_menu, container, false);
 
         initView();
+
+        viewModel = new ViewModelProvider(this).get(CustomerMenuViewModel.class);
+        observeViewModel();
 
         return binding.getRoot();
     }
@@ -153,44 +155,42 @@ public class CustomerMenuFragment extends Fragment implements MenuItemClickListe
         binding.recCustMenu.setAdapter(adapter);
     }
 
-    protected void getProfileData() {
-        binding.pgEdit.setVisibility(View.VISIBLE);
-
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-
-        textParams.put("profile_id", PrefsUtil.with(activity).readString("UserId"));
-
-        new WebServiceCall(context, WebServiceUrl.URL_PROFILE, textParams, ProfilePojo.class,
-                false, new WebServiceCall.OnResultListener() {
-            @Override
-            public void onResult(boolean status, Object obj) {
-                binding.pgEdit.setVisibility(View.GONE);
-                if (status) {
-                    EditProfileActivity.profileData = ((ProfilePojo) obj).getData();
-                    if (EditProfileActivity.profileData != null) {
-                        Intent i = new Intent(activity, EditProfileActivity.class);
-                        i.putExtra("Edit", "true");
-                        i.putExtra("isFromEdit", true);
-                        myActivityResultLauncher.launch(i);
-                    } else {
-                        Toast.makeText(context, R.string.can_not_edit_now, Toast.LENGTH_LONG).show();
-                    }
-                } else {
-                    Toast.makeText(context, (String) obj,
-                            Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onAsync(Object asyncTask) {
-                profileDataAsync = null;
-            }
-
-            @Override
-            public void onCancelled() {
-                profileDataAsync = null;
+    private void observeViewModel() {
+        viewModel.getProfile().observe(getViewLifecycleOwner(), pojo -> {
+            binding.pgEdit.setVisibility(View.GONE);
+            if (pojo != null && pojo.getData() != null) {
+                EditProfileActivity.profileData = pojo.getData();
+                Intent i = new Intent(activity, EditProfileActivity.class);
+                i.putExtra("Edit", "true");
+                i.putExtra("isFromEdit", true);
+                myActivityResultLauncher.launch(i);
+            } else {
+                Toast.makeText(context, R.string.can_not_edit_now, Toast.LENGTH_LONG).show();
             }
         });
+
+        viewModel.getLogoutResult().observe(getViewLifecycleOwner(), result -> {
+            File offlineFile = new File(activity.getFilesDir().getPath(), "/offline.json");
+            if (offlineFile.exists()) offlineFile.delete();
+            SecurePrefsUtil.with(activity).clearPrefs();
+            PrefsUtil.with(activity).clearPrefs();
+            Intent intent = new Intent(activity, LoginActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            activity.finish();
+        });
+
+        viewModel.getError().observe(getViewLifecycleOwner(), errorMsg -> {
+            if (errorMsg != null) {
+                binding.pgEdit.setVisibility(View.GONE);
+                Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    protected void getProfileData() {
+        binding.pgEdit.setVisibility(View.VISIBLE);
+        viewModel.loadProfile(PrefsUtil.with(activity).readString("UserId"));
     }
 
     @Override
@@ -200,8 +200,6 @@ public class CustomerMenuFragment extends Fragment implements MenuItemClickListe
         } catch (Exception e) {
             e.printStackTrace();
         }
-        Utils.cancelAsyncTask(profileDataAsync);
-        Utils.cancelAsyncTask(userLogoutAsync);
         super.onDestroy();
     }
 
@@ -244,56 +242,10 @@ public class CustomerMenuFragment extends Fragment implements MenuItemClickListe
     }
 
     private void serviceCallLogout() {
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-
         SecurePrefsUtil securePrefs = SecurePrefsUtil.with(activity);
         PrefsUtil prefsUtil = PrefsUtil.with(activity);
-        
         String userId = securePrefs.readString("UserId");
-        if (userId == null || userId.isEmpty()) {
-            userId = prefsUtil.readString("UserId");
-        }
-        
-        String deviceToken = securePrefs.readString("device_token");
-        if (deviceToken == null || deviceToken.isEmpty()) {
-            deviceToken = prefsUtil.readString("device_token");
-        }
-        
-        textParams.put("user_id", userId != null ? userId : "");
-        textParams.put("device_token", deviceToken != null ? deviceToken : "");
-
-
-        new WebServiceCall(context, WebServiceUrl.URL_LOGOUT, textParams,
-                CommonPojo.class, true, new WebServiceCall.OnResultListener() {
-            @Override
-            public void onResult(boolean status, Object obj) {
-                File offlineFile = new File(activity.getFilesDir().getPath(), "/offline.json");
-                if (offlineFile.exists()) {
-                    offlineFile.delete();
-                }
-                
-                SecurePrefsUtil.with(activity).clearPrefs();
-                PrefsUtil.with(activity).clearPrefs();
-                
-                Intent intent = new Intent(activity, LoginActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                startActivity(intent);
-                activity.finish();
-                
-                if (!status) {
-                    Toast.makeText(context, getString(R.string.logout), Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onAsync(Object asyncTask) {
-                userLogoutAsync = null;
-            }
-
-            @Override
-            public void onCancelled() {
-                userLogoutAsync = null;
-            }
-        });
+        if (userId == null || userId.isEmpty()) userId = prefsUtil.readString("UserId");
+        viewModel.logout(userId != null ? userId : "");
     }
 }
