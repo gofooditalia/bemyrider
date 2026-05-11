@@ -22,16 +22,15 @@ import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
-import com.app.bemyrider.AsyncTask.WebServiceCall;
 import com.app.bemyrider.R;
-import com.app.bemyrider.WebServices.WebServiceUrl;
 import com.app.bemyrider.activity.user.UserProfileActivity;
 import com.app.bemyrider.databinding.PartnerActivityServiceRequestDetailBinding;
 import com.app.bemyrider.fragment.partner.Fragment_ServiceRequest_ReviewDetail;
 import com.app.bemyrider.fragment.partner.Fragment_ServiceRequest_ServiceDetail;
-import com.app.bemyrider.model.DownloadInvoicePojo;
 import com.app.bemyrider.model.ProviderHistoryPojoItem;
-import com.app.bemyrider.model.ProviderServiceRequestPojo;
+import com.app.bemyrider.viewmodel.PartnerServiceRequestDetailViewModel;
+
+import androidx.lifecycle.ViewModelProvider;
 import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.LocaleManager;
 import com.app.bemyrider.utils.PrefsUtil;
@@ -40,6 +39,7 @@ import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Objects;
 
 import coil.Coil;
@@ -55,7 +55,7 @@ public class Partner_ServiceRequestDetail_Tablayout_Activity extends AppCompatAc
             R.drawable.tabicon_servicedetail_style,
             R.drawable.tabicon_costsummary_style
     };
-    private WebServiceCall downloadInvoiceAsync, serviceDetailAsync;
+    private PartnerServiceRequestDetailViewModel viewModel;
     private ConnectionManager connectionManager;
     private String serviceRequestId = "";
 
@@ -65,6 +65,9 @@ public class Partner_ServiceRequestDetail_Tablayout_Activity extends AppCompatAc
         binding = DataBindingUtil.setContentView(this, R.layout.partner_activity_service_request_detail);
 
         initView();
+
+        viewModel = new ViewModelProvider(this).get(PartnerServiceRequestDetailViewModel.class);
+        observeViewModel();
         serviceCallGetDetail();
 
         View.OnClickListener profileClickListener = v -> {
@@ -88,82 +91,72 @@ public class Partner_ServiceRequestDetail_Tablayout_Activity extends AppCompatAc
         });
     }
 
+    private void observeViewModel() {
+        viewModel.getDetail().observe(this, pojo -> {
+            binding.progress.setVisibility(View.GONE);
+            binding.rlMain.setVisibility(View.VISIBLE);
+            if (pojo != null && pojo.getData() != null) {
+                serviceDetailData = pojo.getData();
+                if (getSupportActionBar() != null) {
+                    getSupportActionBar().setTitle(HtmlCompat.fromHtml(
+                            "<font color=#FFFFFF>" + pojo.getData().getServiceName(), HtmlCompat.FROM_HTML_MODE_LEGACY));
+                }
+                manageData();
+            }
+        });
+
+        viewModel.getInvoiceResult().observe(this, pojo -> {
+            binding.pgDownloadInvoice.setVisibility(View.GONE);
+            binding.btnDownloadInvoiceCompleted.setClickable(true);
+            if (pojo != null && pojo.getData() != null && pojo.getData().getFileName() != null) {
+                Intent i = new Intent(Intent.ACTION_VIEW);
+                i.setData(Uri.parse(pojo.getData().getFileName()));
+                startActivity(i);
+            } else if (pojo != null) {
+                Toast.makeText(this, getString(R.string.no_record_founf), Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        viewModel.getError().observe(this, errorMsg -> {
+            if (errorMsg != null) {
+                binding.progress.setVisibility(View.GONE);
+                binding.rlMain.setVisibility(View.VISIBLE);
+                binding.pgDownloadInvoice.setVisibility(View.GONE);
+                binding.btnDownloadInvoiceCompleted.setClickable(true);
+                Toast.makeText(this, errorMsg, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
     private void serviceCallDownloadInvoice() {
         binding.btnDownloadInvoiceCompleted.setClickable(false);
         binding.pgDownloadInvoice.setVisibility(View.VISIBLE);
 
-        String url = WebServiceUrl.URL_DOWNLOAD_INVOICE + "/" + serviceRequestId;
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-        textParams.put("user_id", PrefsUtil.with(this).readString("UserId"));
-        textParams.put("user_type", PrefsUtil.with(this).readString("UserType"));
-        textParams.put("request_type", "app");
-        textParams.put("invoice", getString(R.string.invoice));
-        textParams.put("service_start_time", getString(R.string.service_s_time));
-        textParams.put("service_end_time", getString(R.string.service_e_time));
-        textParams.put("booking_id", getString(R.string.booking_id));
-        textParams.put("booking_details", getString(R.string.booking_details));
-        textParams.put("booking_amount", getString(R.string.booking_amount));
-        textParams.put("admin_fees", getString(R.string.admin_feesb));
-        textParams.put("payment_type", getString(R.string.payment_type));
-        textParams.put("total_payable_amount", getString(R.string.total_payable_amount));
-        textParams.put("total_receivable_amount", getString(R.string.total_receivable_amount));
-        textParams.put("wallet", getString(R.string.wallet));
-        textParams.put("cash", getString(R.string.cash));
-        textParams.put("complete", getString(R.string.status_completed));
-        
-        downloadInvoiceAsync = new WebServiceCall(this, url, textParams, DownloadInvoicePojo.class, false, new WebServiceCall.OnResultListener() {
-            @Override
-            public void onResult(boolean status, Object obj) {
-                binding.pgDownloadInvoice.setVisibility(View.GONE);
-                binding.btnDownloadInvoiceCompleted.setClickable(true);
-                if (status) {
-                    DownloadInvoicePojo pojo = (DownloadInvoicePojo) obj;
-                    if(pojo.getData() != null && pojo.getData().getFileName() != null) {
-                        Intent i = new Intent(Intent.ACTION_VIEW);
-                        i.setData(Uri.parse(pojo.getData().getFileName()));
-                        startActivity(i);
-                    } else {
-                        Toast.makeText(Partner_ServiceRequestDetail_Tablayout_Activity.this, getString(R.string.no_record_founf), Toast.LENGTH_SHORT).show();
-                    }
-                } else {
-                    Toast.makeText(Partner_ServiceRequestDetail_Tablayout_Activity.this, Objects.toString(obj, getString(R.string.server_error)), Toast.LENGTH_SHORT).show();
-                }
-            }
-            @Override public void onAsync(Object asyncTask) { downloadInvoiceAsync = null; }
-            @Override public void onCancelled() { downloadInvoiceAsync = null; }
-        });
+        String url = "https://bemyrider.it/download-invoice/" + serviceRequestId;
+        Map<String, String> params = new LinkedHashMap<>();
+        params.put("user_id", PrefsUtil.with(this).readString("UserId"));
+        params.put("user_type", PrefsUtil.with(this).readString("UserType"));
+        params.put("request_type", "app");
+        params.put("invoice", getString(R.string.invoice));
+        params.put("service_start_time", getString(R.string.service_s_time));
+        params.put("service_end_time", getString(R.string.service_e_time));
+        params.put("booking_id", getString(R.string.booking_id));
+        params.put("booking_details", getString(R.string.booking_details));
+        params.put("booking_amount", getString(R.string.booking_amount));
+        params.put("admin_fees", getString(R.string.admin_feesb));
+        params.put("payment_type", getString(R.string.payment_type));
+        params.put("total_payable_amount", getString(R.string.total_payable_amount));
+        params.put("total_receivable_amount", getString(R.string.total_receivable_amount));
+        params.put("wallet", getString(R.string.wallet));
+        params.put("cash", getString(R.string.cash));
+        params.put("complete", getString(R.string.status_completed));
+        viewModel.downloadInvoice(url, params);
     }
 
     private void serviceCallGetDetail() {
         binding.rlMain.setVisibility(View.GONE);
         binding.progress.setVisibility(View.VISIBLE);
-
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-        textParams.put("user_id", PrefsUtil.with(this).readString("UserId"));
-        textParams.put("service_request_id", serviceRequestId);
-
-        serviceDetailAsync = new WebServiceCall(this, WebServiceUrl.URL_SERVICEDETAILS, textParams, ProviderServiceRequestPojo.class, false,
-                new WebServiceCall.OnResultListener() {
-                    @Override
-                    public void onResult(boolean status, Object obj) {
-                        binding.progress.setVisibility(View.GONE);
-                        binding.rlMain.setVisibility(View.VISIBLE);
-                        if (status) {
-                            ProviderServiceRequestPojo result = (ProviderServiceRequestPojo) obj;
-                            if (result.getData() != null) {
-                                serviceDetailData = result.getData();
-                                if (getSupportActionBar() != null) {
-                                    getSupportActionBar().setTitle(HtmlCompat.fromHtml("<font color=#FFFFFF>" + result.getData().getServiceName(), HtmlCompat.FROM_HTML_MODE_LEGACY));
-                                }
-                                manageData();
-                            }
-                        } else {
-                            Toast.makeText(Partner_ServiceRequestDetail_Tablayout_Activity.this, Objects.toString(obj, getString(R.string.server_error)), Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                    @Override public void onAsync(Object asyncTask) { serviceDetailAsync = null; }
-                    @Override public void onCancelled() { serviceDetailAsync = null; }
-                });
+        viewModel.loadDetail(PrefsUtil.with(this).readString("UserId"), serviceRequestId);
     }
 
     private void manageData() {
@@ -257,8 +250,6 @@ public class Partner_ServiceRequestDetail_Tablayout_Activity extends AppCompatAc
                 Log.e(TAG, "Error unregistering receiver", e);
             }
         }
-        Utils.cancelAsyncTask(downloadInvoiceAsync);
-        Utils.cancelAsyncTask(serviceDetailAsync);
         super.onDestroy();
     }
     

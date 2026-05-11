@@ -21,15 +21,15 @@ import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
-import com.app.bemyrider.AsyncTask.WebServiceCall;
 import com.app.bemyrider.R;
-import com.app.bemyrider.WebServices.WebServiceUrl;
 import com.app.bemyrider.databinding.PartnerActivityMyServiceDetailBinding;
 import com.app.bemyrider.fragment.partner.Fragment_Partner_ServiceDetail;
 import com.app.bemyrider.fragment.partner.Fragment_Partner_serviceImage;
 import com.app.bemyrider.fragment.partner.Fragment_Partner_serviceReview;
-import com.app.bemyrider.model.CommonPojo;
 import com.app.bemyrider.model.ProviderServiceDetailPOJO;
+import com.app.bemyrider.viewmodel.PartnerServiceDetailViewModel;
+
+import androidx.lifecycle.ViewModelProvider;
 import com.app.bemyrider.model.ProviderServiceDetailsItem;
 import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.LocaleManager;
@@ -39,6 +39,7 @@ import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Objects;
 
 import coil.Coil;
@@ -56,7 +57,7 @@ public class Partner_ServiceDetail_Activity extends AppCompatActivity {
             R.drawable.tabicon_review_style,
             R.drawable.tabicon_images_style
     };
-    private WebServiceCall serviceDetailAsync, deleteServiceAsync;
+    private PartnerServiceDetailViewModel viewModel;
     private ConnectionManager connectionManager;
 
     @Override
@@ -65,6 +66,9 @@ public class Partner_ServiceDetail_Activity extends AppCompatActivity {
         binding = DataBindingUtil.setContentView(this, R.layout.partner_activity_my_service_detail);
 
         initView();
+
+        viewModel = new ViewModelProvider(this).get(PartnerServiceDetailViewModel.class);
+        observeViewModel();
 
         String userImg = PrefsUtil.with(mContext).readString("UserImg");
         if (userImg != null && !userImg.isEmpty()) {
@@ -117,63 +121,58 @@ public class Partner_ServiceDetail_Activity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private void serviceCall() {
-        binding.progress.setVisibility(View.VISIBLE);
+    private void observeViewModel() {
+        viewModel.getDetail().observe(this, pojo -> {
+            binding.progress.setVisibility(View.GONE);
+            binding.rlMain.setVisibility(View.VISIBLE);
+            if (pojo != null && pojo.getData() != null) {
+                serviceDetailData = pojo.getData();
+                binding.TxtRatingShow.setText(String.valueOf(pojo.getData().getAvgRating()));
+                setupViewPager();
+            } else if (pojo != null) {
+                Toast.makeText(mContext, R.string.server_error, Toast.LENGTH_SHORT).show();
+            }
+        });
 
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-        textParams.put("provider_service_id", getIntent().getStringExtra("providerServiceId"));
+        viewModel.getDeleteResult().observe(this, result -> {
+            binding.pgDelete.setVisibility(View.GONE);
+            binding.imgDelete.setVisibility(View.VISIBLE);
+            binding.imgDelete.setClickable(true);
+            binding.btnEditService.setClickable(true);
+            if (result != null && result.isStatus()) {
+                Intent i = new Intent(mContext, Partner_MyServices_Activity.class);
+                i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(i);
+                finish();
+            }
+        });
 
-        serviceDetailAsync = new WebServiceCall(mContext, WebServiceUrl.MY_SERVICE_DETAILS, textParams,
-                ProviderServiceDetailPOJO.class, false, new WebServiceCall.OnResultListener() {
-            @Override
-            public void onResult(boolean status, Object obj) {
+        viewModel.getError().observe(this, errorMsg -> {
+            if (errorMsg != null) {
                 binding.progress.setVisibility(View.GONE);
                 binding.rlMain.setVisibility(View.VISIBLE);
-                if (status) {
-                    ProviderServiceDetailPOJO pojo = (ProviderServiceDetailPOJO) obj;
-                    if (pojo != null && pojo.getData() != null) {
-                        serviceDetailData = pojo.getData();
-                        binding.TxtRatingShow.setText(String.valueOf(pojo.getData().getAvgRating()));
-                        setupViewPager();
-                    } else {
-                        Toast.makeText(mContext, R.string.server_error, Toast.LENGTH_SHORT).show();
-                    }
-                } else {
-                    Toast.makeText(mContext, Objects.toString(obj, getString(R.string.server_error)), Toast.LENGTH_SHORT).show();
-                }
+                binding.pgDelete.setVisibility(View.GONE);
+                binding.imgDelete.setVisibility(View.VISIBLE);
+                binding.imgDelete.setClickable(true);
+                binding.btnEditService.setClickable(true);
+                Toast.makeText(mContext, errorMsg, Toast.LENGTH_SHORT).show();
             }
-            @Override public void onAsync(Object asyncTask) { serviceDetailAsync = null; }
-            @Override public void onCancelled() { serviceDetailAsync = null; }
         });
+    }
+
+    private void serviceCall() {
+        binding.progress.setVisibility(View.VISIBLE);
+        Map<String, String> params = new LinkedHashMap<>();
+        params.put("provider_service_id", getIntent().getStringExtra("providerServiceId"));
+        viewModel.loadDetail(params);
     }
 
     private void deleteServiceCall() {
         binding.imgDelete.setVisibility(View.GONE);
         binding.pgDelete.setVisibility(View.VISIBLE);
-
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-        textParams.put("provider_service_id", getIntent().getStringExtra("providerServiceId"));
-        textParams.put("user_id", PrefsUtil.with(this).readString("UserId"));
-
-        deleteServiceAsync = new WebServiceCall(mContext, WebServiceUrl.MY_SERVICE_DELETE, textParams, CommonPojo.class, false, new WebServiceCall.OnResultListener() {
-            @Override
-            public void onResult(boolean status, Object obj) {
-                binding.pgDelete.setVisibility(View.GONE);
-                binding.imgDelete.setVisibility(View.VISIBLE);
-                binding.imgDelete.setClickable(true);
-                binding.btnEditService.setClickable(true);
-                if (status) {
-                    Intent i = new Intent(mContext, Partner_MyServices_Activity.class);
-                    i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    startActivity(i);
-                    finish();
-                } else {
-                    Toast.makeText(mContext, Objects.toString(obj, getString(R.string.server_error)), Toast.LENGTH_SHORT).show();
-                }
-            }
-            @Override public void onAsync(Object asyncTask) { deleteServiceAsync = null; }
-            @Override public void onCancelled() { deleteServiceAsync = null; }
-        });
+        viewModel.deleteService(
+            getIntent().getStringExtra("providerServiceId"),
+            PrefsUtil.with(this).readString("UserId"));
     }
 
     private void initView() {
@@ -224,8 +223,6 @@ public class Partner_ServiceDetail_Activity extends AppCompatActivity {
                 Log.e(TAG, "Error unregistering receiver", e);
             }
         }
-        Utils.cancelAsyncTask(serviceDetailAsync);
-        Utils.cancelAsyncTask(deleteServiceAsync);
         super.onDestroy();
     }
     

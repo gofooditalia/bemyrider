@@ -1,6 +1,10 @@
 package com.app.bemyrider.network
 
 import com.app.bemyrider.model.BulkInvoicePojo
+import com.app.bemyrider.model.DownloadInvoicePojo
+import com.app.bemyrider.model.ProviderServiceRequestPojo
+import com.app.bemyrider.model.ServiceReviewPojo
+import com.app.bemyrider.model.partner.MyServiceListPojo
 import com.app.bemyrider.model.CheckStripeConnectedPojo
 import com.app.bemyrider.model.CommonPojo
 import com.app.bemyrider.model.LanguagePojo
@@ -33,6 +37,7 @@ import retrofit2.http.GET
 import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
+import retrofit2.http.Url
 
 interface ApiServiceKt {
 
@@ -210,6 +215,39 @@ interface ApiServiceKt {
         @Field("date_from") dateFrom: String? = null,
         @Field("date_to") dateTo: String? = null
     ): Response<BulkInvoicePojo>
+
+    @FormUrlEncoded
+    @POST("services/providerservices")
+    suspend fun getMyServices(
+        @FieldMap params: Map<String, String>
+    ): Response<MyServiceListPojo>
+
+    @FormUrlEncoded
+    @POST("services/deleteservices")
+    suspend fun deleteService(
+        @Field("provider_service_id") providerServiceId: String,
+        @Field("user_id") userId: String
+    ): Response<CommonPojo>
+
+    @FormUrlEncoded
+    @POST("services/providerservice")
+    suspend fun getServiceRequestDetail(
+        @Field("user_id") userId: String,
+        @Field("service_request_id") serviceRequestId: String
+    ): Response<ProviderServiceRequestPojo>
+
+    @FormUrlEncoded
+    @POST
+    suspend fun downloadInvoice(
+        @Url url: String,
+        @FieldMap params: Map<String, String>
+    ): Response<DownloadInvoicePojo>
+
+    @FormUrlEncoded
+    @POST("services/providerreviews")
+    suspend fun getProviderReviews(
+        @FieldMap params: Map<String, String>
+    ): Response<ServiceReviewPojo>
 
     @FormUrlEncoded
     @POST("notifications/getNotifications")

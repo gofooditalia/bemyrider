@@ -18,18 +18,18 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.bemyrider.Adapter.Partner.RvMyServiceAdapter;
 import com.app.bemyrider.AsyncTask.ConnectionCheck;
-import com.app.bemyrider.AsyncTask.WebServiceCall;
 import com.app.bemyrider.R;
-import com.app.bemyrider.WebServices.WebServiceUrl;
 import com.app.bemyrider.databinding.PartnerActivityMyServicesBinding;
 import com.app.bemyrider.model.MessageEvent;
 import com.app.bemyrider.model.partner.MyServiceListItem;
-import com.app.bemyrider.model.partner.MyServiceListPojo;
 import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.LocaleManager;
 import com.app.bemyrider.utils.Log;
 import com.app.bemyrider.utils.PrefsUtil;
 import com.app.bemyrider.utils.Utils;
+import com.app.bemyrider.viewmodel.PartnerMyServicesViewModel;
+
+import androidx.lifecycle.ViewModelProvider;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
@@ -60,8 +60,9 @@ public class Partner_MyServices_Activity extends AppCompatActivity {
     private Context mContext = Partner_MyServices_Activity.this;
     private LinearLayoutManager layoutManager;
     private String keyWord = "";
-    private WebServiceCall myServiceAsync;
+    private PartnerMyServicesViewModel viewModel;
     private ConnectionManager connectionManager;
+    private boolean pendingClear = false;
 
     /*pagination vars start*/
     private boolean loading = true;
@@ -76,6 +77,8 @@ public class Partner_MyServices_Activity extends AppCompatActivity {
         binding = DataBindingUtil.setContentView(Partner_MyServices_Activity.this, R.layout.partner_activity_my_services, null);
         initView();
 
+        viewModel = new ViewModelProvider(this).get(PartnerMyServicesViewModel.class);
+        observeViewModel();
         serviceCall(true);
 
         binding.edtSearch.addTextChangedListener(new TextWatcher() {
@@ -103,87 +106,48 @@ public class Partner_MyServices_Activity extends AppCompatActivity {
         binding.fabAddService.setOnClickListener(v -> startActivity(new Intent(mContext, AddNewService_Activity.class)));
     }
 
-    /*---------------- Get Service List Api Call -------------------*/
-    private void serviceCall(boolean isClear) {
-        if (isClear) {
-            page = 1;
-            binding.layoutNoservice.setVisibility(View.GONE);
-            binding.rvMyservice.scrollToPosition(0);
-        }
-        if (!binding.swipeRefresh.isRefreshing()) {
-            binding.progress.setVisibility(View.VISIBLE);
-        }
-
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-
-        if (getIntent().hasExtra(Utils.PROVIDER_ID)) {
-            if (getIntent().getStringExtra(Utils.PROVIDER_ID) != null
-                    && getIntent().getStringExtra(Utils.PROVIDER_ID).length() > 0) {
-                textParams.put("user_id", getIntent().getStringExtra(Utils.PROVIDER_ID));
-            } else {
-                textParams.put("user_id", PrefsUtil.with(mContext).readString("UserId"));
-            }
-        } else {
-            textParams.put("user_id", PrefsUtil.with(mContext).readString("UserId"));
-        }
-        textParams.put("keyword", Utils.encodeEmoji(keyWord));
-        textParams.put("page", String.valueOf(page));
-
-        new WebServiceCall(mContext, WebServiceUrl.URL_MYSERVICE, textParams,
-                MyServiceListPojo.class, false, new WebServiceCall.OnResultListener() {
-            @Override
-            public void onResult(boolean status, Object obj) {
-                if (binding.swipeRefresh.isRefreshing()) {
-                    binding.swipeRefresh.setRefreshing(false);
-                }
-                if (status) {
-                    MyServiceListPojo response_myservice = (MyServiceListPojo) obj;
-                    if (isClear) {
-                        arrayList.clear();
-                    }
-                    binding.progress.setVisibility(View.GONE);
-                    binding.rvMyservice.setVisibility(View.VISIBLE);
-
-                    arrayList.addAll(response_myservice.getData().getServiceList());
-                    adapter.notifyDataSetChanged();
-
-                    if (arrayList.size() > 0) {
-                        binding.layoutNoservice.setVisibility(View.GONE);
-                        binding.rvMyservice.setVisibility(View.VISIBLE);
-                        binding.fabAddService.setVisibility(View.GONE);
-                    } else {
-                        binding.layoutNoservice.setVisibility(View.VISIBLE);
-                        binding.rvMyservice.setVisibility(View.GONE);
-                        if (keyWord == "")
-                            binding.fabAddService.setVisibility(View.VISIBLE);
-                        else
-                            binding.fabAddService.setVisibility(View.GONE);
-                    }
-                    binding.rvMyservice.addOnScrollListener(listner);
-                    loading = true;
-                    try {
-                        total_records = response_myservice.getData().getPagination().getTotalRecords();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                } else {
-                    binding.progress.setVisibility(View.GONE);
-                    Toast.makeText(mContext, obj.toString(), Toast.LENGTH_SHORT).show();
-                }
-
-            }
-
-            @Override
-            public void onAsync(Object asyncTask) {
-                myServiceAsync = null;
-            }
-
-            @Override
-            public void onCancelled() {
-                myServiceAsync = null;
+    private void observeViewModel() {
+        viewModel.getServices().observe(this, pojo -> {
+            if (binding.swipeRefresh.isRefreshing()) binding.swipeRefresh.setRefreshing(false);
+            binding.progress.setVisibility(View.GONE);
+            if (pojo != null && pojo.getData() != null) {
+                if (pendingClear) { arrayList.clear(); pendingClear = false; }
+                arrayList.addAll(pojo.getData().getServiceList());
+                adapter.notifyDataSetChanged();
+                boolean hasItems = !arrayList.isEmpty();
+                binding.layoutNoservice.setVisibility(hasItems ? View.GONE : View.VISIBLE);
+                binding.rvMyservice.setVisibility(hasItems ? View.VISIBLE : View.GONE);
+                binding.fabAddService.setVisibility(hasItems ? View.GONE : (keyWord.isEmpty() ? View.VISIBLE : View.GONE));
+                binding.rvMyservice.addOnScrollListener(listner);
+                loading = true;
+                try { total_records = pojo.getData().getPagination().getTotalRecords(); } catch (Exception ignored) {}
             }
         });
 
+        viewModel.getError().observe(this, errorMsg -> {
+            if (errorMsg != null) {
+                if (binding.swipeRefresh.isRefreshing()) binding.swipeRefresh.setRefreshing(false);
+                binding.progress.setVisibility(View.GONE);
+                Toast.makeText(mContext, errorMsg, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void serviceCall(boolean isClear) {
+        if (isClear) { page = 1; binding.layoutNoservice.setVisibility(View.GONE); binding.rvMyservice.scrollToPosition(0); }
+        pendingClear = isClear;
+        if (!binding.swipeRefresh.isRefreshing()) binding.progress.setVisibility(View.VISIBLE);
+
+        LinkedHashMap<String, String> params = new LinkedHashMap<>();
+        String userId = (getIntent().hasExtra(Utils.PROVIDER_ID) &&
+                getIntent().getStringExtra(Utils.PROVIDER_ID) != null &&
+                !getIntent().getStringExtra(Utils.PROVIDER_ID).isEmpty())
+                ? getIntent().getStringExtra(Utils.PROVIDER_ID)
+                : PrefsUtil.with(mContext).readString("UserId");
+        params.put("user_id", userId);
+        params.put("keyword", Utils.encodeEmoji(keyWord));
+        params.put("page", String.valueOf(page));
+        viewModel.loadMyServices(params);
     }
 
     @Override
@@ -271,7 +235,6 @@ public class Partner_MyServices_Activity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        Utils.cancelAsyncTask(myServiceAsync);
         super.onDestroy();
     }
 

@@ -7,6 +7,10 @@ import com.app.bemyrider.model.CommonPojo
 import com.app.bemyrider.model.LanguagePojo
 import com.app.bemyrider.model.NewLoginPojo
 import com.app.bemyrider.model.CustomerHistoryPojo
+import com.app.bemyrider.model.DownloadInvoicePojo
+import com.app.bemyrider.model.ProviderServiceRequestPojo
+import com.app.bemyrider.model.ServiceReviewPojo
+import com.app.bemyrider.model.partner.MyServiceListPojo
 import com.app.bemyrider.model.user.FavoriteServiceListPojo
 import com.app.bemyrider.model.user.ProviderListPOJO
 import com.app.bemyrider.model.ProviderServiceDetailPOJO
@@ -322,6 +326,21 @@ class AppRepository {
             else -> apiService.getSmallDelivery(action, sort, rating, location, lat, lng, keyword, page)
         }
     }
+
+    suspend fun getMyServices(params: Map<String, String>): Response<MyServiceListPojo> =
+        apiService.getMyServices(params)
+
+    suspend fun deleteService(providerServiceId: String, userId: String): Response<CommonPojo> =
+        apiService.deleteService(providerServiceId, userId)
+
+    suspend fun getServiceRequestDetail(userId: String, serviceRequestId: String): Response<ProviderServiceRequestPojo> =
+        apiService.getServiceRequestDetail(userId, serviceRequestId)
+
+    suspend fun downloadInvoice(url: String, params: Map<String, String>): Response<DownloadInvoicePojo> =
+        apiService.downloadInvoice(url, params)
+
+    suspend fun getProviderReviews(params: Map<String, String>): Response<ServiceReviewPojo> =
+        apiService.getProviderReviews(params)
 
     suspend fun getCustomerServiceHistory(userId: String, tab: String, page: Int): Response<CustomerHistoryPojo> =
         apiService.getCustomerServiceHistory(userId, tab, page)
