@@ -1,1 +1,0 @@
-// Il codice è stato rimosso. In Coil, si usa `CircleCropTransformation` nativamente.

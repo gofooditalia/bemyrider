@@ -1,1 +1,0 @@
-// Il codice è stato rimosso. La gestione della rotazione EXIF è ora gestita nativamente da Coil.

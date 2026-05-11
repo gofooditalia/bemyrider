@@ -1,1 +1,0 @@
-// Il codice è stato rimosso. In Coil, si usa `RoundedCornersTransformation` nativamente, ma la versione custom di Picasso è stata rimossa perché non utilizzata.
