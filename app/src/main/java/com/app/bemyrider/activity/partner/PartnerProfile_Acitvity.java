@@ -16,9 +16,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.text.HtmlCompat;
 
-import com.app.bemyrider.AsyncTask.WebServiceCall;
 import com.app.bemyrider.R;
-import com.app.bemyrider.WebServices.WebServiceUrl;
 import com.app.bemyrider.model.CommonPojo;
 import com.app.bemyrider.model.ProfileItem;
 import com.app.bemyrider.model.ProfilePojo;
@@ -26,8 +24,10 @@ import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.LocaleManager;
 import com.app.bemyrider.utils.PrefsUtil;
 import com.app.bemyrider.utils.Utils;
+import com.app.bemyrider.viewmodel.PartnerOwnProfileViewModel;
 
-import java.util.LinkedHashMap;
+import androidx.lifecycle.ViewModelProvider;
+
 import java.util.Objects;
 
 import coil.Coil;
@@ -41,7 +41,7 @@ public class PartnerProfile_Acitvity extends AppCompatActivity {
             txt_rating, txt_tota_review, txt_viewall, txt_about_user, txt_available_days, txt_address_pro, txt_worked_on;
     private final Context mContext = this;
     private SwitchCompat switch_available_now;
-    private WebServiceCall availableStatusAsync, getProfileAsync;
+    private PartnerOwnProfileViewModel viewModel;
     private ConnectionManager connectionManager;
 
     @Override
@@ -56,9 +56,13 @@ public class PartnerProfile_Acitvity extends AppCompatActivity {
         }
 
         initView();
-        serviceCall();
 
-        switch_available_now.setOnCheckedChangeListener((compoundButton, b) -> serviceCallChangeStatus(b ? "y" : "n"));
+        viewModel = new ViewModelProvider(this).get(PartnerOwnProfileViewModel.class);
+        observeViewModel();
+        viewModel.loadProfile(PrefsUtil.with(mContext).readString("UserId"));
+
+        switch_available_now.setOnCheckedChangeListener((compoundButton, b) ->
+                viewModel.updateAvailability(PrefsUtil.with(mContext).readString("UserId"), b ? "y" : "n"));
 
         findViewById(R.id.fab_edit).setOnClickListener(v -> Toast.makeText(mContext, "Edit profile is not available.", Toast.LENGTH_SHORT).show());
 
@@ -72,45 +76,23 @@ public class PartnerProfile_Acitvity extends AppCompatActivity {
         });
     }
 
-    private void serviceCallChangeStatus(final String switchstatus) {
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-        textParams.put("user_id", PrefsUtil.with(mContext).readString("UserId"));
-        textParams.put("isAvailable", switchstatus);
-
-        availableStatusAsync = new WebServiceCall(this, WebServiceUrl.URL_AVAILABLE_NOW,
-                textParams, CommonPojo.class, true, new WebServiceCall.OnResultListener() {
-            @Override
-            public void onResult(boolean status, Object obj) {
-                if (status) {
-                    switch_available_now.setChecked("y".equals(switchstatus));
-                }
+    private void observeViewModel() {
+        viewModel.getProfile().observe(this, pojo -> {
+            if (pojo == null || pojo.getData() == null) {
+                Toast.makeText(mContext, R.string.profile_loading_error, Toast.LENGTH_SHORT).show();
+                return;
             }
-            @Override public void onAsync(Object asyncTask) { availableStatusAsync = null; }
-            @Override public void onCancelled() { availableStatusAsync = null; }
+            updateUI(pojo.getData());
         });
-    }
 
-    private void serviceCall() {
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-        textParams.put("profile_id", PrefsUtil.with(mContext).readString("UserId"));
+        viewModel.getAvailabilityResult().observe(this, result -> {
+            // switch già aggiornato ottimisticamente dal listener; nessuna azione extra necessaria
+        });
 
-        getProfileAsync = new WebServiceCall(mContext, WebServiceUrl.URL_PROFILE, textParams, ProfilePojo.class,
-                true, new WebServiceCall.OnResultListener() {
-            @Override
-            public void onResult(boolean status, Object obj) {
-                if (!status) {
-                    Toast.makeText(mContext, Objects.toString(obj, getString(R.string.server_error)), Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                ProfilePojo response_profile = (ProfilePojo) obj;
-                if (response_profile.getData() == null) {
-                    Toast.makeText(mContext, R.string.profile_loading_error, Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                updateUI(response_profile.getData());
+        viewModel.getError().observe(this, errorMsg -> {
+            if (errorMsg != null) {
+                Toast.makeText(mContext, errorMsg, Toast.LENGTH_SHORT).show();
             }
-            @Override public void onAsync(Object asyncTask) { getProfileAsync = null; }
-            @Override public void onCancelled() { getProfileAsync = null; }
         });
     }
 
@@ -196,8 +178,6 @@ public class PartnerProfile_Acitvity extends AppCompatActivity {
                 Log.e(TAG, "Error unregistering receiver", e);
             }
         }
-        Utils.cancelAsyncTask(availableStatusAsync);
-        Utils.cancelAsyncTask(getProfileAsync);
         super.onDestroy();
     }
 

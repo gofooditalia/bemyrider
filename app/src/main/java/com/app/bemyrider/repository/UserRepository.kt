@@ -118,6 +118,12 @@ class AppRepository {
 
     suspend fun getProfile(profileId: String): Response<ProfilePojo> = apiService.getProfile(profileId)
 
+    suspend fun getPartnerProfile(loginUserId: String, profileId: String): Response<ProfilePojo> =
+        apiService.getPartnerProfile(loginUserId, profileId)
+
+    suspend fun flagUser(userId: String, flagUserId: String): Response<CommonPojo> =
+        apiService.flagUser(userId, flagUserId)
+
     suspend fun getOfflineData(userId: String): Response<String> = apiService.getOfflineData(userId)
 
     suspend fun forgotPassword(email: String): NewLoginPojo {

@@ -17,9 +17,7 @@ import androidx.core.content.ContextCompat;
 import androidx.databinding.DataBindingUtil;
 
 import com.app.bemyrider.AsyncTask.ConnectionCheck;
-import com.app.bemyrider.AsyncTask.WebServiceCall;
 import com.app.bemyrider.R;
-import com.app.bemyrider.WebServices.WebServiceUrl;
 import com.app.bemyrider.databinding.ActivityCustomerProfileBinding;
 import com.app.bemyrider.model.MessageEvent;
 import com.app.bemyrider.model.ProfileItem;
@@ -28,8 +26,11 @@ import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.LocaleManager;
 import com.app.bemyrider.utils.PrefsUtil;
 import com.app.bemyrider.utils.Utils;
+import com.app.bemyrider.viewmodel.UserProfileViewModel;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+
+import androidx.lifecycle.ViewModelProvider;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -38,7 +39,6 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.util.LinkedHashMap;
 import java.util.Objects;
 
 import coil.Coil;
@@ -50,7 +50,7 @@ public class CustomerProfileActivity extends AppCompatActivity {
     private ActivityCustomerProfileBinding binding;
 
     private ProfileItem profileData;
-    private WebServiceCall profileDataAsync;
+    private UserProfileViewModel viewModel;
     private ConnectionManager connectionManager;
     private Context context;
     private ActivityResultLauncher<Intent> editProfileLauncher;
@@ -64,8 +64,11 @@ public class CustomerProfileActivity extends AppCompatActivity {
         init();
         setupActivityLaunchers();
 
+        viewModel = new ViewModelProvider(this).get(UserProfileViewModel.class);
+        observeViewModel();
+
         if (new ConnectionCheck().isNetworkConnected(context)) {
-            getProfileData();
+            viewModel.loadProfile(PrefsUtil.with(this).readString("UserId"));
         } else {
             getOfflineDetails();
         }
@@ -121,49 +124,36 @@ public class CustomerProfileActivity extends AppCompatActivity {
         });
     }
 
+    private void observeViewModel() {
+        viewModel.getProfile().observe(this, pojo -> {
+            binding.progress.setVisibility(View.GONE);
+            binding.linHeader.setVisibility(View.VISIBLE);
+            binding.llUserProfileDetail.setVisibility(View.VISIBLE);
+            binding.ImgEdit.setVisibility(View.VISIBLE);
+            if (pojo != null && pojo.getData() != null) {
+                profileData = pojo.getData();
+                EditProfileActivity.profileData = profileData;
+                updateUI(profileData);
+            }
+        });
+
+        viewModel.getError().observe(this, errorMsg -> {
+            if (errorMsg != null) {
+                binding.progress.setVisibility(View.GONE);
+                binding.linHeader.setVisibility(View.VISIBLE);
+                binding.llUserProfileDetail.setVisibility(View.VISIBLE);
+                binding.ImgEdit.setVisibility(View.VISIBLE);
+                Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
     protected void getProfileData() {
         binding.llUserProfileDetail.setVisibility(View.GONE);
         binding.linHeader.setVisibility(View.GONE);
         binding.ImgEdit.setVisibility(View.GONE);
         binding.progress.setVisibility(View.VISIBLE);
-
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-        textParams.put("profile_id", PrefsUtil.with(this).readString("UserId"));
-
-        profileDataAsync = new WebServiceCall(context, WebServiceUrl.URL_PROFILE, textParams, ProfilePojo.class,
-                false, new WebServiceCall.OnResultListener() {
-            @Override
-            public void onResult(boolean status, Object obj) {
-                binding.progress.setVisibility(View.GONE);
-                binding.linHeader.setVisibility(View.VISIBLE);
-                binding.llUserProfileDetail.setVisibility(View.VISIBLE);
-                binding.ImgEdit.setVisibility(View.VISIBLE);
-
-                if (!status) {
-                    String errorMessage = (obj instanceof String) ? (String) obj : getString(R.string.server_error);
-                    Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                
-                ProfilePojo profilePojo = (ProfilePojo) obj;
-                if(profilePojo.getData() == null) return;
-                
-                profileData = profilePojo.getData();
-                EditProfileActivity.profileData = profileData;
-
-                updateUI(profileData);
-            }
-
-            @Override
-            public void onAsync(Object asyncTask) {
-                profileDataAsync = null;
-            }
-
-            @Override
-            public void onCancelled() {
-                profileDataAsync = null;
-            }
-        });
+        viewModel.loadProfile(PrefsUtil.with(this).readString("UserId"));
     }
 
     private void updateUI(ProfileItem data) {
@@ -261,7 +251,6 @@ public class CustomerProfileActivity extends AppCompatActivity {
                 Log.e(TAG, "Error unregistering connection manager", e);
             }
         }
-        Utils.cancelAsyncTask(profileDataAsync);
         super.onDestroy();
     }
 

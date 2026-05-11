@@ -16,9 +16,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.databinding.DataBindingUtil;
 
-import com.app.bemyrider.AsyncTask.WebServiceCall;
 import com.app.bemyrider.R;
-import com.app.bemyrider.WebServices.WebServiceUrl;
 import com.app.bemyrider.activity.partner.PartnerReviewsActivity;
 import com.app.bemyrider.databinding.PartnerProfileAcitvityBinding;
 import com.app.bemyrider.model.CommonPojo;
@@ -28,11 +26,13 @@ import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.LocaleManager;
 import com.app.bemyrider.utils.PrefsUtil;
 import com.app.bemyrider.utils.Utils;
+import com.app.bemyrider.viewmodel.PartnerProfileViewModel;
+
+import androidx.lifecycle.ViewModelProvider;
 
 import coil.Coil;
 import coil.request.ImageRequest;
 
-import java.util.LinkedHashMap;
 
 public class PartnerProfileActivity extends AppCompatActivity {
 
@@ -40,7 +40,7 @@ public class PartnerProfileActivity extends AppCompatActivity {
     private PartnerProfileAcitvityBinding binding;
     private final Context mContext = this;
     private String partnerId = "";
-    private WebServiceCall getProfileAsync, reportUserAsync;
+    private PartnerProfileViewModel viewModel;
     private ConnectionManager connectionManager;
     private String isFlag = "";
 
@@ -58,48 +58,61 @@ public class PartnerProfileActivity extends AppCompatActivity {
         }
 
         initView();
-        serviceCall();
 
-        binding.relReportUser.setOnClickListener(v -> serviceCallReportUser());
+        viewModel = new ViewModelProvider(this).get(PartnerProfileViewModel.class);
+        observeViewModel();
+        viewModel.loadPartnerProfile(PrefsUtil.with(this).readString("UserId"), partnerId);
+
+        binding.relReportUser.setOnClickListener(v -> {
+            binding.imgReportUser.setVisibility(View.GONE);
+            binding.pgReportUser.setVisibility(View.VISIBLE);
+            viewModel.reportUser(PrefsUtil.with(this).readString("UserId"), partnerId);
+        });
     }
 
-    private void serviceCall() {
-        binding.progress.setVisibility(View.VISIBLE);
-        binding.llMain.setVisibility(View.GONE);
-        binding.relReportUser.setVisibility(View.GONE);
+    private void observeViewModel() {
+        viewModel.getProfile().observe(this, pojo -> {
+            binding.progress.setVisibility(View.GONE);
+            binding.llMain.setVisibility(View.VISIBLE);
+            binding.relReportUser.setVisibility(View.VISIBLE);
+            if (pojo != null && pojo.getData() != null) {
+                updateUI(pojo.getData());
+            } else if (pojo != null) {
+                Toast.makeText(mContext, R.string.profile_loading_error, Toast.LENGTH_SHORT).show();
+            }
+        });
 
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-        textParams.put("loginuser_id", PrefsUtil.with(this).readString("UserId"));
-        textParams.put("profile_id", partnerId);
+        viewModel.getFlagResult().observe(this, result -> {
+            binding.pgReportUser.setVisibility(View.GONE);
+            binding.imgReportUser.setVisibility(View.VISIBLE);
+            if (result != null && result.isStatus()) {
+                if ("y".equalsIgnoreCase(isFlag)) {
+                    binding.imgReportUser.setImageResource(R.mipmap.ic_report_user);
+                    isFlag = "n";
+                } else {
+                    binding.imgReportUser.setImageResource(R.mipmap.ic_report_user_filled);
+                    isFlag = "y";
+                }
+                Toast.makeText(mContext, result.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
 
-        getProfileAsync = new WebServiceCall(mContext, WebServiceUrl.URL_PROFILE, textParams, ProfilePojo.class, false,
-                new WebServiceCall.OnResultListener() {
-                    @Override
-                    public void onResult(boolean status, Object obj) {
-                        binding.progress.setVisibility(View.GONE);
-                        binding.llMain.setVisibility(View.VISIBLE);
-                        binding.relReportUser.setVisibility(View.VISIBLE);
-                        if (status) {
-                            ProfilePojo response_profile = (ProfilePojo) obj;
-                            if (response_profile == null || response_profile.getData() == null) {
-                                Toast.makeText(mContext, R.string.profile_loading_error, Toast.LENGTH_SHORT).show();
-                                return;
-                            }
-                            final ProfileItem pItem = response_profile.getData();
-                            updateUI(pItem);
-                        } else {
-                            Toast.makeText(mContext, obj.toString(), Toast.LENGTH_SHORT).show();
-                        }
-                    }
+        viewModel.getError().observe(this, errorMsg -> {
+            if (errorMsg != null) {
+                binding.progress.setVisibility(View.GONE);
+                binding.pgReportUser.setVisibility(View.GONE);
+                binding.imgReportUser.setVisibility(View.VISIBLE);
+                Toast.makeText(mContext, errorMsg, Toast.LENGTH_SHORT).show();
+            }
+        });
 
-                    @Override
-                    public void onAsync(Object obj) { getProfileAsync = null; }
-
-                    @Override
-                    public void onCancelled() {
-                        getProfileAsync = null;
-                    }
-                });
+        viewModel.getIsLoading().observe(this, isLoading -> {
+            if (isLoading) {
+                binding.progress.setVisibility(View.VISIBLE);
+                binding.llMain.setVisibility(View.GONE);
+                binding.relReportUser.setVisibility(View.GONE);
+            }
+        });
     }
 
     private void updateUI(@NonNull ProfileItem pItem) {
@@ -171,44 +184,6 @@ public class PartnerProfileActivity extends AppCompatActivity {
         });
     }
 
-    private void serviceCallReportUser() {
-        binding.imgReportUser.setVisibility(View.GONE);
-        binding.pgReportUser.setVisibility(View.VISIBLE);
-
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-        textParams.put("user_id", PrefsUtil.with(this).readString("UserId"));
-        textParams.put("flag_user_id", partnerId);
-
-        reportUserAsync = new WebServiceCall(mContext, WebServiceUrl.URL_FLAGUSER, textParams, CommonPojo.class, false,
-                new WebServiceCall.OnResultListener() {
-                    @Override
-                    public void onResult(boolean status, Object obj) {
-                        binding.pgReportUser.setVisibility(View.GONE);
-                        binding.imgReportUser.setVisibility(View.VISIBLE);
-                        if (status) {
-                            CommonPojo commonPojo = (CommonPojo) obj;
-                            if ("y".equalsIgnoreCase(isFlag)) {
-                                binding.imgReportUser.setImageResource(R.mipmap.ic_report_user);
-                                isFlag = "n";
-                            } else {
-                                binding.imgReportUser.setImageResource(R.mipmap.ic_report_user_filled);
-                                isFlag = "y";
-                            }
-                            Toast.makeText(mContext, commonPojo.getMessage(), Toast.LENGTH_SHORT).show();
-                        } else {
-                            Toast.makeText(mContext, obj.toString(), Toast.LENGTH_SHORT).show();
-                        }
-                    }
-
-                    @Override
-                    public void onAsync(Object obj) { reportUserAsync = null; }
-
-                    @Override
-                    public void onCancelled() {
-                        reportUserAsync = null;
-                    }
-                });
-    }
 
     private void initView() {
         binding.appBarLayout.addOnOffsetChangedListener((appBarLayout, verticalOffset) -> {
@@ -270,8 +245,6 @@ public class PartnerProfileActivity extends AppCompatActivity {
                 Log.e(TAG, "Error unregistering connection manager", e);
             }
         }
-        Utils.cancelAsyncTask(getProfileAsync);
-        Utils.cancelAsyncTask(reportUserAsync);
         super.onDestroy();
     }
 

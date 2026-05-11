@@ -141,6 +141,20 @@ interface ApiServiceKt {
     ): Response<ProfilePojo>
 
     @FormUrlEncoded
+    @POST("profile")
+    suspend fun getPartnerProfile(
+            @Field("loginuser_id") loginUserId: String,
+            @Field("profile_id") profileId: String
+    ): Response<ProfilePojo>
+
+    @FormUrlEncoded
+    @POST("profile/flag_user")
+    suspend fun flagUser(
+            @Field("user_id") userId: String,
+            @Field("flag_user_id") flagUserId: String
+    ): Response<CommonPojo>
+
+    @FormUrlEncoded
     @POST("profile/getOfflineData")
     suspend fun getOfflineData(
             @Field("user_id") userId: String
