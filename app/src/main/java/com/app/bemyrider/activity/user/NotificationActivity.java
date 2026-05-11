@@ -61,12 +61,11 @@ public class NotificationActivity extends AppCompatActivity {
         context = NotificationActivity.this;
         userId = PrefsUtil.with(context).readString("UserId");
 
-        setTitle(HtmlCompat.fromHtml("<font color=#FFFFFF>" + getString(R.string.notification_settings), HtmlCompat.FROM_HTML_MODE_LEGACY));
-
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setHomeButtonEnabled(true);
-            actionBar.setDisplayHomeAsUpEnabled(true);
+        setSupportActionBar(binding.toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle(HtmlCompat.fromHtml("<font color=#FFFFFF>" + getString(R.string.notification_settings), HtmlCompat.FROM_HTML_MODE_LEGACY));
+            getSupportActionBar().setHomeButtonEnabled(true);
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
         connectionManager = new ConnectionManager(context);
@@ -126,20 +125,25 @@ public class NotificationActivity extends AppCompatActivity {
         layout.setOrientation(LinearLayout.HORIZONTAL);
 
         LinearLayout.LayoutParams param = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT, 1.0f);
-        param.setMargins(50, 0, 25, 50);
+                0, LinearLayout.LayoutParams.WRAP_CONTENT, 1.0f);
 
         TextView textView = new TextView(context);
         textView.setText(item.getTitle());
         textView.setTextColor(ContextCompat.getColor(context, R.color.text_light));
         textView.setTextAppearance(context, R.style.font_regular);
-        textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
+        textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
         textView.setLayoutParams(param);
 
         final SwitchCompat aSwitch = new SwitchCompat(context);
         aSwitch.setId(Integer.parseInt(item.getId()));
         aSwitch.setThumbDrawable(ContextCompat.getDrawable(context, R.drawable.custom_thumb));
         aSwitch.setTrackDrawable(null);
+        
+        LinearLayout.LayoutParams switchParam = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        switchParam.setMargins(10, 0, 0, 0);
+        aSwitch.setLayoutParams(switchParam);
+        
         all.add(String.valueOf(aSwitch.getId()));
 
         aSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
@@ -160,7 +164,13 @@ public class NotificationActivity extends AppCompatActivity {
 
         layout.addView(textView);
         layout.addView(aSwitch);
-        layoutMain.addView(layout);
+        
+        int marginBottom = getResources().getDimensionPixelSize(R.dimen.activity_vertical_margin);
+        
+        LinearLayout.LayoutParams rowParam = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        rowParam.setMargins(0, marginBottom / 2, 0, marginBottom / 2);
+        layoutMain.addView(layout, rowParam);
 
         if (addDivider) {
             View viewDivider = new View(context);
@@ -168,7 +178,7 @@ public class NotificationActivity extends AppCompatActivity {
             int dividerHeight = getResources().getDimensionPixelSize(R.dimen.divider_height);
             LinearLayout.LayoutParams dividerParam = new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, dividerHeight);
-            dividerParam.setMargins(50, 0, 50, 50);
+            dividerParam.setMargins(0, 0, 0, marginBottom / 2);
             viewDivider.setLayoutParams(dividerParam);
             layoutMain.addView(viewDivider);
         }

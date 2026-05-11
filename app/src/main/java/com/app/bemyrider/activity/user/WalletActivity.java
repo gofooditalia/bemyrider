@@ -29,6 +29,7 @@ import com.app.bemyrider.databinding.FragmentWalletBinding;
 import com.app.bemyrider.model.DepositHistoryItem;
 import com.app.bemyrider.model.MessageEvent;
 import com.app.bemyrider.model.RedeemHistoryPojoItem;
+import com.app.bemyrider.model.WalletDetailsPojo;
 import com.app.bemyrider.model.WalletDetailsPojoItem;
 import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.LocaleManager;

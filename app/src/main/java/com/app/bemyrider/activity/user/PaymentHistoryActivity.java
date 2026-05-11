@@ -23,6 +23,7 @@ import com.app.bemyrider.model.MessageEvent;
 import com.app.bemyrider.model.PaymentHistoryPojoItem;
 import com.app.bemyrider.model.TransectionListItem;
 import com.app.bemyrider.utils.ConnectionManager;
+import com.app.bemyrider.utils.LocaleManager;
 import com.app.bemyrider.utils.Log;
 import com.app.bemyrider.utils.PrefsUtil;
 import com.app.bemyrider.utils.Utils;

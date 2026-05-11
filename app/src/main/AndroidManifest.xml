@@ -399,6 +399,7 @@
             android:configChanges="keyboardHidden|screenSize|screenLayout|orientation"
             android:exported="false"
             android:screenOrientation="portrait"
+            android:theme="@style/NoToolBarStyle"
             android:windowSoftInputMode="stateHidden" />
         <activity
             android:name=".activity.FeedbackActivity"
@@ -408,31 +409,6 @@
             android:windowSoftInputMode="stateHidden" />
         <activity
             android:name=".activity.ContactUsActivity"
-            android:configChanges="keyboardHidden|screenSize|screenLayout|orientation"
-            android:exported="false"
-            android:screenOrientation="portrait"
-            android:windowSoftInputMode="stateHidden" />
-        <activity
-            android:name=".activity.PaypalwebviewActivity"
-            android:configChanges="keyboardHidden|screenSize|screenLayout|orientation"
-            android:exported="false"
-            android:screenOrientation="portrait"
-            android:windowSoftInputMode="stateHidden" />
-        <activity
-            android:name=".activity.user.PartnerProfileActivity"
-            android:configChanges="keyboardHidden|screenSize|screenLayout|orientation"
-            android:exported="false"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:windowSoftInputMode="stateHidden" />
-        <activity
-            android:name=".activity.user.PopularCategoryActivity"
-            android:configChanges="keyboardHidden|screenSize|screenLayout|orientation"
-            android:exported="false"
-            android:screenOrientation="portrait"
-            android:windowSoftInputMode="stateHidden" />
-        <activity
-            android:name=".activity.user.UserServicesActivity"
             android:configChanges="keyboardHidden|screenSize|screenLayout|orientation"
             android:exported="false"
             android:screenOrientation="portrait"
