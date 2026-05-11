@@ -7,6 +7,9 @@ import com.app.bemyrider.model.CommonPojo
 import com.app.bemyrider.model.LanguagePojo
 import com.app.bemyrider.model.NewLoginPojo
 import com.app.bemyrider.model.CustomerHistoryPojo
+import com.app.bemyrider.model.DisputeDetailPojo
+import com.app.bemyrider.model.DisputeListPojo
+import com.app.bemyrider.model.SendDisputeMessagePojo
 import com.app.bemyrider.model.DownloadInvoicePojo
 import com.app.bemyrider.model.ProviderServiceRequestPojo
 import com.app.bemyrider.model.ServiceReviewPojo
@@ -326,6 +329,31 @@ class AppRepository {
             else -> apiService.getSmallDelivery(action, sort, rating, location, lat, lng, keyword, page)
         }
     }
+
+    suspend fun getDisputeList(userId: String, page: Int): Response<DisputeListPojo> =
+        apiService.getDisputeList(userId, page)
+
+    suspend fun getDisputeDetail(disputeId: String, page: Int, lastMessageId: String? = null): Response<DisputeDetailPojo> =
+        apiService.getDisputeDetail(disputeId, page, lastMessageId)
+
+    suspend fun sendDisputeMessage(disputeId: String, userId: String, messageText: String?, filePath: String?): Response<SendDisputeMessagePojo> {
+        val toBody = { s: String -> s.toRequestBody(MultipartBody.FORM) }
+        val textPart = if (filePath.isNullOrEmpty() && messageText != null) messageText.toRequestBody(MultipartBody.FORM) else null
+        val filePart = if (!filePath.isNullOrEmpty()) {
+            val file = File(filePath)
+            if (file.exists()) MultipartBody.Part.createFormData("attachment", file.name, file.asRequestBody("image/*".toMediaTypeOrNull())) else null
+        } else null
+        return apiService.sendDisputeMessage(toBody(disputeId), toBody(userId), textPart, filePart)
+    }
+
+    suspend fun acceptDispute(disputeId: String, userId: String): Response<CommonPojo> =
+        apiService.acceptDispute(disputeId, userId)
+
+    suspend fun escalateToAdmin(disputeId: String, userId: String): Response<CommonPojo> =
+        apiService.escalateToAdmin(disputeId, userId)
+
+    suspend fun raiseDispute(serviceRequestId: String, userId: String, title: String, message: String): Response<CommonPojo> =
+        apiService.raiseDispute(serviceRequestId, userId, title, message)
 
     suspend fun getMyServices(params: Map<String, String>): Response<MyServiceListPojo> =
         apiService.getMyServices(params)

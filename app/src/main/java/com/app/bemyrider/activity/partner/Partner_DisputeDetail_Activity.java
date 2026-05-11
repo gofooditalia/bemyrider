@@ -28,18 +28,17 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.bemyrider.Adapter.User.DisputeDetailItemAdapter;
 import com.app.bemyrider.AsyncTask.DownloadAsync;
-import com.app.bemyrider.AsyncTask.WebServiceCall;
 import com.app.bemyrider.R;
-import com.app.bemyrider.WebServices.WebServiceUrl;
 import com.app.bemyrider.activity.user.ServiceHistoryActivity;
 import com.app.bemyrider.databinding.PartnerActivityDisputeDetailBinding;
 import com.app.bemyrider.helper.PermissionUtils;
 import com.app.bemyrider.helper.ToastMaster;
-import com.app.bemyrider.model.CommonPojo;
-import com.app.bemyrider.model.DisputeDetailPojo;
 import com.app.bemyrider.model.DisputeDetailPojoItem;
+import com.app.bemyrider.model.DisputeDetailPojo;
 import com.app.bemyrider.model.FileUtilPOJO;
-import com.app.bemyrider.model.SendDisputeMessagePojo;
+import com.app.bemyrider.viewmodel.DisputeDetailViewModel;
+
+import androidx.lifecycle.ViewModelProvider;
 import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.FileUtils;
 import com.app.bemyrider.utils.LocaleManager;
@@ -47,9 +46,7 @@ import com.app.bemyrider.utils.Log;
 import com.app.bemyrider.utils.PrefsUtil;
 import com.app.bemyrider.utils.Utils;
 
-import java.io.File;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 
 /**
  * Modified by Hardik Talaviya on 4/12/19.
@@ -68,7 +65,9 @@ public class Partner_DisputeDetail_Activity extends AppCompatActivity {
     private DisputeDetailItemAdapter adapter;
     private String serviceRequestId = "", fileName, realPath = "";
     private boolean attachedFile = false;
-    private WebServiceCall escalateToAdminAsync, acceptDisputeAsync, sendMessageAsync, disputeDetailAsync;
+    private boolean pendingClear = false;
+    private boolean isAcceptAction = false;
+    private DisputeDetailViewModel viewModel;
 
 
     private LinearLayoutManager linearLayoutManager;
@@ -103,6 +102,8 @@ public class Partner_DisputeDetail_Activity extends AppCompatActivity {
 
         initViews();
 
+        viewModel = new ViewModelProvider(this).get(DisputeDetailViewModel.class);
+        observeViewModel();
         serviceCallGetDisputeDetails(true);
 
         binding.recyclerDisputeDetails.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -210,178 +211,110 @@ public class Partner_DisputeDetail_Activity extends AppCompatActivity {
         }
     }
 
+    private void observeViewModel() {
+        viewModel.getDetail().observe(this, pojo -> {
+            if (pojo == null || pojo.getData() == null) return;
+            binding.progress.setVisibility(View.GONE);
+            binding.recyclerDisputeDetails.setVisibility(View.VISIBLE);
+            if (pendingClear) {
+                detailPojoItems.clear();
+                pendingClear = false;
+                String customerName = pojo.getData().getCustomerFirstname() + " " + pojo.getData().getCustomerLastname();
+                String providerName = pojo.getData().getProviderFirstname() + " " + pojo.getData().getProviderLastname();
+                adapter = new DisputeDetailItemAdapter(detailPojoItems, this,
+                        customerName, providerName, pojo.getData().getCustomerImage(),
+                        pojo.getData().getProviderImage());
+                binding.recyclerDisputeDetails.setAdapter(adapter);
+            }
+            setData(pojo);
+            int prevSize = detailPojoItems.size();
+            detailPojoItems.addAll(pojo.getData().getMessageList());
+            adapter.notifyDataSetChanged();
+            loading = true;
+            boolean hasItems = !detailPojoItems.isEmpty();
+            binding.txtNoDataDispute.setVisibility(hasItems ? View.GONE : View.VISIBLE);
+            binding.recyclerDisputeDetails.setVisibility(hasItems ? View.VISIBLE : View.GONE);
+            if (hasItems) binding.recyclerDisputeDetails.scrollToPosition(prevSize);
+            try { total_records = pojo.getData().getPagination().getTotalRecords(); } catch (Exception ignored) {}
+        });
+
+        viewModel.getSendResult().observe(this, pojo -> {
+            binding.layoutBottompanel.pgSend.setVisibility(View.GONE);
+            binding.layoutBottompanel.ImgSend.setVisibility(View.VISIBLE);
+            if (pojo != null && pojo.getData() != null) {
+                binding.layoutBottompanel.edtMessage.setText("");
+                attachedFile = false;
+                realPath = "";
+                detailPojoItems.add(0, pojo.getData());
+                adapter.notifyDataSetChanged();
+                binding.recyclerDisputeDetails.scrollToPosition(0);
+            }
+        });
+
+        viewModel.getActionResult().observe(this, result -> {
+            binding.pgEscalateAdmin.setVisibility(View.GONE);
+            binding.pgAcceptDispute.setVisibility(View.GONE);
+            binding.escalateToAdmin.setClickable(true);
+            binding.acceptDispute.setClickable(true);
+            if (result != null && result.isStatus()) {
+                Toast.makeText(this, result.getMessage(), Toast.LENGTH_SHORT).show();
+                if (isAcceptAction) {
+                    binding.acceptDispute.setVisibility(View.GONE);
+                    String userType = PrefsUtil.with(this).readString("UserType");
+                    Intent intent = "c".equals(userType)
+                            ? new Intent(this, ServiceHistoryActivity.class)
+                            : new Intent(this, Partner_ServiceRequest_TabLayout_Activity.class);
+                    startActivity(intent);
+                }
+                finish();
+            }
+        });
+
+        viewModel.getError().observe(this, errorMsg -> {
+            if (errorMsg != null) {
+                binding.progress.setVisibility(View.GONE);
+                binding.pgEscalateAdmin.setVisibility(View.GONE);
+                binding.pgAcceptDispute.setVisibility(View.GONE);
+                binding.layoutBottompanel.pgSend.setVisibility(View.GONE);
+                binding.escalateToAdmin.setClickable(true);
+                binding.acceptDispute.setClickable(true);
+                binding.layoutBottompanel.ImgSend.setVisibility(View.VISIBLE);
+                Toast.makeText(this, errorMsg, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
     private void serviceCallEscalateToAdmin() {
         binding.escalateToAdmin.setClickable(false);
         binding.acceptDispute.setClickable(false);
         binding.pgEscalateAdmin.setVisibility(View.VISIBLE);
-
-        String currentUserId = PrefsUtil.with(this).readString("UserId");
-
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-        textParams.put("dispute_id", getIntent().getStringExtra("DisputeId"));
-        textParams.put("user_id", currentUserId);
-
-        new WebServiceCall(this, WebServiceUrl.URL_ESCALAPERTO_ADMIN, textParams, CommonPojo.class, false,
-                new WebServiceCall.OnResultListener() {
-                    @Override
-                    public void onResult(boolean status, Object obj) {
-                        binding.pgEscalateAdmin.setVisibility(View.GONE);
-                        binding.escalateToAdmin.setClickable(true);
-                        binding.acceptDispute.setClickable(true);
-                        if (status) {
-                            Toast.makeText(Partner_DisputeDetail_Activity.this, ((CommonPojo) obj).getMessage(), Toast.LENGTH_SHORT).show();
-                            finish();
-                        } else {
-                            Toast.makeText(Partner_DisputeDetail_Activity.this, (String) obj, Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                    @Override public void onAsync(Object obj) { escalateToAdminAsync = null; }
-                    @Override public void onCancelled() { escalateToAdminAsync = null; }
-                });
-
-
+        isAcceptAction = false;
+        viewModel.escalateToAdmin(getIntent().getStringExtra("DisputeId"), PrefsUtil.with(this).readString("UserId"));
     }
 
     private void serviceCallAcceptDispute() {
         binding.acceptDispute.setClickable(false);
         binding.escalateToAdmin.setClickable(false);
         binding.pgAcceptDispute.setVisibility(View.VISIBLE);
-
-        String currentUserId = PrefsUtil.with(this).readString("UserId");
-
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-        textParams.put("dispute_id", getIntent().getStringExtra("DisputeId"));
-        textParams.put("user_id", currentUserId);
-
-        new WebServiceCall(this, WebServiceUrl.URL_ACCEPT_DISPUTE, textParams, CommonPojo.class, false,
-                new WebServiceCall.OnResultListener() {
-                    @Override
-                    public void onResult(boolean status, Object obj) {
-                        binding.pgAcceptDispute.setVisibility(View.GONE);
-                        binding.acceptDispute.setClickable(true);
-                        binding.escalateToAdmin.setClickable(true);
-                        if (status) {
-                            binding.acceptDispute.setVisibility(View.GONE);
-                            if (PrefsUtil.with(Partner_DisputeDetail_Activity.this).readString("UserType").equals("c")) {
-                                Intent intent = new Intent(Partner_DisputeDetail_Activity.this, ServiceHistoryActivity.class);
-                                startActivity(intent);
-                            } else {
-                                Intent intent = new Intent(Partner_DisputeDetail_Activity.this, Partner_ServiceRequest_TabLayout_Activity.class);
-                                startActivity(intent);
-                            }
-                            finish();
-                        } else {
-                            Toast.makeText(Partner_DisputeDetail_Activity.this, (String) obj, Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                    @Override public void onAsync(Object obj) { acceptDisputeAsync = null; }
-                    @Override public void onCancelled() { acceptDisputeAsync = null; }
-                });
+        isAcceptAction = true;
+        viewModel.acceptDispute(getIntent().getStringExtra("DisputeId"), PrefsUtil.with(this).readString("UserId"));
     }
 
     private void serviceCallSendMessage() {
         binding.layoutBottompanel.ImgSend.setVisibility(View.GONE);
         binding.layoutBottompanel.pgSend.setVisibility(View.VISIBLE);
-
-        String currentUserId = PrefsUtil.with(this).readString("UserId");
-
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-        LinkedHashMap<String, File> fileParams = new LinkedHashMap<>();
-
-        textParams.put("dispute_id", getIntent().getStringExtra("DisputeId"));
-        textParams.put("message_text", binding.layoutBottompanel.edtMessage.getText().toString().trim());
-        textParams.put("user_id", currentUserId);
-
-        if (attachedFile) {
-            fileParams.put("attachment", new File(realPath));
-        } else {
-            textParams.put("message_text", Utils.encodeEmoji(binding.layoutBottompanel.edtMessage.getText().toString().trim()));
-        }
-
-        new WebServiceCall(this, WebServiceUrl.URL_SEND_DISPUTE_MESSAGE, textParams, fileParams, SendDisputeMessagePojo.class,
-                false, new WebServiceCall.OnResultListener() {
-            @Override
-            public void onResult(boolean status, Object obj) {
-                binding.layoutBottompanel.pgSend.setVisibility(View.GONE);
-                binding.layoutBottompanel.ImgSend.setVisibility(View.VISIBLE);
-                if (status) {
-                    SendDisputeMessagePojo sendDisputeMessagePojo = (SendDisputeMessagePojo) obj;
-                    binding.layoutBottompanel.edtMessage.setText("");
-                    detailPojoItems.add(0, sendDisputeMessagePojo.getData());
-                    adapter.notifyDataSetChanged();
-                    binding.recyclerDisputeDetails.scrollToPosition(0);
-                } else {
-                    Toast.makeText(Partner_DisputeDetail_Activity.this, (String) obj, Toast.LENGTH_SHORT).show();
-                }
-            }
-            @Override public void onAsync(Object obj) { sendMessageAsync = null; }
-            @Override public void onCancelled() { sendMessageAsync = null; }
-        });
+        String messageText = attachedFile ? null : Utils.encodeEmoji(binding.layoutBottompanel.edtMessage.getText().toString().trim());
+        String attachment = attachedFile ? realPath : null;
+        viewModel.sendMessage(getIntent().getStringExtra("DisputeId"), PrefsUtil.with(this).readString("UserId"), messageText, attachment);
     }
 
     private void serviceCallGetDisputeDetails(boolean clearFlag) {
-        if (clearFlag) {
-            page = 1;
-            binding.txtNoDataDispute.setVisibility(View.GONE);
-            binding.recyclerDisputeDetails.scrollToPosition(0);
-        }
+        if (clearFlag) { page = 1; binding.txtNoDataDispute.setVisibility(View.GONE); binding.recyclerDisputeDetails.scrollToPosition(0); }
+        pendingClear = clearFlag;
         binding.progress.setVisibility(View.VISIBLE);
-
-        String currentUserId = PrefsUtil.with(this).readString("UserId");
-
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-
-        if (page > 1) {
-            textParams.put("last_message_id", detailPojoItems.get(detailPojoItems.size() - 1).getMessageId());
-        }
-        textParams.put("dispute_id", getIntent().getStringExtra("DisputeId"));
-        textParams.put("page", String.valueOf(page));
-
-        new WebServiceCall(this, WebServiceUrl.URL_DISPUTE_DETAILS, textParams, DisputeDetailPojo.class, false,
-                new WebServiceCall.OnResultListener() {
-                    @Override
-                    public void onResult(boolean status, Object obj) {
-                        if (status) {
-                            DisputeDetailPojo detailPojo = (DisputeDetailPojo) obj;
-                            binding.progress.setVisibility(View.GONE);
-                            binding.recyclerDisputeDetails.setVisibility(View.VISIBLE);
-                            if (clearFlag) {
-                                detailPojoItems.clear();
-                                String customerName = detailPojo.getData().getCustomerFirstname() + " " + detailPojo.getData().getCustomerLastname();
-                                String providerName = detailPojo.getData().getProviderFirstname() + " " + detailPojo.getData().getProviderLastname();
-                                adapter = new DisputeDetailItemAdapter(detailPojoItems, Partner_DisputeDetail_Activity.this,
-                                        customerName, providerName, detailPojo.getData().getCustomerImage(),
-                                        detailPojo.getData().getProviderImage());
-                                binding.recyclerDisputeDetails.setAdapter(adapter);
-                            }
-
-                            setData(detailPojo);
-
-                            detailPojoItems.addAll(detailPojo.getData().getMessageList());
-                            adapter.notifyDataSetChanged();
-                            loading = true;
-
-                            if (detailPojoItems.size() > 0) {
-                                binding.txtNoDataDispute.setVisibility(View.GONE);
-                                binding.recyclerDisputeDetails.setVisibility(View.VISIBLE);
-                                binding.recyclerDisputeDetails.scrollToPosition(detailPojoItems.size() - detailPojo.getData().getMessageList().size());
-                            } else {
-                                binding.recyclerDisputeDetails.setVisibility(View.GONE);
-                                binding.txtNoDataDispute.setVisibility(View.VISIBLE);
-                            }
-                            try {
-                                total_records = detailPojo.getData().getPagination().getTotalRecords();
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        } else {
-                            binding.progress.setVisibility(View.GONE);
-                            Toast.makeText(Partner_DisputeDetail_Activity.this, (String) obj, Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                    @Override public void onAsync(Object obj) { disputeDetailAsync = null; }
-                    @Override public void onCancelled() { disputeDetailAsync = null; }
-                });
+        String lastMsgId = (page > 1 && !detailPojoItems.isEmpty())
+                ? detailPojoItems.get(detailPojoItems.size() - 1).getMessageId() : null;
+        viewModel.loadDetail(getIntent().getStringExtra("DisputeId"), page, lastMsgId);
     }
 
     private void setData(DisputeDetailPojo detailPojo) {
@@ -448,10 +381,6 @@ public class Partner_DisputeDetail_Activity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         try { connectionManager.unregisterReceiver(); } catch (Exception e) { e.printStackTrace(); }
-        Utils.cancelAsyncTask(escalateToAdminAsync);
-        Utils.cancelAsyncTask(acceptDisputeAsync);
-        Utils.cancelAsyncTask(sendMessageAsync);
-        Utils.cancelAsyncTask(disputeDetailAsync);
         super.onDestroy();
     }
 }

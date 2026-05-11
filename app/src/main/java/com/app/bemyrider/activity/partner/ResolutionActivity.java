@@ -19,12 +19,12 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.bemyrider.Adapter.User.DisputeListAdapter;
 import com.app.bemyrider.AsyncTask.ConnectionCheck;
-import com.app.bemyrider.AsyncTask.WebServiceCall;
 import com.app.bemyrider.R;
-import com.app.bemyrider.WebServices.WebServiceUrl;
 import com.app.bemyrider.databinding.PartnerActivityResolutionBinding;
-import com.app.bemyrider.model.DisputeListPojo;
 import com.app.bemyrider.model.DisputeListPojoItem;
+import com.app.bemyrider.viewmodel.DisputeListViewModel;
+
+import androidx.lifecycle.ViewModelProvider;
 import com.app.bemyrider.model.MessageEvent;
 import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.LocaleManager;
@@ -45,7 +45,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 
 /**
@@ -63,7 +62,8 @@ public class ResolutionActivity extends AppCompatActivity {
     private RecyclerView.OnScrollListener listner;
     private LinearLayoutManager layoutManager;
     private boolean loading = true;
-    private WebServiceCall disputeListAsync;
+    private boolean pendingClear = false;
+    private DisputeListViewModel viewModel;
     private Context context;
     private ConnectionManager connectionManager;
 
@@ -74,6 +74,8 @@ public class ResolutionActivity extends AppCompatActivity {
 
         initViews();
 
+        viewModel = new ViewModelProvider(this).get(DisputeListViewModel.class);
+        observeViewModel();
         getDisputeList(true);
 
         listner = new RecyclerView.OnScrollListener() {
@@ -133,73 +135,43 @@ public class ResolutionActivity extends AppCompatActivity {
         binding.rvDisputeListPro.setAdapter(adapter);
     }
 
-    /*------------- Dispute List Api Call ---------------*/
-    private void getDisputeList(boolean isClear) {
+    private void observeViewModel() {
+        viewModel.getDisputes().observe(this, pojo -> {
+            if (binding.swipeRefresh.isRefreshing()) binding.swipeRefresh.setRefreshing(false);
+            binding.progress.setVisibility(View.GONE);
+            if (pojo != null && pojo.getData() != null) {
+                if (pendingClear) { disputeList.clear(); pendingClear = false; }
+                disputeList.addAll(pojo.getData().getDisputeList());
+                adapter.notifyDataSetChanged();
+                loading = true;
+                boolean hasItems = !disputeList.isEmpty();
+                binding.txtNoRecordDisputeP.setVisibility(hasItems ? View.GONE : View.VISIBLE);
+                binding.rvDisputeListPro.setVisibility(hasItems ? View.VISIBLE : View.GONE);
+                try { total_records = pojo.getData().getPagination().getTotalRecords(); } catch (Exception ignored) {}
+                binding.rvDisputeListPro.addOnScrollListener(listner);
+            }
+        });
+        viewModel.getError().observe(this, errorMsg -> {
+            if (errorMsg != null) {
+                if (binding.swipeRefresh.isRefreshing()) binding.swipeRefresh.setRefreshing(false);
+                binding.progress.setVisibility(View.GONE);
+                Toast.makeText(this, errorMsg, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
 
+    private void getDisputeList(boolean isClear) {
         if (isClear) {
             page = 1;
             binding.txtNoRecordDisputeP.setVisibility(View.GONE);
             binding.rvDisputeListPro.scrollToPosition(0);
         }
+        pendingClear = isClear;
         if (!binding.swipeRefresh.isRefreshing()) {
             binding.progress.setVisibility(View.VISIBLE);
         }
 
-        String url = WebServiceUrl.URL_GETDISPUTELIST;
-
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-
-        textParams.put("user_id", PrefsUtil.with(ResolutionActivity.this).readString("UserId"));
-        textParams.put("page", String.valueOf(page));
-
-        new WebServiceCall(this, url, textParams, DisputeListPojo.class, false,
-                new WebServiceCall.OnResultListener() {
-                    @Override
-                    public void onResult(boolean status, Object obj) {
-                        if (binding.swipeRefresh.isRefreshing()) {
-                            binding.swipeRefresh.setRefreshing(false);
-                        }
-                        if (status) {
-                            DisputeListPojo disputeListPojo = (DisputeListPojo) obj;
-                            List<DisputeListPojoItem> list = ((DisputeListPojo) obj).getData().getDisputeList();
-                            if (isClear) {
-                                disputeList.clear();
-                            }
-                            binding.progress.setVisibility(View.GONE);
-                            binding.rvDisputeListPro.setVisibility(View.VISIBLE);
-                            disputeList.addAll(list);
-                            adapter.notifyDataSetChanged();
-                            loading = true;
-                            if (!(disputeList.size() > 0)) {
-                                binding.txtNoRecordDisputeP.setVisibility(View.VISIBLE);
-                                binding.rvDisputeListPro.setVisibility(View.GONE);
-                            } else {
-                                binding.txtNoRecordDisputeP.setVisibility(View.GONE);
-                                binding.rvDisputeListPro.setVisibility(View.VISIBLE);
-                            }
-                            try {
-                                total_records = disputeListPojo.getData().getPagination().getTotalRecords();
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                            binding.rvDisputeListPro.addOnScrollListener(listner);
-                        } else {
-                            binding.progress.setVisibility(View.GONE);
-                            Toast.makeText(ResolutionActivity.this, (String) obj,
-                                    Toast.LENGTH_SHORT).show();
-                        }
-                    }
-
-                    @Override
-                    public void onAsync(Object asyncTask) {
-                        disputeListAsync = null;
-                    }
-
-                    @Override
-                    public void onCancelled() {
-                        disputeListAsync = null;
-                    }
-                });
+        viewModel.loadDisputes(PrefsUtil.with(this).readString("UserId"), page);
     }
 
     @Override
@@ -303,7 +275,6 @@ public class ResolutionActivity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        Utils.cancelAsyncTask(disputeListAsync);
         super.onDestroy();
     }
 

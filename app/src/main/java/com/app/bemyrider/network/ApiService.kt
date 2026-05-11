@@ -1,6 +1,9 @@
 package com.app.bemyrider.network
 
 import com.app.bemyrider.model.BulkInvoicePojo
+import com.app.bemyrider.model.DisputeDetailPojo
+import com.app.bemyrider.model.DisputeListPojo
+import com.app.bemyrider.model.SendDisputeMessagePojo
 import com.app.bemyrider.model.DownloadInvoicePojo
 import com.app.bemyrider.model.ProviderServiceRequestPojo
 import com.app.bemyrider.model.ServiceReviewPojo
@@ -215,6 +218,53 @@ interface ApiServiceKt {
         @Field("date_from") dateFrom: String? = null,
         @Field("date_to") dateTo: String? = null
     ): Response<BulkInvoicePojo>
+
+    @FormUrlEncoded
+    @POST("disputes/getdisputelist")
+    suspend fun getDisputeList(
+        @Field("user_id") userId: String,
+        @Field("page") page: Int
+    ): Response<DisputeListPojo>
+
+    @FormUrlEncoded
+    @POST("disputes/getdisputedetails")
+    suspend fun getDisputeDetail(
+        @Field("dispute_id") disputeId: String,
+        @Field("page") page: Int,
+        @Field("last_message_id") lastMessageId: String? = null
+    ): Response<DisputeDetailPojo>
+
+    @Multipart
+    @POST("disputes/senddisputemessage")
+    suspend fun sendDisputeMessage(
+        @Part("dispute_id") disputeId: RequestBody,
+        @Part("user_id") userId: RequestBody,
+        @Part("message_text") messageText: RequestBody?,
+        @Part attachment: MultipartBody.Part?
+    ): Response<SendDisputeMessagePojo>
+
+    @FormUrlEncoded
+    @POST("disputes/acceptdispute")
+    suspend fun acceptDispute(
+        @Field("dispute_id") disputeId: String,
+        @Field("user_id") userId: String
+    ): Response<CommonPojo>
+
+    @FormUrlEncoded
+    @POST("disputes/escalatetoadmin")
+    suspend fun escalateToAdmin(
+        @Field("dispute_id") disputeId: String,
+        @Field("user_id") userId: String
+    ): Response<CommonPojo>
+
+    @FormUrlEncoded
+    @POST("disputes/raisedispute")
+    suspend fun raiseDispute(
+        @Field("service_request_id") serviceRequestId: String,
+        @Field("user_id") userId: String,
+        @Field("title") title: String,
+        @Field("message") message: String
+    ): Response<CommonPojo>
 
     @FormUrlEncoded
     @POST("services/providerservices")

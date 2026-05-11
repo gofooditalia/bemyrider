@@ -17,12 +17,12 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.bemyrider.Adapter.User.DisputeListAdapter;
 import com.app.bemyrider.AsyncTask.ConnectionCheck;
-import com.app.bemyrider.AsyncTask.WebServiceCall;
 import com.app.bemyrider.R;
-import com.app.bemyrider.WebServices.WebServiceUrl;
 import com.app.bemyrider.databinding.ActivityDisputelistBinding;
-import com.app.bemyrider.model.DisputeListPojo;
 import com.app.bemyrider.model.DisputeListPojoItem;
+import com.app.bemyrider.viewmodel.DisputeListViewModel;
+
+import androidx.lifecycle.ViewModelProvider;
 import com.app.bemyrider.model.MessageEvent;
 import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.LocaleManager;
@@ -43,7 +43,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 
 /**
@@ -59,10 +58,10 @@ public class DisputeListActivity extends AppCompatActivity {
     private int page = 1;
     private int total_records = 0;
     private RecyclerView.OnScrollListener listner;
-    private WebServiceCall disputeListAsync;
+    private DisputeListViewModel viewModel;
     private LinearLayoutManager layoutManager;
     private boolean loading = true;
-    private SharedPreferences preferences;
+    private boolean pendingClear = false;
     private Context context;
     private ConnectionManager connectionManager;
 
@@ -71,9 +70,10 @@ public class DisputeListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(DisputeListActivity.this, R.layout.activity_disputelist, null);
 
-        preferences = getSharedPreferences("Unique", MODE_PRIVATE);
-
         initViews();
+
+        viewModel = new ViewModelProvider(this).get(DisputeListViewModel.class);
+        observeViewModel();
 
         if (new ConnectionCheck().isNetworkConnected(this)) {
             getDisputeList(true);
@@ -135,64 +135,37 @@ public class DisputeListActivity extends AppCompatActivity {
         binding.rvDisputeList.setAdapter(adapter);
     }
 
+    private void observeViewModel() {
+        viewModel.getDisputes().observe(this, pojo -> {
+            if (binding.swipeRefresh.isRefreshing()) binding.swipeRefresh.setRefreshing(false);
+            binding.progress.setVisibility(View.GONE);
+            if (pojo != null && pojo.getData() != null) {
+                if (pendingClear) { disputeList.clear(); pendingClear = false; }
+                disputeList.addAll(pojo.getData().getDisputeList());
+                adapter.notifyDataSetChanged();
+                loading = true;
+                boolean hasItems = !disputeList.isEmpty();
+                binding.txtNoRecordDis.setVisibility(hasItems ? View.GONE : View.VISIBLE);
+                binding.rvDisputeList.setVisibility(hasItems ? View.VISIBLE : View.GONE);
+                try { total_records = pojo.getData().getPagination().getTotalRecords(); } catch (Exception ignored) {}
+                binding.rvDisputeList.addOnScrollListener(listner);
+            }
+        });
+
+        viewModel.getError().observe(this, errorMsg -> {
+            if (errorMsg != null) {
+                if (binding.swipeRefresh.isRefreshing()) binding.swipeRefresh.setRefreshing(false);
+                binding.progress.setVisibility(View.GONE);
+                Toast.makeText(this, errorMsg, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
     private void getDisputeList(final boolean isClear) {
-        if (isClear) {
-            page = 1;
-            binding.txtNoRecordDis.setVisibility(View.GONE);
-            binding.rvDisputeList.scrollToPosition(0);
-        }
-        if (!binding.swipeRefresh.isRefreshing()) {
-            binding.progress.setVisibility(View.VISIBLE);
-        }
-
-        String url = WebServiceUrl.URL_GETDISPUTELIST;
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-
-        textParams.put("user_id", PrefsUtil.with(DisputeListActivity.this).readString("UserId"));
-        textParams.put("page", String.valueOf(page));
-        textParams.put("lId", preferences.getString("lanId", "1"));
-
-        new WebServiceCall(this, url, textParams, DisputeListPojo.class, false,
-                new WebServiceCall.OnResultListener() {
-                    @Override
-                    public void onResult(boolean status, Object obj) {
-                        if (binding.swipeRefresh.isRefreshing()) {
-                            binding.swipeRefresh.setRefreshing(false);
-                        }
-                        if (status) {
-                            DisputeListPojo disputeListPojo = (DisputeListPojo) obj;
-                            List<DisputeListPojoItem> list = disputeListPojo.getData().getDisputeList();
-                            if (isClear) {
-                                disputeList.clear();
-                            }
-                            binding.progress.setVisibility(View.GONE);
-                            binding.rvDisputeList.setVisibility(View.VISIBLE);
-
-                            disputeList.addAll(list);
-                            adapter.notifyDataSetChanged();
-                            loading = true;
-                            if (disputeList.size() > 0) {
-                                binding.txtNoRecordDis.setVisibility(View.GONE);
-                                binding.rvDisputeList.setVisibility(View.VISIBLE);
-                            } else {
-                                binding.rvDisputeList.setVisibility(View.GONE);
-                                binding.txtNoRecordDis.setVisibility(View.VISIBLE);
-                            }
-                            try {
-                                total_records = disputeListPojo.getData().getPagination().getTotalRecords();
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                            binding.rvDisputeList.addOnScrollListener(listner);
-                        } else {
-                            binding.progress.setVisibility(View.GONE);
-                            Toast.makeText(DisputeListActivity.this, (String) obj,
-                                    Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                    @Override public void onAsync(Object obj) { disputeListAsync = null; }
-                    @Override public void onCancelled() { disputeListAsync = null; }
-                });
+        if (isClear) { page = 1; binding.txtNoRecordDis.setVisibility(View.GONE); binding.rvDisputeList.scrollToPosition(0); }
+        pendingClear = isClear;
+        if (!binding.swipeRefresh.isRefreshing()) binding.progress.setVisibility(View.VISIBLE);
+        viewModel.loadDisputes(PrefsUtil.with(this).readString("UserId"), page);
     }
 
     @Override
@@ -254,7 +227,6 @@ public class DisputeListActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         try { connectionManager.unregisterReceiver(); } catch (Exception e) { e.printStackTrace(); }
-        Utils.cancelAsyncTask(disputeListAsync);
         super.onDestroy();
     }
 

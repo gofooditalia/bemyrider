@@ -15,18 +15,17 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.text.HtmlCompat;
 import androidx.databinding.DataBindingUtil;
 
-import com.app.bemyrider.AsyncTask.WebServiceCall;
 import com.app.bemyrider.R;
-import com.app.bemyrider.WebServices.WebServiceUrl;
 import com.app.bemyrider.databinding.ActivityRaiseDisputeBinding;
-import com.app.bemyrider.model.CommonPojo;
+import com.app.bemyrider.viewmodel.RaiseDisputeViewModel;
+
+import androidx.lifecycle.ViewModelProvider;
 import com.app.bemyrider.utils.ConnectionManager;
 import com.app.bemyrider.utils.LocaleManager;
 import com.app.bemyrider.utils.Log;
 import com.app.bemyrider.utils.PrefsUtil;
 import com.app.bemyrider.utils.Utils;
 
-import java.util.LinkedHashMap;
 
 /**
  * Modified by Hardik Talaviya on 4/12/19.
@@ -36,7 +35,7 @@ public class RaiseDisputeActivity extends AppCompatActivity {
 
     private ActivityRaiseDisputeBinding binding;
     private String serviceRequestId = "";
-    private WebServiceCall raiseDisputeAsync;
+    private RaiseDisputeViewModel viewModel;
     private Context context;
     private ConnectionManager connectionManager;
 
@@ -47,6 +46,24 @@ public class RaiseDisputeActivity extends AppCompatActivity {
         binding = DataBindingUtil.setContentView(RaiseDisputeActivity.this, R.layout.activity_raise_dispute, null);
 
         initViews();
+
+        viewModel = new ViewModelProvider(this).get(RaiseDisputeViewModel.class);
+        viewModel.getResult().observe(this, result -> {
+            binding.pgSubmit.setVisibility(View.GONE);
+            binding.btnSubmit.setClickable(true);
+            if (result != null && result.isStatus()) {
+                Toast.makeText(this, result.getMessage(), Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(this, DisputeListActivity.class));
+                finish();
+            }
+        });
+        viewModel.getError().observe(this, errorMsg -> {
+            if (errorMsg != null) {
+                binding.pgSubmit.setVisibility(View.GONE);
+                binding.btnSubmit.setClickable(true);
+                Toast.makeText(this, errorMsg, Toast.LENGTH_SHORT).show();
+            }
+        });
 
         if (getIntent().hasExtra("RequestID")) {
             serviceRequestId = getIntent().getStringExtra("RequestID");
@@ -81,34 +98,12 @@ public class RaiseDisputeActivity extends AppCompatActivity {
 
     private void raiseDispute() {
         binding.pgSubmit.setVisibility(View.VISIBLE);
-
-        String url = WebServiceUrl.URL_RASEDISPUTE;
-        LinkedHashMap<String, String> textParams = new LinkedHashMap<>();
-
-        textParams.put("service_request_id", serviceRequestId);
-        textParams.put("user_id", PrefsUtil.with(RaiseDisputeActivity.this).readString("UserId"));
-        textParams.put("title", binding.edtSubject.getText().toString().trim());
-        textParams.put("message", Utils.encodeEmoji(binding.edtDesc.getText().toString().trim()));
-
-        new WebServiceCall(this, url, textParams, CommonPojo.class, false,
-                new WebServiceCall.OnResultListener() {
-                    @Override
-                    public void onResult(boolean status, Object obj) {
-                        binding.pgSubmit.setVisibility(View.GONE);
-                        binding.btnSubmit.setClickable(true);
-                        if (status) {
-                            CommonPojo pojo = (CommonPojo) obj;
-                            Toast.makeText(RaiseDisputeActivity.this, pojo.getMessage(), Toast.LENGTH_SHORT).show();
-                            Intent intent = new Intent(RaiseDisputeActivity.this, DisputeListActivity.class);
-                            startActivity(intent);
-                            finish();
-                        } else {
-                            Toast.makeText(RaiseDisputeActivity.this, (String) obj, Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                    @Override public void onAsync(Object obj) { raiseDisputeAsync = null; }
-                    @Override public void onCancelled() { raiseDisputeAsync = null; }
-                });
+        viewModel.raiseDispute(
+            serviceRequestId,
+            PrefsUtil.with(this).readString("UserId"),
+            binding.edtSubject.getText().toString().trim(),
+            Utils.encodeEmoji(binding.edtDesc.getText().toString().trim())
+        );
     }
 
     private boolean checkValidation() {
@@ -139,7 +134,6 @@ public class RaiseDisputeActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         try { connectionManager.unregisterReceiver(); } catch (Exception e) { e.printStackTrace(); }
-        Utils.cancelAsyncTask(raiseDisputeAsync);
         super.onDestroy();
     }
 
