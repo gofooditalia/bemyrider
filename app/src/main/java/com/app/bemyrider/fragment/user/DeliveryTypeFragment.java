@@ -28,21 +28,17 @@ import com.app.bemyrider.viewmodel.DeliveryTypeViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
 import java.util.ArrayList;
+import java.util.List;
 
-/**
- * Optimized for Lazy Loading and Request Cancellation by Gemini - 2024.
- */
 public class DeliveryTypeFragment extends Fragment {
-
-    private static final String TAG = "DeliveryTypeFragment";
 
     private FragmentDeliveryTypeListingBinding binding;
     private DeliveryTypeAdapter deliveryTypeAdapter;
-    private ArrayList<ProviderItem> arrayList;
+    private ArrayList<ProviderItem> arrayList = new ArrayList<>();
     private LinearLayoutManager layoutManager;
     private boolean isLoading = false;
     private boolean isDataLoaded = false;
-    private int pastVisibleItems, visibleItemCount, totalItemCount, page = 1, total_page = 1;
+    private int page = 1, total_page = 1;
     private DeliveryTypeViewModel viewModel;
     private Context context;
     private Activity activity;
@@ -56,9 +52,6 @@ public class DeliveryTypeFragment extends Fragment {
         args.putInt("index", index);
         f.setArguments(args);
         return f;
-    }
-
-    public DeliveryTypeFragment() {
     }
 
     @Override
@@ -88,14 +81,14 @@ public class DeliveryTypeFragment extends Fragment {
 
         binding.rvDeliveryList.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
                 if (dy > 0) {
-                    visibleItemCount = layoutManager.getChildCount();
-                    totalItemCount = layoutManager.getItemCount();
-                    pastVisibleItems = layoutManager.findFirstVisibleItemPosition();
-                    if ((!isLoading) && page < total_page) {
-                        if ((visibleItemCount + pastVisibleItems) >= totalItemCount) {
-                            page++;
+                    int visibleItemCount = layoutManager.getChildCount();
+                    int totalItemCount = layoutManager.getItemCount();
+                    int pastVisibleItems = layoutManager.findFirstVisibleItemPosition();
+
+                    if (!isLoading && page < total_page) {
+                        if ((visibleItemCount + pastVisibleItems) >= totalItemCount - 2) {
                             getAllProviders(false);
                         }
                     }
@@ -106,16 +99,13 @@ public class DeliveryTypeFragment extends Fragment {
 
     private void initView() {
         layoutManager = new LinearLayoutManager(context);
-        binding.rvDeliveryList.setHasFixedSize(true);
         binding.rvDeliveryList.setLayoutManager(layoutManager);
         binding.rvDeliveryList.setItemAnimator(new DefaultItemAnimator());
 
-        arrayList = new ArrayList<>();
         deliveryTypeAdapter = new DeliveryTypeAdapter(activity);
         binding.rvDeliveryList.setAdapter(deliveryTypeAdapter);
 
         binding.swipeRefresh.setOnRefreshListener(() -> {
-            binding.swipeRefresh.setRefreshing(true);
             getAllProviders(true);
         });
     }
@@ -129,25 +119,35 @@ public class DeliveryTypeFragment extends Fragment {
     private void observeViewModel() {
         viewModel.getProviders().observe(getViewLifecycleOwner(), pojo -> {
             if (!isAdded()) return;
-            if (binding.swipeRefresh.isRefreshing()) binding.swipeRefresh.setRefreshing(false);
+            binding.swipeRefresh.setRefreshing(false);
             binding.progress.setVisibility(View.GONE);
+            isLoading = false;
+
             if (pojo != null && pojo.getData() != null) {
                 isDataLoaded = true;
-                arrayList.clear(); // viewModel già gestisce la semantica clear/append via pendingClear
-                arrayList.addAll(pojo.getData().getProviderList());
-                binding.rvDeliveryList.setVisibility(View.VISIBLE);
+                List<ProviderItem> newItems = pojo.getData().getProviderList();
+                int serverPage = pojo.getData().getPagination().getCurrentPage();
+                total_page = pojo.getData().getPagination().getTotalPages();
+                page = serverPage;
+
+                if (serverPage == 1) {
+                    arrayList.clear();
+                    if (newItems != null) arrayList.addAll(newItems);
+                } else {
+                    if (newItems != null) arrayList.addAll(newItems);
+                }
+
                 boolean hasItems = !arrayList.isEmpty();
                 binding.txtNoRecord.setVisibility(hasItems ? View.GONE : View.VISIBLE);
                 binding.rvDeliveryList.setVisibility(hasItems ? View.VISIBLE : View.GONE);
+                
                 deliveryTypeAdapter.submitList(new ArrayList<>(arrayList));
-                total_page = pojo.getData().getPagination().getTotalPages();
-                page = pojo.getData().getPagination().getCurrentPage();
             }
-            isLoading = false;
         });
+
         viewModel.getError().observe(getViewLifecycleOwner(), errorMsg -> {
             if (errorMsg != null && isAdded()) {
-                if (binding.swipeRefresh.isRefreshing()) binding.swipeRefresh.setRefreshing(false);
+                binding.swipeRefresh.setRefreshing(false);
                 binding.progress.setVisibility(View.GONE);
                 Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show();
                 isLoading = false;
@@ -156,13 +156,16 @@ public class DeliveryTypeFragment extends Fragment {
     }
 
     private void getAllProviders(boolean isClear) {
+        if (isLoading) return;
+        isLoading = true;
+
         if (isClear) {
             page = 1;
-            arrayList.clear();
             binding.txtNoRecord.setVisibility(View.GONE);
-            binding.rvDeliveryList.scrollToPosition(0);
+        } else {
+            page++;
         }
-        isLoading = true;
+
         if (!binding.swipeRefresh.isRefreshing()) binding.progress.setVisibility(View.VISIBLE);
 
         String action = currentIndex == 2 ? "large" : currentIndex == 1 ? "medium" : "small";
@@ -178,7 +181,7 @@ public class DeliveryTypeFragment extends Fragment {
         mStrSearch = strSearch;
         if (binding != null) {
             binding.rvDeliveryList.setVisibility(View.GONE);
-            binding.getRoot().post(() -> getAllProviders(true));
+            getAllProviders(true);
         }
     }
 
@@ -193,12 +196,7 @@ public class DeliveryTypeFragment extends Fragment {
         if (!"0.0".equals(strRating)) mStrRating = strRating;
         if (binding != null) {
             binding.rvDeliveryList.setVisibility(View.GONE);
-            binding.getRoot().post(() -> getAllProviders(true));
+            getAllProviders(true);
         }
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
     }
 }
