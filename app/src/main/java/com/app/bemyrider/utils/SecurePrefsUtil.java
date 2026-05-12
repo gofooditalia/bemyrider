@@ -48,11 +48,13 @@ public class SecurePrefsUtil {
                     EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM);
             this.isFallback = false;
         } catch (GeneralSecurityException | IOException | RuntimeException e) {
-            e.printStackTrace();
+            android.util.Log.e("SecurePrefsUtil", "EncryptedSharedPreferences non disponibile, fallback a storage non cifrato", e);
             this.sharedPreferences = context.getSharedPreferences("SecureMyPrefs_Fallback", Context.MODE_PRIVATE);
             this.isFallback = true;
         }
     }
+
+    public boolean isFallback() { return isFallback; }
 
     public static synchronized SecurePrefsUtil with(Context context) {
         if (instance == null) {

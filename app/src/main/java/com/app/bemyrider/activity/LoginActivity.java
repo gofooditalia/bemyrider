@@ -269,7 +269,6 @@ public class LoginActivity extends AppCompatActivity {
                     securePrefs.write("LastName", item.getLastName());
                     securePrefs.write("UserType", item.getUserType());
                     securePrefs.write("eMail", item.getEmailId());
-                    securePrefs.write("Pass", binding.etLoginPassword.getText().toString().trim());
                     securePrefs.write("CurrencySign", getResources().getString(R.string.currency));
                     securePrefs.write("UserImg", item.getProfileImg());
                     securePrefs.write("login_cust_address", item.getAddress());

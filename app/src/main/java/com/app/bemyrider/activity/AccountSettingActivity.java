@@ -209,7 +209,6 @@ public class AccountSettingActivity extends AppCompatActivity {
                 if (commonPojo.isStatus()) {
                     Toast.makeText(AccountSettingActivity.this, commonPojo.getMessage(), Toast.LENGTH_SHORT).show();
                     
-                    SecurePrefsUtil.with(AccountSettingActivity.this).write("Pass", newPwd);
                     finish();
                 } else {
                     Toast.makeText(AccountSettingActivity.this, commonPojo.getMessage(), Toast.LENGTH_SHORT).show();
