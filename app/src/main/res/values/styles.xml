@@ -3,27 +3,23 @@
     <!-- Base application theme. -->
 
     <!--<style name="AppTheme" >-->
-    <style name="AppTheme" parent="Theme.MaterialComponents.Light.DarkActionBar">
-        <!-- Customize your theme here. -->
+    <style name="AppTheme" parent="Theme.Material3.Light">
         <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
+        <item name="colorSecondary">@color/colorAccent</item>
         <item name="colorControlNormal">@color/text</item>
         <item name="colorControlActivated">@color/button</item>
         <item name="android:timePickerStyle" tools:ignore="NewApi">@style/TimePicker</item>
         <item name="fontFamily">@font/roboto_light</item>
-        <item name="android:fontFamily">@font/roboto_light</item> <!-- Default app font -->
+        <item name="android:fontFamily">@font/roboto_light</item>
         <item name="actionBarStyle">@style/Custom.ActionBar</item>
         <item name="android:homeAsUpIndicator">@drawable/ic_back</item>
         <item name="android:statusBarColor" tools:targetApi="lollipop">@color/status_bg_color</item>
         <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
     </style>
 
-    <style name="AppThemeNoActionBar" parent="Theme.AppCompat.Light.NoActionBar">
-        <!-- Customize your theme here. -->
+    <style name="AppThemeNoActionBar" parent="Theme.Material3.Light.NoActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
+        <item name="colorSecondary">@color/colorAccent</item>
         <item name="colorControlNormal">@color/text</item>
         <item name="colorControlActivated">@color/button</item>
         <item name="android:timePickerStyle" tools:ignore="NewApi">@style/TimePicker</item>
@@ -104,7 +100,7 @@
         <item name="colorControlActivated">@color/button</item>
     </style>
 
-    <style name="StyledTilEditText" parent="ThemeOverlay.MaterialComponents.TextInputEditText.OutlinedBox.Dense"> <!--parent="ThemeOverlay.MaterialComponents.TextInputEditText.OutlinedBox.Dense"-->
+    <style name="StyledTilEditText" parent="ThemeOverlay.Material3.TextInputEditText.OutlinedBox.Dense"> <!--parent="ThemeOverlay.MaterialComponents.TextInputEditText.OutlinedBox.Dense"-->
         <item name="android:textColor">@color/text_light</item>
         <item name="android:colorBackground">@color/text_light</item>
         <item name="colorControlActivated">@color/text_light</item>
@@ -121,7 +117,7 @@
          <item name="android:fontFamily">@font/roboto_light</item>-->
     </style>
 
-    <style name="StyledTilInput" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox"> <!---->
+    <style name="StyledTilInput" parent="Widget.Material3.TextInputLayout.OutlinedBox"> <!---->
         <item name="android:colorBackground">@color/text_light</item>
         <item name="android:textColorPrimary">@color/text</item>
         <item name="android:textColorHint">@color/text_medium</item>
@@ -172,7 +168,7 @@
         <item name="colorControlNormal">@color/white</item>
     </style>
 
-    <style name="MyTextInputLayout" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+    <style name="MyTextInputLayout" parent="Widget.Material3.TextInputLayout.OutlinedBox">
         <item name="android:colorBackground">@color/text_light</item>
         <item name="android:textColorHint">@color/text_medium</item>
         <item name="boxStrokeColor">@color/edit_text_box_border</item>
@@ -186,7 +182,7 @@
         <item name="android:fontFamily">@font/roboto_light</item>
     </style>
 
-    <style name="MyTextInputEditText" parent="ThemeOverlay.MaterialComponents.TextInputEditText.OutlinedBox.Dense">
+    <style name="MyTextInputEditText" parent="ThemeOverlay.Material3.TextInputEditText.OutlinedBox.Dense">
         <item name="android:textColor">@color/text_light</item>
         <item name="android:colorBackground">@color/text_light</item>
         <item name="colorControlActivated">@color/text_light</item>
@@ -298,7 +294,7 @@
         <item name="android:fontFamily">@font/roboto_regular</item>
     </style>
 
-    <style name="BottomNavigationViewTheam" parent="@style/Theme.MaterialComponents.Light.DarkActionBar">
+    <style name="BottomNavigationViewTheam" parent="@style/Theme.Material3.Light">
         <item name="colorPrimary">@color/tex</item>
         <item name="colorPrimaryDark">@color/button</item>
         <item name="colorAccent">@color/tex</item>

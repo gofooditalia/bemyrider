@@ -7,6 +7,7 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
+        <!-- Toolbar con barra di ricerca M3 -->
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
@@ -23,56 +24,64 @@
             app:contentInsetStart="0dp"
             app:elevation="0dp">
 
-            <RelativeLayout
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="@dimen/_8sdp"
-                android:background="@drawable/rounded_white_bg"
-                android:padding="@dimen/_5sdp">
+                app:cardCornerRadius="24dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="@color/white">
 
-                <androidx.appcompat.widget.AppCompatImageView
-                    android:id="@+id/imgSearch"
-                    android:layout_width="@dimen/_20sdp"
-                    android:layout_height="@dimen/_20sdp"
-                    android:layout_alignParentStart="true"
-                    android:layout_margin="5dp"
-                    android:layout_centerVertical="true"
-                    android:src="@drawable/search"
-                    android:tint="@color/text" />
-
-                <androidx.appcompat.widget.AppCompatEditText
-                    android:id="@+id/edtSearch"
-                    style="@style/font_regular"
+                <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_marginStart="5dp"
-                    android:layout_marginTop="5dp"
-                    android:layout_marginEnd="5dp"
-                    android:layout_marginBottom="5dp"
-                    android:layout_toStartOf="@+id/imgFilter"
-                    android:layout_toEndOf="@+id/imgSearch"
-                    android:background="@color/transparent"
-                    android:hint="@string/search_keyword"
-                    android:imeOptions="actionSearch"
-                    android:inputType="text"
-                    android:textColor="@color/text"
-                    android:textColorHint="@color/hint_text_color"
-                    android:textSize="@dimen/_13ssp" />
+                    android:padding="@dimen/_5sdp">
 
-                <androidx.appcompat.widget.AppCompatImageView
-                    android:id="@+id/imgFilter"
-                    android:layout_width="@dimen/_22sdp"
-                    android:layout_height="@dimen/_22sdp"
-                    android:layout_alignParentEnd="true"
-                    android:layout_marginStart="5dp"
-                    android:layout_marginTop="5dp"
-                    android:layout_marginEnd="5dp"
-                    android:layout_marginBottom="5dp"
-                    android:src="@drawable/ic_filter" />
+                    <androidx.appcompat.widget.AppCompatImageView
+                        android:id="@+id/imgSearch"
+                        android:layout_width="@dimen/_20sdp"
+                        android:layout_height="@dimen/_20sdp"
+                        android:layout_alignParentStart="true"
+                        android:layout_centerVertical="true"
+                        android:layout_margin="5dp"
+                        android:src="@drawable/search"
+                        android:tint="@color/text" />
 
-            </RelativeLayout>
+                    <androidx.appcompat.widget.AppCompatEditText
+                        android:id="@+id/edtSearch"
+                        style="@style/font_regular"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:layout_marginStart="5dp"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginEnd="5dp"
+                        android:layout_marginBottom="5dp"
+                        android:layout_toStartOf="@+id/imgFilter"
+                        android:layout_toEndOf="@+id/imgSearch"
+                        android:background="@color/transparent"
+                        android:hint="@string/search_keyword"
+                        android:imeOptions="actionSearch"
+                        android:inputType="text"
+                        android:textColor="@color/text"
+                        android:textColorHint="@color/hint_text_color"
+                        android:textSize="@dimen/_13ssp" />
 
+                    <androidx.appcompat.widget.AppCompatImageView
+                        android:id="@+id/imgFilter"
+                        android:layout_width="@dimen/_22sdp"
+                        android:layout_height="@dimen/_22sdp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:layout_marginStart="5dp"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginEnd="5dp"
+                        android:layout_marginBottom="5dp"
+                        android:src="@drawable/ic_filter" />
+
+                </RelativeLayout>
+
+            </com.google.android.material.card.MaterialCardView>
 
         </androidx.appcompat.widget.Toolbar>
 
@@ -80,39 +89,27 @@
             android:id="@+id/activity_home"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@+id/toolbar"
-            android:background="@color/white"
-            android:gravity="center">
+            android:background="@color/white">
 
-            <!-- our tablayout to display tabs  -->
             <com.google.android.material.tabs.TabLayout
                 android:id="@+id/tabLayoutHome"
+                style="@style/Widget.Material3.TabLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:minHeight="?attr/actionBarSize"
-                app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-                app:tabBackground="@drawable/tabicon_selector"
-                app:tabIndicatorColor="@color/tab_text_selector"
+                app:tabGravity="fill"
+                app:tabIndicatorColor="@color/button"
                 app:tabMode="fixed"
                 app:tabPadding="0dp"
                 app:tabSelectedTextColor="@color/button"
                 app:tabTextAppearance="@style/tab_text"
                 app:tabTextColor="@color/text" />
 
-            <!-- View pager to swipe views -->
             <androidx.viewpager2.widget.ViewPager2
                 android:id="@+id/pagerHome"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_below="@+id/tabLayoutHome"
-                android:visibility="visible" />
+                android:layout_below="@+id/tabLayoutHome" />
 
-           <!-- <FrameLayout
-                android:id="@+id/frameContainer"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_below="@+id/tabLayoutHome"/>
--->
         </RelativeLayout>
 
     </androidx.appcompat.widget.LinearLayoutCompat>

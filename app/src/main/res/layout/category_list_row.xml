@@ -1,32 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/rlCategory"
+    style="@style/Widget.Material3.CardView.Elevated"
     android:layout_width="match_parent"
     android:layout_height="@dimen/_135sdp"
-    android:layout_margin="@dimen/_4sdp">
+    android:layout_margin="@dimen/_6sdp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="4dp">
 
     <ImageView
         android:id="@+id/ivCategoryImage"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scaleType="fitXY"
-        android:contentDescription="@null" />
+        android:contentDescription="@null"
+        android:scaleType="centerCrop" />
 
     <View
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_alignBottom="@+id/ivCategoryImage"
         android:background="@drawable/gradient_dark_for_text_on_image" />
 
     <TextView
         android:id="@+id/txtCategoryName"
+        style="@style/font_regular"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/ivCategoryImage"
-        android:layout_margin="@dimen/_5sdp"
-        android:text="asdf"
-        style="@style/font_regular"
+        android:layout_gravity="bottom"
+        android:layout_margin="@dimen/_12sdp"
         android:textColor="@color/white"
-        android:textSize="@dimen/_13ssp" />
+        android:textSize="@dimen/_15ssp" />
 
-</RelativeLayout>
+</com.google.android.material.card.MaterialCardView>

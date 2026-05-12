@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout>
-    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <RelativeLayout
         android:id="@+id/activity_service_detail_"
-        android:background="@color/white"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@color/white"
         android:fitsSystemWindows="true">
 
         <RelativeLayout
@@ -14,84 +15,93 @@
             android:layout_height="match_parent"
             android:visibility="visible">
 
-            <RelativeLayout
+            <!-- Header: rider info -->
+            <com.google.android.material.card.MaterialCardView
                 android:id="@+id/layout_profile"
-                android:layout_width="wrap_content"
+                style="@style/Widget.Material3.CardView.Elevated"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingStart="@dimen/_14sdp"
-                android:paddingTop="@dimen/_14sdp"
-                android:paddingEnd="@dimen/_14sdp"
-                android:paddingBottom="@dimen/_14sdp">
-
-                <com.app.bemyrider.utils.CircleImageView
-                    android:id="@+id/img_profile"
-                    android:layout_width="@dimen/_50sdp"
-                    android:layout_height="@dimen/_50sdp"
-                    android:layout_marginEnd="@dimen/_3sdp" />
+                app:cardCornerRadius="0dp"
+                app:cardElevation="2dp">
 
                 <RelativeLayout
-                    android:id="@+id/layout_name"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/_3sdp"
-                    android:layout_toEndOf="@+id/img_profile">
+                    android:paddingStart="@dimen/_14sdp"
+                    android:paddingTop="@dimen/_14sdp"
+                    android:paddingEnd="@dimen/_14sdp"
+                    android:paddingBottom="@dimen/_14sdp">
 
-                    <androidx.appcompat.widget.AppCompatTextView
-                        android:id="@+id/txt_name"
-                        style="@style/font_medium"
+                    <com.app.bemyrider.utils.CircleImageView
+                        android:id="@+id/img_profile"
+                        android:layout_width="@dimen/_60sdp"
+                        android:layout_height="@dimen/_60sdp"
+                        android:layout_centerVertical="true"
+                        android:layout_marginEnd="@dimen/_12sdp" />
+
+                    <RelativeLayout
+                        android:id="@+id/layout_name"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_toStartOf="@+id/txt_status"
-                        android:textColor="@color/text"
-                        android:textSize="@dimen/_13ssp" />
-
-                    <androidx.appcompat.widget.LinearLayoutCompat
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_below="@+id/txt_name"
-                        android:layout_marginTop="@dimen/_7sdp"
-                        android:orientation="horizontal">
-
-                        <androidx.appcompat.widget.AppCompatImageView
-                            android:layout_width="@dimen/_12sdp"
-                            android:layout_height="@dimen/_12sdp"
-                            android:src="@mipmap/ic_star_yellow"
-                            app:tint="@color/icon_color" />
+                        android:layout_centerVertical="true"
+                        android:layout_toEndOf="@+id/img_profile">
 
                         <androidx.appcompat.widget.AppCompatTextView
-                            android:id="@+id/txt_ratingShow"
+                            android:id="@+id/txt_name"
+                            style="@style/font_medium"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_toStartOf="@+id/txt_status"
+                            android:textColor="@color/text"
+                            android:textSize="@dimen/_14ssp" />
+
+                        <androidx.appcompat.widget.LinearLayoutCompat
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@+id/txt_name"
+                            android:layout_marginTop="@dimen/_5sdp"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <androidx.appcompat.widget.AppCompatImageView
+                                android:layout_width="@dimen/_13sdp"
+                                android:layout_height="@dimen/_13sdp"
+                                android:src="@mipmap/ic_star_yellow"
+                                app:tint="@color/icon_color" />
+
+                            <androidx.appcompat.widget.AppCompatTextView
+                                android:id="@+id/txt_ratingShow"
+                                style="@style/font_regular"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="4dp"
+                                android:includeFontPadding="false"
+                                android:textColor="@color/text_medium"
+                                android:textSize="@dimen/_11ssp" />
+
+                        </androidx.appcompat.widget.LinearLayoutCompat>
+
+                        <androidx.appcompat.widget.AppCompatTextView
+                            android:id="@+id/txt_status"
                             style="@style/font_regular"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_gravity="center"
-                            android:layout_marginStart="5dp"
-                            android:includeFontPadding="false"
-                            android:textColor="@color/text_medium"
-                            android:textSize="@dimen/_11ssp" />
+                            android:layout_alignParentEnd="true"
+                            android:paddingStart="@dimen/_6sdp"
+                            android:paddingTop="@dimen/_2sdp"
+                            android:paddingEnd="@dimen/_6sdp"
+                            android:paddingBottom="@dimen/_2sdp"
+                            android:text="Accepted"
+                            android:textColor="@color/white"
+                            android:textSize="@dimen/_10ssp" />
 
-                    </androidx.appcompat.widget.LinearLayoutCompat>
-
-                    <androidx.appcompat.widget.AppCompatTextView
-                        android:id="@+id/txt_status"
-                        style="@style/font_regular"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentEnd="true"
-                        android:layout_marginStart="4dp"
-                        android:paddingStart="@dimen/_4sdp"
-                        android:paddingTop="@dimen/_1sdp"
-                        android:paddingEnd="@dimen/_4sdp"
-                        android:paddingBottom="@dimen/_1sdp"
-                        android:text="Accepted"
-                        android:textColor="@color/white"
-                        android:textSize="@dimen/_11ssp" />
+                    </RelativeLayout>
 
                 </RelativeLayout>
 
+            </com.google.android.material.card.MaterialCardView>
 
-            </RelativeLayout>
-
-
+            <!-- Barra azioni contestuali: messaggio, disputa, segnala, preferito -->
             <androidx.appcompat.widget.LinearLayoutCompat
                 android:id="@+id/layout_function"
                 android:layout_width="match_parent"
@@ -128,7 +138,6 @@
 
                 </androidx.appcompat.widget.LinearLayoutCompat>
 
-                <!--0dp -> 1dp transparent-> edit_border_color-->
                 <View
                     android:id="@+id/ll_view_message"
                     android:layout_width="0dp"
@@ -168,8 +177,6 @@
 
                 </androidx.appcompat.widget.LinearLayoutCompat>
 
-                <!--0dp -> 1dp transparent-> edit_border_color-->
-
                 <View
                     android:id="@+id/ll_view_dispute"
                     android:layout_width="0dp"
@@ -208,8 +215,6 @@
                         android:textSize="@dimen/_10ssp" />
 
                 </androidx.appcompat.widget.LinearLayoutCompat>
-
-                <!--0dp -> 1dp transparent-> edit_border_color-->
 
                 <View
                     android:id="@+id/ll_view_report"
@@ -258,19 +263,21 @@
 
             </androidx.appcompat.widget.LinearLayoutCompat>
 
+            <!-- Tab bar -->
             <com.google.android.material.tabs.TabLayout
                 android:id="@+id/tabLayout"
+                style="@style/Widget.Material3.TabLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/layout_function"
-                android:layout_marginTop="@dimen/_14sdp"
-                android:minHeight="?attr/actionBarSize"
-                app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-                app:tabBackground="@drawable/tabicon_selector"
+                android:layout_marginTop="@dimen/_6sdp"
+                app:tabGravity="fill"
                 app:tabIconTint="@color/tab_text_selector"
-                app:tabIndicatorColor="@color/tab_text_selector"
+                app:tabIndicatorColor="@color/button"
                 app:tabMode="fixed"
-                app:tabPadding="0dp" />
+                app:tabPadding="0dp"
+                app:tabSelectedTextColor="@color/button"
+                app:tabTextColor="@color/text_medium" />
 
             <androidx.viewpager2.widget.ViewPager2
                 android:id="@+id/pager"
@@ -279,99 +286,99 @@
                 android:layout_above="@+id/layout_btn"
                 android:layout_below="@+id/tabLayout" />
 
+            <!-- Bottom CTA buttons -->
             <androidx.appcompat.widget.LinearLayoutCompat
                 android:id="@+id/layout_btn"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_alignParentBottom="true"
-                android:layout_marginStart="@dimen/_14sdp"
-                android:layout_marginEnd="@dimen/_14sdp"
                 android:orientation="vertical"
-                android:paddingTop="@dimen/_14sdp">
+                android:paddingStart="@dimen/_14sdp"
+                android:paddingTop="@dimen/_10sdp"
+                android:paddingEnd="@dimen/_14sdp"
+                android:paddingBottom="@dimen/_14sdp">
 
-                <androidx.appcompat.widget.AppCompatButton
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_book"
-                    style="@style/font_regular"
+                    style="@style/Widget.Material3.Button"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/_1sdp"
-                    android:layout_marginBottom="@dimen/_14sdp"
-                    android:background="@drawable/button_style_filltype_two"
+                    android:layout_marginBottom="@dimen/_6sdp"
                     android:text="@string/book_now"
                     android:textAllCaps="false"
-                    android:textColor="@color/white"
                     android:textSize="@dimen/_13ssp"
-                    android:visibility="gone" />
+                    android:visibility="gone"
+                    app:backgroundTint="@color/button"
+                    app:cornerRadius="8dp" />
 
-                <androidx.appcompat.widget.AppCompatButton
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_cancel"
-                    style="@style/font_regular"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/_1sdp"
-                    android:layout_marginBottom="@dimen/_14sdp"
-                    android:background="@drawable/button_style_filltype_two"
+                    android:layout_marginBottom="@dimen/_6sdp"
                     android:text="@string/cancel"
                     android:textAllCaps="false"
-                    android:textColor="@color/white"
+                    android:textColor="@color/button"
                     android:textSize="@dimen/_13ssp"
-                    android:visibility="gone" />
+                    android:visibility="gone"
+                    app:cornerRadius="8dp"
+                    app:strokeColor="@color/button" />
 
-                <androidx.appcompat.widget.AppCompatButton
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_add_review"
-                    style="@style/font_regular"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/_1sdp"
-                    android:layout_marginBottom="@dimen/_14sdp"
-                    android:background="@drawable/button_style_filltype"
+                    android:layout_marginBottom="@dimen/_6sdp"
                     android:text="@string/add_review"
                     android:textAllCaps="false"
                     android:textColor="@color/button"
                     android:textSize="@dimen/_13ssp"
-                    android:visibility="gone" />
+                    android:visibility="gone"
+                    app:cornerRadius="8dp"
+                    app:strokeColor="@color/button" />
 
-                <androidx.appcompat.widget.AppCompatButton
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_extend_payment"
-                    style="@style/font_regular"
+                    style="@style/Widget.Material3.Button"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/_1sdp"
-                    android:layout_marginBottom="@dimen/_14sdp"
-                    android:background="@drawable/button_style_filltype_two"
+                    android:layout_marginBottom="@dimen/_6sdp"
                     android:text="@string/pay_for_extend_service"
                     android:textAllCaps="false"
-                    android:textColor="@color/white"
                     android:textSize="@dimen/_13ssp"
-                    android:visibility="gone" />
+                    android:visibility="gone"
+                    app:backgroundTint="@color/button"
+                    app:cornerRadius="8dp" />
 
-                <androidx.appcompat.widget.AppCompatButton
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_extend_service"
-                    style="@style/font_regular"
+                    style="@style/Widget.Material3.Button"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/_1sdp"
-                    android:layout_marginBottom="@dimen/_14sdp"
-                    android:background="@drawable/button_style_filltype_two"
+                    android:layout_marginBottom="@dimen/_6sdp"
                     android:text="@string/expand_service"
                     android:textAllCaps="false"
-                    android:textColor="@color/white"
                     android:textSize="@dimen/_13ssp"
-                    android:visibility="gone" />
+                    android:visibility="gone"
+                    app:backgroundTint="@color/button"
+                    app:cornerRadius="8dp" />
 
-                <androidx.appcompat.widget.AppCompatButton
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_download_invoice"
-                    style="@style/font_regular"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/_1sdp"
-                    android:layout_marginBottom="@dimen/_14sdp"
-                    android:background="@drawable/button_style_filltype_two"
                     android:text="@string/download_invoice"
                     android:textAllCaps="false"
-                    android:textColor="@color/white"
+                    android:textColor="@color/button"
                     android:textSize="@dimen/_13ssp"
-                    android:visibility="gone" />
+                    android:visibility="gone"
+                    app:cornerRadius="8dp"
+                    app:icon="@drawable/ic_filter"
+                    app:iconTint="@color/button"
+                    app:strokeColor="@color/button" />
 
             </androidx.appcompat.widget.LinearLayoutCompat>
 
@@ -382,10 +389,7 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/_30sdp"
             android:layout_centerInParent="true"
-            android:layout_gravity="center"
             android:visibility="gone" />
-
-
 
     </RelativeLayout>
 

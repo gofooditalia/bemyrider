@@ -1,30 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/relative_review"
+    style="@style/Widget.Material3.CardView.Elevated"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical">
+    android:layout_marginStart="@dimen/_10sdp"
+    android:layout_marginTop="@dimen/_5sdp"
+    android:layout_marginEnd="@dimen/_10sdp"
+    android:layout_marginBottom="@dimen/_5sdp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp">
 
     <RelativeLayout
         android:id="@+id/relDetail"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="@dimen/_13sdp">
+        android:padding="@dimen/_12sdp">
 
         <com.app.bemyrider.utils.CircleImageView
             android:id="@+id/imgProvider"
-            android:layout_width="@dimen/_50sdp"
-            android:layout_height="@dimen/_50sdp"
+            android:layout_width="@dimen/_55sdp"
+            android:layout_height="@dimen/_55sdp"
+            android:layout_centerVertical="true"
             android:layout_marginEnd="@dimen/_3sdp" />
+
+        <TextView
+            android:id="@+id/txtRate"
+            style="@style/font_bold"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:textColor="@color/button"
+            android:textSize="@dimen/_13ssp" />
 
         <androidx.appcompat.widget.LinearLayoutCompat
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="@dimen/_3sdp"
-            android:layout_toStartOf="@id/txtRate"
+            android:layout_centerVertical="true"
+            android:layout_marginHorizontal="@dimen/_6sdp"
             android:layout_toEndOf="@+id/imgProvider"
+            android:layout_toStartOf="@id/txtRate"
             android:orientation="vertical">
 
             <TextView
@@ -32,16 +50,13 @@
                 style="@style/font_regular"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_alignParentStart="true"
-                android:layout_toStartOf="@+id/txt_date"
                 android:textColor="@color/text"
-                android:textSize="@dimen/_12ssp" />
+                android:textSize="@dimen/_13ssp" />
 
             <RelativeLayout
                 android:id="@+id/layout_rate"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/layout_subject"
                 android:layout_marginTop="@dimen/_3sdp">
 
                 <ImageView
@@ -68,81 +83,14 @@
                 style="@style/font_light"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentStart="true"
                 android:layout_marginTop="@dimen/_3sdp"
-                android:maxLines="2"
+                android:maxLines="1"
+                android:ellipsize="end"
                 android:textColor="@color/text_light"
                 android:textSize="@dimen/_11ssp" />
 
-
         </androidx.appcompat.widget.LinearLayoutCompat>
 
-        <TextView
-            android:id="@+id/txtRate"
-            style="@style/font_bold"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:text="0$/h"
-            android:textColor="@color/text"
-            android:textSize="@dimen/_13ssp" />
     </RelativeLayout>
 
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_below="@+id/relDetail"
-        android:background="@color/edit_border_color" />
-
-</RelativeLayout>
-
-
-    <!--
-    <androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/_14sdp"
-        android:layout_marginEnd="@dimen/_14sdp"
-        android:layout_marginTop="@dimen/_7sdp"
-        android:layout_marginBottom="@dimen/_7sdp"
-        android:background="@drawable/rounded_home_bg"
-        android:orientation="vertical">
-
-        <androidx.appcompat.widget.AppCompatImageView
-            android:id="@+id/imgProvider"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/_150sdp"
-            android:scaleType="fitXY"
-            android:adjustViewBounds="true"
-            android:background="@color/transparent"
-            android:src="@drawable/dummy_image"/>
-
-        <androidx.appcompat.widget.LinearLayoutCompat
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="@dimen/_14sdp"
-            android:orientation="vertical">
-
-            <androidx.appcompat.widget.AppCompatTextView
-                android:id="@+id/txtName"
-                style="@style/font_regular"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textColor="@color/text"
-                android:textSize="@dimen/_12ssp"/>
-
-            <androidx.appcompat.widget.AppCompatTextView
-                android:id="@+id/txtAddress"
-                style="@style/font_regular"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/_4sdp"
-                android:textColor="@color/text_light"
-                android:textSize="@dimen/_12ssp" />
-
-        </androidx.appcompat.widget.LinearLayoutCompat>
-
-
-    </androidx.appcompat.widget.LinearLayoutCompat>-->
+</com.google.android.material.card.MaterialCardView>
