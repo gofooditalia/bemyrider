@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:app="http://schemas.android.com/apk/res-auto"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/white"
@@ -181,7 +182,6 @@
                     style="@style/StyledTilInput"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_below="@+id/view_sp_code"
                     android:layout_marginTop="4dp">
 
                     <com.google.android.material.textfield.MaterialAutoCompleteTextView
@@ -403,7 +403,6 @@
                     style="@style/StyledTilInput"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_below="@+id/till_edit_address"
                     android:layout_marginTop="4dp">
 
                     <com.google.android.material.textfield.TextInputEditText
@@ -420,7 +419,6 @@
                 <androidx.appcompat.widget.LinearLayoutCompat
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_below="@id/et_edit_aboutme"
                     android:layout_marginTop="4dp"
                     android:orientation="horizontal">
 
@@ -475,17 +473,19 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/_12sdp"
                 android:layout_marginTop="4dp"
+                android:layout_marginEnd="@dimen/_12sdp"
                 android:orientation="vertical">
 
                 <androidx.appcompat.widget.AppCompatTextView
                     style="@style/font_regular"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
                     android:text="@string/deliveries_type"
                     android:textColor="@color/text"
                     android:textSize="@dimen/_12ssp" />
 
-                <androidx.appcompat.widget.SwitchCompat
+                <com.google.android.material.materialswitch.MaterialSwitch
                     android:id="@+id/switch_small"
                     style="@style/font_light"
                     android:layout_width="match_parent"
@@ -493,12 +493,12 @@
                     android:paddingTop="10dp"
                     android:paddingBottom="7dp"
                     android:text="@string/small"
-                    android:textColor="@color/text_light"
-                    android:textSize="@dimen/_12ssp"
-                    android:thumb="@drawable/custom_thumb"
-                    app:track="@null" />
+                    android:textColor="@color/text"
+                    app:thumbTint="@color/button"
+                    app:trackTint="@color/gray_light"
+                    android:textSize="@dimen/_12ssp" />
 
-                <androidx.appcompat.widget.SwitchCompat
+                <com.google.android.material.materialswitch.MaterialSwitch
                     android:id="@+id/switch_medium"
                     style="@style/font_light"
                     android:layout_width="match_parent"
@@ -506,12 +506,12 @@
                     android:paddingTop="7dp"
                     android:paddingBottom="7dp"
                     android:text="@string/medium"
-                    android:textColor="@color/text_light"
-                    android:textSize="@dimen/_12ssp"
-                    android:thumb="@drawable/custom_thumb"
-                    app:track="@null" />
+                    android:textColor="@color/text"
+                    app:thumbTint="@color/button"
+                    app:trackTint="@color/gray_light"
+                    android:textSize="@dimen/_12ssp" />
 
-                <androidx.appcompat.widget.SwitchCompat
+                <com.google.android.material.materialswitch.MaterialSwitch
                     android:id="@+id/switch_large"
                     style="@style/font_light"
                     android:layout_width="match_parent"
@@ -519,10 +519,10 @@
                     android:paddingTop="7dp"
                     android:paddingBottom="7dp"
                     android:text="@string/large"
-                    android:textColor="@color/text_light"
-                    android:textSize="@dimen/_12ssp"
-                    android:thumb="@drawable/custom_thumb"
-                    app:track="@null" />
+                    android:textColor="@color/text"
+                    app:thumbTint="@color/button"
+                    app:trackTint="@color/gray_light"
+                    android:textSize="@dimen/_12ssp" />
 
             </androidx.appcompat.widget.LinearLayoutCompat>
 
@@ -531,17 +531,19 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/_12sdp"
                 android:layout_marginTop="4dp"
+                android:layout_marginEnd="@dimen/_12sdp"
                 android:orientation="vertical">
 
                 <androidx.appcompat.widget.AppCompatTextView
                     style="@style/font_regular"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
                     android:text="@string/working_days"
                     android:textColor="@color/text"
                     android:textSize="@dimen/_12ssp" />
 
-                <androidx.appcompat.widget.SwitchCompat
+                <com.google.android.material.materialswitch.MaterialSwitch
                     android:id="@+id/switch_sunday"
                     style="@style/font_light"
                     android:layout_width="match_parent"
@@ -550,12 +552,12 @@
                     android:paddingBottom="7dp"
                     android:text="@string/sunday"
                     android:textAllCaps="true"
-                    android:textColor="@color/text_light"
-                    android:textSize="@dimen/_12ssp"
-                    android:thumb="@drawable/custom_thumb"
-                    app:track="@null" />
+                    android:textColor="@color/text"
+                    app:thumbTint="@color/button"
+                    app:trackTint="@color/gray_light"
+                    android:textSize="@dimen/_12ssp" />
 
-                <androidx.appcompat.widget.SwitchCompat
+                <com.google.android.material.materialswitch.MaterialSwitch
                     android:id="@+id/switch_monday"
                     style="@style/font_light"
                     android:layout_width="match_parent"
@@ -564,12 +566,12 @@
                     android:paddingBottom="7dp"
                     android:text="@string/monday"
                     android:textAllCaps="true"
-                    android:textColor="@color/text_light"
-                    android:textSize="@dimen/_12ssp"
-                    android:thumb="@drawable/custom_thumb"
-                    app:track="@null" />
+                    android:textColor="@color/text"
+                    app:thumbTint="@color/button"
+                    app:trackTint="@color/gray_light"
+                    android:textSize="@dimen/_12ssp" />
 
-                <androidx.appcompat.widget.SwitchCompat
+                <com.google.android.material.materialswitch.MaterialSwitch
                     android:id="@+id/switch_tuesday"
                     style="@style/font_light"
                     android:layout_width="match_parent"
@@ -578,12 +580,12 @@
                     android:paddingBottom="7dp"
                     android:text="@string/tuesday"
                     android:textAllCaps="true"
-                    android:textColor="@color/text_light"
-                    android:textSize="@dimen/_12ssp"
-                    android:thumb="@drawable/custom_thumb"
-                    app:track="@null" />
+                    android:textColor="@color/text"
+                    app:thumbTint="@color/button"
+                    app:trackTint="@color/gray_light"
+                    android:textSize="@dimen/_12ssp" />
 
-                <androidx.appcompat.widget.SwitchCompat
+                <com.google.android.material.materialswitch.MaterialSwitch
                     android:id="@+id/switch_wednwsday"
                     style="@style/font_light"
                     android:layout_width="match_parent"
@@ -592,12 +594,12 @@
                     android:paddingBottom="7dp"
                     android:text="@string/wednesday"
                     android:textAllCaps="true"
-                    android:textColor="@color/text_light"
-                    android:textSize="@dimen/_12ssp"
-                    android:thumb="@drawable/custom_thumb"
-                    app:track="@null" />
+                    android:textColor="@color/text"
+                    app:thumbTint="@color/button"
+                    app:trackTint="@color/gray_light"
+                    android:textSize="@dimen/_12ssp" />
 
-                <androidx.appcompat.widget.SwitchCompat
+                <com.google.android.material.materialswitch.MaterialSwitch
                     android:id="@+id/switch_thursday"
                     style="@style/font_light"
                     android:layout_width="match_parent"
@@ -606,12 +608,12 @@
                     android:paddingBottom="7dp"
                     android:text="@string/thursday"
                     android:textAllCaps="true"
-                    android:textColor="@color/text_light"
-                    android:textSize="@dimen/_12ssp"
-                    android:thumb="@drawable/custom_thumb"
-                    app:track="@null" />
+                    android:textColor="@color/text"
+                    app:thumbTint="@color/button"
+                    app:trackTint="@color/gray_light"
+                    android:textSize="@dimen/_12ssp" />
 
-                <androidx.appcompat.widget.SwitchCompat
+                <com.google.android.material.materialswitch.MaterialSwitch
                     android:id="@+id/switch_friday"
                     style="@style/font_light"
                     android:layout_width="match_parent"
@@ -620,12 +622,12 @@
                     android:paddingBottom="7dp"
                     android:text="@string/friday"
                     android:textAllCaps="true"
-                    android:textColor="@color/text_light"
-                    android:textSize="@dimen/_12ssp"
-                    android:thumb="@drawable/custom_thumb"
-                    app:track="@null" />
+                    android:textColor="@color/text"
+                    app:thumbTint="@color/button"
+                    app:trackTint="@color/gray_light"
+                    android:textSize="@dimen/_12ssp" />
 
-                <androidx.appcompat.widget.SwitchCompat
+                <com.google.android.material.materialswitch.MaterialSwitch
                     android:id="@+id/switch_saturday"
                     style="@style/font_light"
                     android:layout_width="match_parent"
@@ -634,10 +636,10 @@
                     android:paddingBottom="7dp"
                     android:text="@string/saturday"
                     android:textAllCaps="true"
-                    android:textColor="@color/text_light"
-                    android:textSize="@dimen/_12ssp"
-                    android:thumb="@drawable/custom_thumb"
-                    app:track="@null" />
+                    android:textColor="@color/text"
+                    app:thumbTint="@color/button"
+                    app:trackTint="@color/gray_light"
+                    android:textSize="@dimen/_12ssp" />
 
             </androidx.appcompat.widget.LinearLayoutCompat>
 
